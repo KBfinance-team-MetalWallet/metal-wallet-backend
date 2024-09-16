@@ -2,6 +2,7 @@ package com.kb.wallet.global.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import java.util.Arrays;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.transaction.ChainedTransactionManager;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -30,14 +32,20 @@ import java.util.Properties;
 })
 @MapperScan(
     basePackages = {
-        "com.kb.wallet.member.repository"
+        "com.kb.wallet.member.repository",
+        "com.kb.wallet.ticket.repository"
     },
     annotationClass = org.apache.ibatis.annotations.Mapper.class //해당패키지에서 @Mapper어노테이션이 선언된 인터페이스 찾기
 )
-@EnableJpaRepositories(basePackages = "com.kb.wallet.member.repository")
+@EnableJpaRepositories(basePackages = {
+    "com.kb.wallet.member.repository",
+    "com.kb.wallet.ticket.repository"
+})
+@EnableJpaAuditing
 @EnableTransactionManagement
 
 public class AppConfig {
+
   @Bean
   public DataSource dataSource() {
     HikariConfig config = new HikariConfig();
@@ -61,7 +69,7 @@ public class AppConfig {
   public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
     LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
     emf.setDataSource(dataSource);
-    emf.setPackagesToScan("com.kb.wallet.member.domain");  // JPA 엔티티가 있는 패키지 설정
+    emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain");  // JPA 엔티티가 있는 패키지 설정
     emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
     // JPA Properties 설정
@@ -69,7 +77,7 @@ public class AppConfig {
     jpaProperties.put("hibernate.hbm2ddl.auto", "update"); // 테이블 자동 생성
     jpaProperties.put("hibernate.show_sql", "true"); // SQL 쿼리 로그 출력
     jpaProperties.put("hibernate.physical_naming_strategy",
-            "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
+        "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
 
     emf.setJpaProperties(jpaProperties);
 
@@ -77,7 +85,8 @@ public class AppConfig {
   }
 
   @Bean
-  public PlatformTransactionManager jpaTransactionManager(LocalContainerEntityManagerFactoryBean entityManagerFactory) {
+  public PlatformTransactionManager jpaTransactionManager(
+      LocalContainerEntityManagerFactoryBean entityManagerFactory) {
     JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
     jpaTransactionManager.setEntityManagerFactory(entityManagerFactory.getObject());
     return jpaTransactionManager;
@@ -88,11 +97,14 @@ public class AppConfig {
   public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
     SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
     sessionFactory.setDataSource(dataSource);
-    sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain");  // MyBatis 모델 패키지 설정
-    sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
+    sessionFactory.setTypeAliasesPackage(
+        Arrays.toString(new String[]{"com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain"}));  // MyBatis 모델 패키지 설정
+    sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(
+        "classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
 
     org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
-    configuration.setAutoMappingBehavior(org.apache.ibatis.session.AutoMappingBehavior.PARTIAL); // Set AUTO_MAPPING_BEHAVIOR to PARTIAL
+    configuration.setAutoMappingBehavior(
+        org.apache.ibatis.session.AutoMappingBehavior.PARTIAL); // Set AUTO_MAPPING_BEHAVIOR to PARTIAL
     configuration.setMapUnderscoreToCamelCase(true);
     sessionFactory.setConfiguration(configuration);
 
@@ -113,8 +125,8 @@ public class AppConfig {
   // 두 트랜잭션 매니저를 ChainedTransactionManager로 묶음
   @Bean
   public PlatformTransactionManager transactionManager(
-          @Qualifier("jpaTransactionManager") PlatformTransactionManager jpaTransactionManager,
-          @Qualifier("myBatisTransactionManager") PlatformTransactionManager myBatisTransactionManager) {
+      @Qualifier("jpaTransactionManager") PlatformTransactionManager jpaTransactionManager,
+      @Qualifier("myBatisTransactionManager") PlatformTransactionManager myBatisTransactionManager) {
     return new ChainedTransactionManager(jpaTransactionManager, myBatisTransactionManager);
   }
 
