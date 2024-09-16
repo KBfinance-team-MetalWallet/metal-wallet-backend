@@ -69,7 +69,13 @@ public class TicketServiceImpl implements TicketService{
     Ticket ticket = ticketRepository.findById(ticketId)
         .orElseThrow(() -> new RuntimeException());
 
+    // 티켓 주인인지 검사
     if(ticket.getMember().getId() != member.getId()) {
+      throw new RuntimeException();
+    }
+
+    // 티켓 상태가 구매 상태인지 검사
+    if(ticket.getTicketStatus() != TicketStatus.BOOKED) {
       throw new RuntimeException();
     }
 
