@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -40,14 +41,16 @@ public class Ticket {
   @JoinColumn(name = "member_id")
   private Member member;
 
+  @Column
   @Enumerated(value = EnumType.STRING)
   // enum의 값을 index가 아닌 텍스트 값 그대로 저장하고 싶을 때 위의 어노테이션 사용
   private TicketStatus ticketStatus;
 
-  @CreatedDate
   @Column(updatable = false)
+  @CreatedDate
   private LocalDateTime createdAt;
 
+  @Column
   private LocalDateTime validUntil;
 
   @Column

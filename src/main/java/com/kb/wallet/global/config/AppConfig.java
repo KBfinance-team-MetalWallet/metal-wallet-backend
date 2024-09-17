@@ -97,8 +97,8 @@ public class AppConfig {
   public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
     SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
     sessionFactory.setDataSource(dataSource);
-    sessionFactory.setTypeAliasesPackage(
-        Arrays.toString(new String[]{"com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain"}));  // MyBatis 모델 패키지 설정
+    sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain");
+    sessionFactory.setTypeAliasesPackage("com.kb.wallet.ticket.domain");
     sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(
         "classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
 
