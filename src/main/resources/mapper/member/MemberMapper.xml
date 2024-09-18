@@ -18,12 +18,12 @@
 
     <select id="findAll" resultMap="memberResultMap">
         SELECT *
-        FROM members
+        FROM member
     </select>
 
     <select id="findById" parameterType="Long" resultMap="memberResultMap">
         SELECT *
-        FROM members
+        FROM member
         WHERE id = #{id}
     </select>
 

@@ -6,12 +6,8 @@ import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.TicketDTO;
 import com.kb.wallet.ticket.repository.TicketMapper;
 import com.kb.wallet.ticket.repository.TicketRepository;
-import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,8 +26,8 @@ public class TicketServiceImpl implements TicketService{
   public Ticket saveTicket(Member member, TicketDTO.TicketRequest ticketRequest) {
     // 일정 테이블에서 일정 찾아서 넣어줘야 함.
     // TODO : 임의 member 생성.. 로그인 구현 시 삭제 해야 함
-    Member member1 = new Member();
-    member1.setId(1L);
+    Member temp = new Member();
+    temp.setId(1L);
 
     // TODO : 뮤지컬이 유효한지 검사
 
@@ -39,7 +35,7 @@ public class TicketServiceImpl implements TicketService{
 
     // 티켓 엔티티 생성
     Ticket ticket = Ticket.builder()
-        .member(member1)
+        .member(temp)
         .ticketStatus(TicketStatus.BOOKED)
         .build();
     ticketRepository.save(ticket);
