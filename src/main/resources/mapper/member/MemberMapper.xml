@@ -5,15 +5,15 @@
 <mapper namespace="com.kb.wallet.member.repository.MemberMapper">
 
     <!-- 결과 매핑 설정 -->
-    <resultMap id="memberResultMap" type="com.kb.wallet.member.domain.Member" autoMapping="true">
+    <resultMap id="memberResultMap" type="Member" autoMapping="true">
         <id property="id" column="id"/>
-        <result property="id" column="id"/>
-        <result property="name" column="name"/>
+        <result property="accountId" column="account_id"/>
+        <result property="userName" column="user_name"/>
         <result property="role" column="role"/>
         <result property="phone" column="phone"/>
         <result property="email" column="email"/>
         <result property="pinNumber" column="pin_number"/>
-        <result property="isActivated" column="is_activated"/>
+        <result property="loginNumber" column="login_number"/>
     </resultMap>
 
     <select id="findAll" resultMap="memberResultMap">
