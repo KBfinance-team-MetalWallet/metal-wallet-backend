@@ -35,7 +35,7 @@ public class TicketController {
       @AuthenticationPrincipal Member member,
       @RequestParam(name = "page", defaultValue = "0") int page,
       @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<Ticket> tickets = ticketService.findAllUserTicket(member.getId(), page, size);
+    Page<Ticket> tickets = ticketService.findAllBookedTickets(member.getId(), page, size);
     return ResponseEntity.ok(tickets);
   }
 
