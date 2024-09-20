@@ -25,7 +25,7 @@ public class TicketController {
   @PostMapping
   public ResponseEntity<Ticket> createTicket(
       @AuthenticationPrincipal Member member,
-      TicketDTO.TicketRequest ticketRequest) {
+      @RequestBody TicketDTO.TicketRequest ticketRequest) {
     Ticket ticket = ticketService.saveTicket(member, ticketRequest);
     return ResponseEntity.ok(ticket);
   }
