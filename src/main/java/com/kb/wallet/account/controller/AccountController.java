@@ -31,9 +31,10 @@ public class AccountController {
     return ResponseEntity.ok(accountService.getAccounts());
   }
 
-  @GetMapping("/{accountNumber}/balance")
-  public ResponseEntity<AccountResponse> getBalanceByAccountNumber(@PathVariable(name = "number") String accountNumber){
-    AccountResponse accountResponse = accountService.getBalanceByAccountNumber(accountNumber);
+  @GetMapping("/{accountId}/balance")
+  public ResponseEntity<AccountResponse> getBalanceByAccountId(
+      @PathVariable(name = "accountId") Long accountId){
+    AccountResponse accountResponse = accountService.getBalanceByAccountId(accountId);
     return ResponseEntity.ok(accountResponse);
   }
 
