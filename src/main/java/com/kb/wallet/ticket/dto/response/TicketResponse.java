@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class CreateTicketResponse {
+public class TicketResponse {
 
   private Long id;
   private TicketStatus ticketStatus;
@@ -22,8 +22,8 @@ public class CreateTicketResponse {
   private LocalDateTime validUntil;
   private LocalDateTime cancelUntil;
 
-  public static CreateTicketResponse toTicketResponse(Ticket ticket) {
-    return CreateTicketResponse.builder()
+  public static TicketResponse toTicketResponse(Ticket ticket) {
+    return TicketResponse.builder()
         .id(ticket.getId())
         .ticketStatus(ticket.getTicketStatus())
         .createdAt(ticket.getCreatedAt())

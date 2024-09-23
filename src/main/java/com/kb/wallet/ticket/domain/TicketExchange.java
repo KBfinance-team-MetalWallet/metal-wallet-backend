@@ -1,6 +1,6 @@
 package com.kb.wallet.ticket.domain;
 
-import com.kb.wallet.ticket.dto.request.CreateTicketExchangeRequest;
+import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -47,7 +47,7 @@ public class TicketExchange {
   private LocalDateTime updatedAt;
 
   public static TicketExchange toTicketExchange(Ticket ticket,
-      CreateTicketExchangeRequest exchangeRequest) {
+      TicketExchangeRequest exchangeRequest) {
     return TicketExchange.builder()
         .ticket(ticket)
         .preferredSeat(exchangeRequest.getPreferredSeatIndex())

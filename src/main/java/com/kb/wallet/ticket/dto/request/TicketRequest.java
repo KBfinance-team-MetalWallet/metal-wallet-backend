@@ -9,7 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class CreateTicketRequest {
+public class TicketRequest {
   private long musicalId;
   private long seatId;
   private long scheduleId;

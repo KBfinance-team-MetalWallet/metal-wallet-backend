@@ -1,10 +1,10 @@
 package com.kb.wallet.ticket.controller;
 
 import com.kb.wallet.member.domain.Member;
-import com.kb.wallet.ticket.dto.request.CreateTicketExchangeRequest;
-import com.kb.wallet.ticket.dto.request.CreateTicketRequest;
-import com.kb.wallet.ticket.dto.response.CreateTicketExchangeResponse;
-import com.kb.wallet.ticket.dto.response.CreateTicketResponse;
+import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
+import com.kb.wallet.ticket.dto.request.TicketRequest;
+import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,19 +33,19 @@ public class TicketController {
   }
 
   @PostMapping
-  public ResponseEntity<CreateTicketResponse> createTicket(
+  public ResponseEntity<TicketResponse> createTicket(
       @AuthenticationPrincipal Member member,
-      @RequestBody CreateTicketRequest ticketRequest) {
-    CreateTicketResponse ticket = ticketService.saveTicket(member, ticketRequest);
+      @RequestBody TicketRequest ticketRequest) {
+    TicketResponse ticket = ticketService.saveTicket(member, ticketRequest);
     return ResponseEntity.ok(ticket);
   }
 
   @GetMapping
-  public ResponseEntity<Page<CreateTicketResponse>> getUserTickets(
+  public ResponseEntity<Page<TicketResponse>> getUserTickets(
       @AuthenticationPrincipal Member member,
       @RequestParam(name = "page", defaultValue = "0") int page,
       @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<CreateTicketResponse> tickets = ticketService.findAllBookedTickets(member.getId(), page, size);
+    Page<TicketResponse> tickets = ticketService.findAllBookedTickets(member.getId(), page, size);
     return ResponseEntity.ok(tickets);
   }
 
@@ -65,10 +65,10 @@ public class TicketController {
   }
 
   @PostMapping("/exchange")
-  public ResponseEntity<CreateTicketExchangeResponse> createTicketExchange(
+  public ResponseEntity<TicketExchangeResponse> createTicketExchange(
       @AuthenticationPrincipal Member member,
-      @RequestBody CreateTicketExchangeRequest exchangeRequest) {
-    CreateTicketExchangeResponse ticketExchange = ticketService.createTicketExchange(member,
+      @RequestBody TicketExchangeRequest exchangeRequest) {
+    TicketExchangeResponse ticketExchange = ticketService.createTicketExchange(member,
         exchangeRequest);
     return ResponseEntity.ok(ticketExchange);
   }

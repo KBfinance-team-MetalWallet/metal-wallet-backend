@@ -13,16 +13,16 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class CreateTicketExchangeResponse {
+public class TicketExchangeResponse {
 
   private Long id;
   private int preferredSeat;
   private String preferredSchedule;
   private LocalDateTime createdAt;
 
-  public static CreateTicketExchangeResponse createTicketExchangeResponse(
+  public static TicketExchangeResponse createTicketExchangeResponse(
       TicketExchange ticketExchange) {
-    return CreateTicketExchangeResponse.builder()
+    return TicketExchangeResponse.builder()
         .id(ticketExchange.getId())
         .preferredSeat(ticketExchange.getPreferredSeat())
         .preferredSchedule(ticketExchange.getPreferredSchedule())
