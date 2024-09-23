@@ -3,7 +3,7 @@ package com.kb.wallet.ticket.domain;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.seat.domain.Seat;
 import com.kb.wallet.ticket.constant.TicketStatus;
-import com.kb.wallet.ticket.dto.request.CreateTicketRequest;
+import com.kb.wallet.ticket.dto.request.TicketRequest;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -63,7 +63,7 @@ public class Ticket {
     private LocalDateTime cancelUntil;
 
     // TODO : 변환 내용 완성해야 함
-    public static Ticket createBookedTicket(CreateTicketRequest ticketRequest) {
+    public static Ticket createBookedTicket(TicketRequest ticketRequest) {
         return Ticket.builder()
             .ticketStatus(TicketStatus.BOOKED)
             .build();

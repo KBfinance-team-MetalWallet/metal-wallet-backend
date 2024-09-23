@@ -5,10 +5,10 @@ import com.kb.wallet.seat.constant.Grade;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.domain.TicketExchange;
-import com.kb.wallet.ticket.dto.request.CreateTicketExchangeRequest;
-import com.kb.wallet.ticket.dto.request.CreateTicketRequest;
-import com.kb.wallet.ticket.dto.response.CreateTicketExchangeResponse;
-import com.kb.wallet.ticket.dto.response.CreateTicketResponse;
+import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
+import com.kb.wallet.ticket.dto.request.TicketRequest;
+import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.ScheduleRepository;
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
 import com.kb.wallet.ticket.repository.TicketMapper;
@@ -35,7 +35,7 @@ public class TicketServiceImpl implements TicketService {
 
 
   @Override
-  public CreateTicketResponse saveTicket(Member member, CreateTicketRequest ticketRequest) {
+  public TicketResponse saveTicket(Member member, TicketRequest ticketRequest) {
     // 일정 테이블에서 일정 찾아서 넣어줘야 함.
     // TODO : 임의 member 생성.. 로그인 구현 시 삭제 해야 함
     Member temp = new Member();
@@ -48,16 +48,16 @@ public class TicketServiceImpl implements TicketService {
     // 티켓 엔티티 생성
     Ticket bookedTicket = Ticket.createBookedTicket(ticketRequest);
     Ticket ticket = ticketRepository.save(bookedTicket);
-    return CreateTicketResponse.toTicketResponse(ticket);
+    return TicketResponse.toTicketResponse(ticket);
   }
 
   @Override
-  public Page<CreateTicketResponse> findAllBookedTickets(Long id, int page, int size) {
+  public Page<TicketResponse> findAllBookedTickets(Long id, int page, int size) {
     id = 1L; // TODO: 이거 로그인 구현 시 지워야 함
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<Ticket> ticketsByMemberIdAndTicketStatus =
         ticketRepository.findTicketsByMemberIdAndTicketStatus(id, TicketStatus.BOOKED, pageable);
-    return ticketsByMemberIdAndTicketStatus.map(CreateTicketResponse::toTicketResponse);
+    return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
   }
 
   @Override
@@ -76,8 +76,8 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public CreateTicketExchangeResponse createTicketExchange(Member member,
-      CreateTicketExchangeRequest exchangeRequest) {
+  public TicketExchangeResponse createTicketExchange(Member member,
+      TicketExchangeRequest exchangeRequest) {
 
     Ticket ticket = checkTicketValidation(exchangeRequest);
 
@@ -93,10 +93,19 @@ public class TicketServiceImpl implements TicketService {
 
     TicketExchange ticketExchange = TicketExchange.toTicketExchange(ticket, exchangeRequest);
     TicketExchange saved = ticketExchangeRepository.save(ticketExchange);
-    return CreateTicketExchangeResponse.createTicketExchangeResponse(saved);
+    return TicketExchangeResponse.createTicketExchangeResponse(saved);
   }
 
-  private Ticket checkTicketValidation(CreateTicketExchangeRequest exchangeRequest) {
+  @Override
+  public Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page,
+      int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    Page<TicketExchange> ticketExchanges = ticketExchangeRepository.findByTicketMember(member,
+        pageable);
+    return ticketExchanges.map(TicketExchangeResponse::createTicketExchangeResponse);
+  }
+
+  private Ticket checkTicketValidation(TicketExchangeRequest exchangeRequest) {
     Ticket ticket = ticketRepository.findById(exchangeRequest.getTicketId())
         .orElseThrow(() -> new RuntimeException());
 
@@ -106,14 +115,14 @@ public class TicketServiceImpl implements TicketService {
     return ticket;
   }
 
-  private void compareWithMusicalDate(CreateTicketExchangeRequest exchangeRequest) {
+  private void compareWithMusicalDate(TicketExchangeRequest exchangeRequest) {
     LocalTime localTime = convertStringToLocalTime(exchangeRequest.getPreferredSchedule());
     if (!scheduleRepository.existsByStartTime(localTime)) {
       throw new RuntimeException("NO_MATCHED_START_TIME");
     }
   }
 
-  private void compareWithOriginalSeatGrade(Ticket ticket, CreateTicketExchangeRequest exchangeRequest) {
+  private void compareWithOriginalSeatGrade(Ticket ticket, TicketExchangeRequest exchangeRequest) {
     int preferredGrade = exchangeRequest.getPreferredSeatIndex() / GRADE_DIVISOR;
     if (ticket.getSeat().getSection().getGrade() != Grade.fromValue(preferredGrade)) {
       throw new RuntimeException("SECTION_NOT_MATCH");

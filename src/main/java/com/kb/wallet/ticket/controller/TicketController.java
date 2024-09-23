@@ -64,6 +64,17 @@ public class TicketController {
     return ResponseEntity.ok().build();
   }
 
+  @GetMapping("/exchange")
+  public ResponseEntity<Page<TicketExchangeResponse>> getUserExchangedTickets(
+      @AuthenticationPrincipal Member member,
+      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "size", defaultValue = "10") int size
+  ) {
+    Page<TicketExchangeResponse> userExchangedTickets = ticketService.getUserExchangedTickets(
+        member, page, size);
+    return ResponseEntity.ok(userExchangedTickets);
+  }
+
   @PostMapping("/exchange")
   public ResponseEntity<TicketExchangeResponse> createTicketExchange(
       @AuthenticationPrincipal Member member,
