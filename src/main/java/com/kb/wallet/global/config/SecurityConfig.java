@@ -70,8 +70,7 @@ public class SecurityConfig {
                                         "/favicon.ico",
                                         "/error",
                                         "/api/home",
-                                        "/api/musicals",
-                                        "/api/musicals/**")
+                                        "/api/musicals")
                                 .permitAll()
                                 .antMatchers("/api/musicals/*/schedule/**").authenticated()
                                 .antMatchers("/api/musicals/*/seat-availability/**").authenticated()
