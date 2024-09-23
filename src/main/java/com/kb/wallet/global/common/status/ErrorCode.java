@@ -53,6 +53,11 @@ public enum ErrorCode {
   // 서버가 처리 할 방법을 모르는 경우 발생
   INTERNAL_SERVER_ERROR(500, "G999", "서버 내부 오류"),
 
+
+  // Ticket Errors
+  TICKET_NOT_FOUND_ERROR(404, "T001", "티켓을 찾을 수 없습니다"),
+  TICKET_STATUS_INVALID(400, "T002", "티켓 상태가 유효하지 않습니다"),
+
   /**
    * ******************************* Custom Error CodeList ***************************************
    */
