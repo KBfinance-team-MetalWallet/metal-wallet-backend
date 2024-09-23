@@ -68,8 +68,16 @@ public class SecurityConfig {
                                         "/v3/api-docs",
                                         "/images/**",
                                         "/favicon.ico",
-                                        "/error")
+                                        "/error",
+                                        "/api/home",
+                                        "/api/musicals",
+                                        "/api/musicals/**")
                                 .permitAll()
+                                .antMatchers("/api/musicals/*/schedule/**").authenticated()
+                                .antMatchers("/api/musicals/*/seat-availability/**").authenticated()
+                                .antMatchers("/api/musicals/*/booking/queue").authenticated()
+                                .antMatchers("/api/musicals/*/seats/reserve").authenticated()
+                                .antMatchers("/api/musicals/*/tickets").authenticated()
                                 .anyRequest().authenticated())
 
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(

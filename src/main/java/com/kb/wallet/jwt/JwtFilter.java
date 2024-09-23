@@ -42,7 +42,21 @@ public class JwtFilter extends OncePerRequestFilter {
                 requestURI.contains("/v3/api-docs") ||
                 requestURI.startsWith("/images") ||
                 requestURI.contains("/favicon.ico") ||
-                requestURI.contains("/error")) {
+                requestURI.contains("/error") ||
+                requestURI.contains("/api/home")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // /api/musicals/**로 들어오는 요청
+        if (requestURI.startsWith("/api/musicals/")) {
+            if (requestURI.contains("/seat-availability/") ||
+                    requestURI.contains("/booking/queue") ||
+                    requestURI.contains("/seats/reserve") ||
+                    requestURI.contains("/tickets")) {
+                throw new AuthenticationException("Invalid or missing token") {
+                };
+            }
             filterChain.doFilter(request, response);
             return;
         }
