@@ -1,6 +1,4 @@
 package com.kb.wallet.musical.domain;
-
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -9,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "musical")
@@ -17,6 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@DynamicUpdate
 public class Musical {
 
     @Id
@@ -27,7 +27,7 @@ public class Musical {
     @NotNull
     private String title;
 
-    @Column(name = "`rank`")
+    @Column
     @NotNull
     private int rank;
 
@@ -38,18 +38,15 @@ public class Musical {
     @NotNull
     private String placeDetail;
 
-    @Column
     @NotNull
     private LocalDate ticketingStartDate;
-
-    @Column
     @NotNull
     private LocalDate ticketingEndDate;
 
     @Column
     @NotNull
     private int runningTime;
-
+    // Todo : Url(링크) 속성도 추후에 활용해야 함. 현재 CRUD에는 필요하지 않아서 사용X.
 //    @Column
 //    @NotNull
 //    private String noticeImageUrl;
