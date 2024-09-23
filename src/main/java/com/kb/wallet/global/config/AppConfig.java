@@ -1,5 +1,8 @@
 package com.kb.wallet.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.Properties;
@@ -32,6 +35,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         "com.kb.wallet.member.repository",
         "com.kb.wallet.ticket.repository",
         "com.kb.wallet.seat.repository"
+        "com.kb.wallet.musical.repository"
+
     },
     annotationClass = org.apache.ibatis.annotations.Mapper.class //해당패키지에서 @Mapper어노테이션이 선언된 인터페이스 찾기
 )
@@ -39,11 +44,24 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
     "com.kb.wallet.member.repository",
     "com.kb.wallet.ticket.repository",
     "com.kb.wallet.seat.repository"
+    "com.kb.wallet.musical.repository",
+    "com.kb.wallet.account.repository"
 })
 @EnableJpaAuditing
 @EnableTransactionManagement
 
 public class AppConfig {
+
+  @Bean
+  public ObjectMapper objectMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule()); // LocalDate와 LocalDateTime을 지원
+    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false); // 날짜를 타임스탬프가 아닌 ISO 8601 형식으로 출력
+    return objectMapper;
+  }
+
+
+
 
   @Bean
   public DataSource dataSource() {
@@ -68,7 +86,7 @@ public class AppConfig {
   public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
     LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
     emf.setDataSource(dataSource);
-    emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain",
+    emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain", "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain"
         "com.kb.wallet.seat.domain");  // JPA 엔티티가 있는 패키지 설정
     emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
@@ -97,9 +115,13 @@ public class AppConfig {
   public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
     SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
     sessionFactory.setDataSource(dataSource);
-    sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain");
-    sessionFactory.setTypeAliasesPackage("com.kb.wallet.ticket.domain");
-    sessionFactory.setTypeAliasesPackage("com.kb.wallet.seat.domain");
+    sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain,"
+        + "com.kb.wallet.ticket.domain,"
+        + "com.kb.wallet.musical.domain,"
+        + "com.kb.wallet.seat.domain");
+//    sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain,com.kb.wallet.ticket.domain,com.kb.wallet.musical.domain");
+
+
     sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(
         "classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
 
