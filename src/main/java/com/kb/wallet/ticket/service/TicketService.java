@@ -1,8 +1,10 @@
 package com.kb.wallet.ticket.service;
 
 import com.kb.wallet.member.domain.Member;
-import com.kb.wallet.ticket.domain.Ticket;
-import com.kb.wallet.ticket.dto.TicketDTO;
+import com.kb.wallet.ticket.dto.request.CreateTicketExchangeRequest;
+import com.kb.wallet.ticket.dto.request.CreateTicketRequest;
+import com.kb.wallet.ticket.dto.response.CreateTicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.CreateTicketResponse;
 import org.springframework.data.domain.Page;
 
 public interface TicketService {
@@ -14,4 +16,7 @@ public interface TicketService {
   void deleteTicket(Member member, long ticketId);
 
   void checkTicket(long ticketId);
+
+  CreateTicketExchangeResponse createTicketExchange(Member member,
+      CreateTicketExchangeRequest exchangeRequest);
 }

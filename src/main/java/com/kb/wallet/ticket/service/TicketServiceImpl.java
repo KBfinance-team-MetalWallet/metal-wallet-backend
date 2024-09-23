@@ -2,25 +2,35 @@ package com.kb.wallet.ticket.service;
 
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
+import com.kb.wallet.ticket.domain.Schedule;
 import com.kb.wallet.ticket.domain.Ticket;
-import com.kb.wallet.ticket.dto.TicketDTO;
+import com.kb.wallet.ticket.domain.TicketExchange;
+import com.kb.wallet.ticket.dto.request.CreateTicketExchangeRequest;
+import com.kb.wallet.ticket.dto.request.CreateTicketRequest;
+import com.kb.wallet.ticket.dto.response.CreateTicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.CreateTicketResponse;
+import com.kb.wallet.ticket.repository.ScheduleRepository;
+import com.kb.wallet.ticket.repository.TicketExchangeRepository;
 import com.kb.wallet.ticket.repository.TicketMapper;
 import com.kb.wallet.ticket.repository.TicketRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TicketServiceImpl implements TicketService{
+@RequiredArgsConstructor
+public class TicketServiceImpl implements TicketService {
 
   private final TicketRepository ticketRepository;
+  private final TicketExchangeRepository ticketExchangeRepository;
+  private final ScheduleRepository scheduleRepository;
   private final TicketMapper ticketMapper;
 
-  @Autowired
-  public TicketServiceImpl(TicketRepository ticketRepository, TicketMapper ticketMapper) {
-    this.ticketRepository = ticketRepository;
-    this.ticketMapper = ticketMapper;
-  }
 
   @Override
   public CreateTicketResponse saveTicket(Member member, CreateTicketRequest ticketRequest) {
@@ -58,6 +68,48 @@ public class TicketServiceImpl implements TicketService{
     ticketRepository.save(ticket);
   }
 
+  public LocalDate convertStringToLocalDate(String dateStr) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    return LocalDate.parse(dateStr, formatter);
+  }
+
+  @Override
+  public CreateTicketExchangeResponse createTicketExchange(Member member,
+      CreateTicketExchangeRequest exchangeRequest) {
+    // 티켓 유효성 검사
+    Ticket ticket = ticketRepository.findById(exchangeRequest.getTicketId())
+        .orElseThrow(() -> new RuntimeException());
+
+    if (ticket.getTicketStatus() != TicketStatus.BOOKED) {
+      throw new RuntimeException("INVALID_TICKET");
+    }
+
+    // 뮤지컬 상영 가능한 유효한 범위의 선택 날짜인지 비교
+    LocalDate localDate = convertStringToLocalDate(exchangeRequest.getPreferredDate());
+    Schedule schedule = scheduleRepository.findByStartTime(localDate)
+        .orElseThrow(() -> new RuntimeException("NO_MATCHED_START_TIME"));
+
+    String preferredDate = exchangeRequest.getPreferredDate();
+    // 뮤지컬 상영 기간 내에 선택한 날짜인지 비교
+
+    // 좌석 등급이 기존에 신청한 것과 동일한지 비교
+//    if(ticket.g)
+
+    checkOwner(member, ticket);
+
+    TicketExchange ticketExchange = TicketExchange.toTicketExchange(ticket, exchangeRequest);
+
+    TicketExchange saved = ticketExchangeRepository.save(ticketExchange);
+    return CreateTicketExchangeResponse.createTicketExchangeResponse(saved);
+  }
+
+  private void checkOwner(Member member, Ticket ticket) {
+    if (ticket.getMember() != member) {
+      // TODO : ticket error TICKET_OWNER_MISMATCH
+      throw new RuntimeException();
+    }
+  }
+
   @Override
   public void deleteTicket(Member member, long ticketId) {
     Ticket ticket = ticketRepository.findById(ticketId)
@@ -72,13 +124,13 @@ public class TicketServiceImpl implements TicketService{
   }
 
   private void checkTicketOwner(Ticket ticket, Member member) {
-    if(ticket.getMember().getId() != member.getId()) {
+    if (ticket.getMember().getId() != member.getId()) {
       throw new RuntimeException();
     }
   }
 
   private void checkIfTicketIsBooked(Ticket ticket) {
-    if(ticket.getTicketStatus() != TicketStatus.BOOKED) {
+    if (ticket.getTicketStatus() != TicketStatus.BOOKED) {
       throw new RuntimeException();
     }
   }
