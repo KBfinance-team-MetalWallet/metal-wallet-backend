@@ -55,8 +55,8 @@ public enum ErrorCode {
 
 
   // Ticket Errors
-  TICKET_NOT_FOUND_ERROR(404, "T001", "티켓을 찾을 수 없습니다"),
-  TICKET_STATUS_INVALID(400, "T002", "티켓 상태가 유효하지 않습니다"),
+  TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다"),
+  TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다"),
 
   /**
    * ******************************* Custom Error CodeList ***************************************
