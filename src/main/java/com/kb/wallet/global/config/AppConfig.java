@@ -41,7 +41,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaRepositories(basePackages = {
     "com.kb.wallet.member.repository",
     "com.kb.wallet.ticket.repository",
-    "com.kb.wallet.musical.repository"
+    "com.kb.wallet.musical.repository",
+    "com.kb.wallet.account.repository"
 })
 @EnableJpaAuditing
 @EnableTransactionManagement
@@ -82,7 +83,7 @@ public class AppConfig {
   public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
     LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
     emf.setDataSource(dataSource);
-    emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain","com.kb.wallet.musical.domain");  // JPA 엔티티가 있는 패키지 설정
+    emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain","com.kb.wallet.musical.domain", "com.kb.wallet.account.domain");
     emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
     // JPA Properties 설정
