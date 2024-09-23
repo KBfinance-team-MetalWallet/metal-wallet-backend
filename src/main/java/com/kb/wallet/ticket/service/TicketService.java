@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 
 public interface TicketService {
 
-  Page<Ticket> findAllBookedTickets(Long id, int page, int size);
+  Page<CreateTicketResponse> findAllBookedTickets(Long id, int page, int size);
 
   CreateTicketResponse saveTicket(Member member, CreateTicketRequest ticketRequest);
 

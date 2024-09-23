@@ -34,11 +34,11 @@ public class TicketController {
   }
 
   @GetMapping
-  public ResponseEntity<Page<Ticket>> getUserTickets(
+  public ResponseEntity<Page<CreateTicketResponse>> getUserTickets(
       @AuthenticationPrincipal Member member,
       @RequestParam(name = "page", defaultValue = "0") int page,
       @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<Ticket> tickets = ticketService.findAllBookedTickets(member.getId(), page, size);
+    Page<CreateTicketResponse> tickets = ticketService.findAllBookedTickets(member.getId(), page, size);
     return ResponseEntity.ok(tickets);
   }
 
