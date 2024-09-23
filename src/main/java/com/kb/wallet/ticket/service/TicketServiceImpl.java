@@ -31,6 +31,8 @@ public class TicketServiceImpl implements TicketService {
   private final ScheduleRepository scheduleRepository;
   private final TicketMapper ticketMapper;
 
+  private final int GRADE_DIVISOR = 10;
+
 
   @Override
   public CreateTicketResponse saveTicket(Member member, CreateTicketRequest ticketRequest) {
@@ -76,26 +78,13 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public CreateTicketExchangeResponse createTicketExchange(Member member,
       CreateTicketExchangeRequest exchangeRequest) {
-    // 티켓 유효성 검사
-    Ticket ticket = ticketRepository.findById(exchangeRequest.getTicketId())
-        .orElseThrow(() -> new RuntimeException());
 
-    if (ticket.getTicketStatus() != TicketStatus.BOOKED) {
-      throw new RuntimeException("INVALID_TICKET");
-    }
+    Ticket ticket = checkTicketValidation(exchangeRequest);
 
-    // 뮤지컬 상영 가능한 유효한 범위의 선택 날짜인지 비교
-    LocalTime localTime = convertStringToLocalTime(exchangeRequest.getPreferredSchedule());
-    if (!scheduleRepository.existsByStartTime(localTime)) {
-      throw new RuntimeException("NO_MATCHED_START_TIME");
-    }
+    compareWithMusicalDate(exchangeRequest);
 
-    // 좌석 등급이 기존에 신청한 것과 동일한지 비교
-    // 회원이 입력한 preferredSeat id를 가지고 seat table에서 조회하고 section을 가져옴.
-    int preferredGrade = exchangeRequest.getPreferredSeatIndex() / 100;
-    if (ticket.getSeat().getSection().getGrade() != Grade.fromValue(preferredGrade)) {
-      throw new RuntimeException("SECTION_NOT_MATCH");
-    }
+    compareWithOriginalSeatGrade(ticket, exchangeRequest);
+
 
     // TODO : 티켓 교환 알고리즘 작성해야 함 .
 
@@ -103,9 +92,32 @@ public class TicketServiceImpl implements TicketService {
     checkOwner(member, ticket);
 
     TicketExchange ticketExchange = TicketExchange.toTicketExchange(ticket, exchangeRequest);
-
     TicketExchange saved = ticketExchangeRepository.save(ticketExchange);
     return CreateTicketExchangeResponse.createTicketExchangeResponse(saved);
+  }
+
+  private Ticket checkTicketValidation(CreateTicketExchangeRequest exchangeRequest) {
+    Ticket ticket = ticketRepository.findById(exchangeRequest.getTicketId())
+        .orElseThrow(() -> new RuntimeException());
+
+    if (ticket.getTicketStatus() != TicketStatus.BOOKED) {
+      throw new RuntimeException("INVALID_TICKET");
+    }
+    return ticket;
+  }
+
+  private void compareWithMusicalDate(CreateTicketExchangeRequest exchangeRequest) {
+    LocalTime localTime = convertStringToLocalTime(exchangeRequest.getPreferredSchedule());
+    if (!scheduleRepository.existsByStartTime(localTime)) {
+      throw new RuntimeException("NO_MATCHED_START_TIME");
+    }
+  }
+
+  private void compareWithOriginalSeatGrade(Ticket ticket, CreateTicketExchangeRequest exchangeRequest) {
+    int preferredGrade = exchangeRequest.getPreferredSeatIndex() / GRADE_DIVISOR;
+    if (ticket.getSeat().getSection().getGrade() != Grade.fromValue(preferredGrade)) {
+      throw new RuntimeException("SECTION_NOT_MATCH");
+    }
   }
 
   private void checkOwner(Member member, Ticket ticket) {
