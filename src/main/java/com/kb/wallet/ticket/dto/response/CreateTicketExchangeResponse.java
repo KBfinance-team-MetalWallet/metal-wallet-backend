@@ -17,7 +17,7 @@ public class CreateTicketExchangeResponse {
 
   private Long id;
   private int preferredSeat;
-  private int preferredSchedule;
+  private String preferredSchedule;
   private LocalDateTime createdAt;
 
   public static CreateTicketExchangeResponse createTicketExchangeResponse(

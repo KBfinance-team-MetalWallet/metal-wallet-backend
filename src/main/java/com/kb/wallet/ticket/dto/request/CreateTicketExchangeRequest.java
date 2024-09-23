@@ -14,6 +14,6 @@ import lombok.Setter;
 public class CreateTicketExchangeRequest {
   private Long ticketId;
   private String preferredDate;
-  private int preferredSchedule;
-  private int preferredSeat;
+  private String preferredSchedule;
+  private int preferredSeatIndex; // 좌석 최대 개수 300개
 }
