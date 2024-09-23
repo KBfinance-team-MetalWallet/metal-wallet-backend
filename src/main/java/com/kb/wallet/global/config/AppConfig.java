@@ -30,13 +30,15 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @MapperScan(
     basePackages = {
         "com.kb.wallet.member.repository",
-        "com.kb.wallet.ticket.repository"
+        "com.kb.wallet.ticket.repository",
+        "com.kb.wallet.seat.repository"
     },
     annotationClass = org.apache.ibatis.annotations.Mapper.class //해당패키지에서 @Mapper어노테이션이 선언된 인터페이스 찾기
 )
 @EnableJpaRepositories(basePackages = {
     "com.kb.wallet.member.repository",
-    "com.kb.wallet.ticket.repository"
+    "com.kb.wallet.ticket.repository",
+    "com.kb.wallet.seat.repository"
 })
 @EnableJpaAuditing
 @EnableTransactionManagement
@@ -66,7 +68,8 @@ public class AppConfig {
   public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
     LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
     emf.setDataSource(dataSource);
-    emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain");  // JPA 엔티티가 있는 패키지 설정
+    emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain",
+        "com.kb.wallet.seat.domain");  // JPA 엔티티가 있는 패키지 설정
     emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
     // JPA Properties 설정
@@ -96,6 +99,7 @@ public class AppConfig {
     sessionFactory.setDataSource(dataSource);
     sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain");
     sessionFactory.setTypeAliasesPackage("com.kb.wallet.ticket.domain");
+    sessionFactory.setTypeAliasesPackage("com.kb.wallet.seat.domain");
     sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(
         "classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
 
