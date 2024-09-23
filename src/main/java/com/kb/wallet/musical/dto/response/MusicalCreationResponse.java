@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class MusicalCreationResponse {
     private Long id;
     private String title;
-    private int rank;
+    private int ranking;
     private String place;
     private String placeDetail;
     private LocalDate ticketingStartDate;
@@ -31,7 +31,7 @@ public class MusicalCreationResponse {
         return MusicalCreationResponse.builder()
             .id(musical.getId())
             .title(musical.getTitle())
-            .rank(musical.getRank())
+            .ranking(musical.getRanking())
             .place(musical.getPlace())
             .placeDetail(musical.getPlaceDetail())
             .ticketingStartDate(musical.getTicketingStartDate())
