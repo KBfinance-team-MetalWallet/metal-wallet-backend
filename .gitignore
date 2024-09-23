@@ -106,3 +106,6 @@ fabric.properties
 
 # Azure Toolkit for IntelliJ plugin
 .idea/**/azureSettings.xml
+
+# Ignore application.properties
+application.properties

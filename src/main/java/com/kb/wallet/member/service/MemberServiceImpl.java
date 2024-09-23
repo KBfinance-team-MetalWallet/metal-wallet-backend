@@ -1,38 +1,44 @@
 package com.kb.wallet.member.service;
 
 import com.kb.wallet.member.domain.Member;
-import com.kb.wallet.member.repository.MemberMapper;
+import com.kb.wallet.member.dto.request.RegisterMemberRequest;
+import com.kb.wallet.member.dto.response.RegisterMemberResponse;
 import com.kb.wallet.member.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
+@RequiredArgsConstructor
 @Service
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
-    private final MemberMapper memberMapper;
+    private final PasswordEncoder encoder;
 
-    @Autowired
-    public MemberServiceImpl(MemberRepository memberRepository, MemberMapper memberMapper) {
-        this.memberRepository = memberRepository;
-        this.memberMapper = memberMapper;
+    @Override
+    @Transactional(transactionManager = "jpaTransactionManager")
+    public RegisterMemberResponse registerMember(RegisterMemberRequest request) {
+        if (memberRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("이미 존재하는 이메일입니다!");
+        }
+
+        if (memberRepository.existsByPhone(request.getPhone())) {
+            throw new RuntimeException("이미 존재하는 핸드폰 번호입니다!");
+        }
+
+        String encodedPin = encoder.encode(request.getPinNumber());
+        String encodedPassword = encoder.encode(request.getPassword());
+        Member member = new Member(request.getEmail(), request.getName(), request.getPhone(),
+                encodedPassword, encodedPin);
+
+        memberRepository.save(member);
+        return new RegisterMemberResponse(member.getId(), member.getEmail(), member.getName());
     }
 
     @Override
-    public Optional<Member> getMemberById(Long id) {
-        return memberRepository.findById(id);
-    }
-
-    @Override
-    public Optional<Member> getMemberById2(Long id) {
-        Member member = memberMapper.findById(id);
-        return Optional.ofNullable(member);
-    }
-
-    @Override
-    public Member createMember(Member member) {
-        return memberRepository.save(member);
+    public Member getMemberByEmail(String email) {
+        return memberRepository.getByEmail(email)
+                .orElseThrow(() -> new RuntimeException("해당 이메일의 사용자가 없습니다!"));
     }
 }
