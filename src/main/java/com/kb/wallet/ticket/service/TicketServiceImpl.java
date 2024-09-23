@@ -1,9 +1,11 @@
 package com.kb.wallet.ticket.service;
 
+import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.TicketDTO;
+import com.kb.wallet.ticket.exception.TicketException;
 import com.kb.wallet.ticket.repository.TicketMapper;
 import com.kb.wallet.ticket.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +53,8 @@ public class TicketServiceImpl implements TicketService{
 
   @Override
   public void checkTicket(long ticketId) {
-    // TODO : GlobalException로 바꿔 주세요.
     Ticket ticket = ticketRepository.findById(ticketId)
-        .orElseThrow(() -> new RuntimeException());
+        .orElseThrow(() -> new TicketException(ErrorCode.TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
 
     ticket.setTicketStatus(TicketStatus.CHECKED);
     ticketRepository.save(ticket);
@@ -62,7 +63,7 @@ public class TicketServiceImpl implements TicketService{
   @Override
   public void deleteTicket(Member member, long ticketId) {
     Ticket ticket = ticketRepository.findById(ticketId)
-        .orElseThrow(() -> new RuntimeException());
+        .orElseThrow(() -> new TicketException(ErrorCode.TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
 
     checkTicketOwner(ticket, member);
     checkIfTicketIsBooked(ticket);
@@ -74,13 +75,13 @@ public class TicketServiceImpl implements TicketService{
 
   private void checkTicketOwner(Ticket ticket, Member member) {
     if(ticket.getMember().getId() != member.getId()) {
-      throw new RuntimeException();
+      throw new TicketException(ErrorCode.FORBIDDEN_ERROR, "해당 티켓의 소유자가 아닙니다.");
     }
   }
 
   private void checkIfTicketIsBooked(Ticket ticket) {
     if(ticket.getTicketStatus() != TicketStatus.BOOKED) {
-      throw new RuntimeException();
+      throw new TicketException(ErrorCode.FORBIDDEN_ERROR, "해당 티켓의 소유자가 아닙니다.");
     }
   }
 
