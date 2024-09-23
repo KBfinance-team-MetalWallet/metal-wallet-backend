@@ -39,7 +39,6 @@ public class AccountServiceImpl implements AccountService {
     return AccountResponse.toAccountsResponseList(accounts);
   }
 
-
   @Override
   public AccountResponse getBalanceByAccountNumber(String accountNumber) {
     //TODO: Tmp Member Data (로그인 구현 시 삭제 예정)
