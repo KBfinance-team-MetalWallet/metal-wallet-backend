@@ -1,8 +1,8 @@
 package com.kb.wallet.musical.controller;
 
 import com.kb.wallet.musical.domain.Musical;
-import com.kb.wallet.musical.dto.MusicalDTO;
-//import com.kb.wallet.musical.repository.JpaMusicalRepository;
+import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
+import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.service.MusicalService;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
@@ -40,9 +40,9 @@ public class MusicalController {
         return ResponseEntity.ok(musical);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Musical> createMusical(@RequestBody MusicalDTO.MusicalRequest musicalRequest) {
-        Musical savedMusical = musicalService.saveMusical(musicalRequest);
+    @PostMapping
+    public ResponseEntity<Musical> createMusical(@RequestBody MusicalCreationRequest request) {
+        Musical savedMusical = musicalService.saveMusical(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedMusical);
     }
 
@@ -53,11 +53,14 @@ public class MusicalController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/{title}")
-    public ResponseEntity<Void> updateTitle(
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateMusicalInfo(
         @PathVariable(name = "id") Long id,
-        @PathVariable(name = "title") String title) {
-        musicalService.updateTitle(id, title);
+        @RequestBody MusicalInfoUpdateRequest request) {
+        /**
+         * TODO : Login Authentication 추가 예정
+         */
+        musicalService.updateMusicalInfo(id, request);
         return ResponseEntity.ok().build();
     }
 
