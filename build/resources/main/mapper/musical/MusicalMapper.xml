@@ -21,12 +21,12 @@
   </resultMap>
 
   <select id="findAll" resultMap="musicalResultMap">
-    SELECT *
+    SELECT title, rank,place,placeDetail,ticketingStartDate,ticketingEndDate,runningTime
     FROM musical
   </select>
 
   <select id="findById" parameterType="Long" resultMap="musicalResultMap">
-    SELECT *
+    SELECT title, rank,place,placeDetail,ticketingStartDate,ticketingEndDate,runningTime
     FROM musical
     WHERE id = #{id}
   </select>
