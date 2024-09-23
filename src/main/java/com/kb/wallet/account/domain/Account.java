@@ -1,13 +1,13 @@
 package com.kb.wallet.account.domain;
 
 import java.time.LocalDateTime;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import lombok.*;
 
 import com.kb.wallet.member.domain.Member;
-
 
 @Entity
 @Table(name = "account")
@@ -27,13 +27,11 @@ public class Account {
   @JoinColumn(name = "member_id")
   private Member member;
 
-  @Column(name = "number")
-  private String accountNumber;
+  private String number;
 
-  @Column()
-  private Integer balance;
+  @ColumnDefault("0")
+  private int balance;
 
-  @Column(name = "created_at")
   @CreatedDate
   private LocalDateTime createdAt;
 }

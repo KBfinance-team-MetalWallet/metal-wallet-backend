@@ -22,13 +22,17 @@ public class AccountController {
     this.accountService = accountService;
   }
 
+  /**
+   * TODO: 로그인 autentication 적용 예정
+   * @return
+   */
   @GetMapping
   public ResponseEntity<List<AccountResponse>> getAccounts() {
     return ResponseEntity.ok(accountService.getAccounts());
   }
 
   @GetMapping("/{accountNumber}/balance")
-  public ResponseEntity<AccountResponse> getBalanceByAccountNumber(@PathVariable(name = "accountNumber") String accountNumber){
+  public ResponseEntity<AccountResponse> getBalanceByAccountNumber(@PathVariable(name = "number") String accountNumber){
     AccountResponse accountResponse = accountService.getBalanceByAccountNumber(accountNumber);
     return ResponseEntity.ok(accountResponse);
   }

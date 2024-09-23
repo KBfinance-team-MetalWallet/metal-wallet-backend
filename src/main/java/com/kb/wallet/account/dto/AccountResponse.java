@@ -17,12 +17,12 @@ public class AccountResponse {
   private Integer balance;
   private LocalDateTime createdAt;
 
-  public static List<AccountResponse> toAccounts(List<Account> accounts) {
+  public static List<AccountResponse> toAccountsResponseList(List<Account> accounts) {
     return accounts.stream()
         .map(account ->
             AccountResponse.builder()
                 .id(account.getId())
-                .accountNumber(account.getAccountNumber())
+                .accountNumber(account.getNumber())
                 .balance(account.getBalance())
                 .createdAt(account.getCreatedAt())
                 .build()
@@ -30,10 +30,10 @@ public class AccountResponse {
         .collect(Collectors.toList());
   }
 
-  public static AccountResponse toAccount(Account account) {
+  public static AccountResponse toAccountResponse(Account account) {
     return AccountResponse.builder()
         .id(account.getId())
-        .accountNumber(account.getAccountNumber())
+        .accountNumber(account.getNumber())
         .balance(account.getBalance())
         .build();
   }

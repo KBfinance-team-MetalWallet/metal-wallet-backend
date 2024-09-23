@@ -29,63 +29,43 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public List<AccountResponse> getAccounts() {
-    try {
-      //TODO: Tmp Member Data -> AuthenticationUtils
-      Member member = new Member();
-      member.setId(1L);
-      //TODO: Global Exception
-      List<Account> accounts = accountRepository.findAllByMember(member)
-          .orElseThrow(() -> new AccountNotFoundException(
-              "AccountNotFoundException for Member ID: " + member.getId()));
-      return AccountResponse.toAccounts(accounts);
-    } catch (DataAccessException e) {
-      throw new DatabaseAccessException();
-    }
+    //TODO: Tmp Member Data -> AuthenticationUtils
+    Member member = new Member();
+    member.setId(1L);
+    //TODO: Global Exception
+    List<Account> accounts = accountRepository.findAllByMember(member)
+        .orElseThrow(() -> new AccountNotFoundException(
+            "AccountNotFoundException for Member ID: " + member.getId()));
+    return AccountResponse.toAccountsResponseList(accounts);
   }
+
 
   @Override
   public AccountResponse getBalanceByAccountNumber(String accountNumber) {
-    try {
-      //TODO: Tmp Member Data (로그인 구현 시 삭제 예정)
-      Member member = new Member();
-      member.setId(1L);
-      Account account = accountRepository.findByMemberAndAccountNumber(member, accountNumber)
-          .orElseThrow(() -> new RuntimeException("Account not found with account number"));
-      return AccountResponse.toAccount(account);
-    } catch (DataAccessException e) {
-      throw new DatabaseAccessException();
-    }
+    //TODO: Tmp Member Data (로그인 구현 시 삭제 예정)
+    Member member = new Member();
+    member.setId(1L);
+    Account account = accountRepository.findByMemberAndNumber(member, accountNumber)
+        .orElseThrow(() -> new RuntimeException("Account not found with account number"));
+    return AccountResponse.toAccountResponse(account);
   }
 
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
   public void createAccount(AccountRequest req) {
-    System.err.println("createAccount: ");
     Member member = new Member();
     member.setId(1L);
-
-    try {
-      Account account = Account.builder()
-          .accountNumber(req.getAccountNumber())
-          .balance(req.getBalance())
-          .member(member)
-          .build();
-      accountRepository.save(account);
-      System.err.println("saved: ");
-
-    } catch (DataAccessException e) {
-      System.err.println("Error saving account: " + e.getMessage());
-      throw new DatabaseAccessException("Failed to save account", e);
-    } catch (Exception e) {
-      log.info("Exception: " + e.getMessage());
-    }
-
+    Account account = Account.builder()
+        .number(req.getAccountNumber())
+        .balance(req.getBalance())
+        .member(member)
+        .build();
+    accountRepository.save(account);
   }
 
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
   public void deleteAccount(Long id) {
-//    AccountRepository accountRepository = this.accountRepository;
     // TODO : id 가 memberId인지 확인해야함.
     accountRepository.deleteById(id);
   }
