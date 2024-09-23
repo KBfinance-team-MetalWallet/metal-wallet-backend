@@ -23,7 +23,7 @@ public class TicketServiceImpl implements TicketService{
   }
 
   @Override
-  public Ticket saveTicket(Member member, TicketDTO.TicketRequest ticketRequest) {
+  public CreateTicketResponse saveTicket(Member member, CreateTicketRequest ticketRequest) {
     // 일정 테이블에서 일정 찾아서 넣어줘야 함.
     // TODO : 임의 member 생성.. 로그인 구현 시 삭제 해야 함
     Member temp = new Member();
@@ -34,12 +34,9 @@ public class TicketServiceImpl implements TicketService{
     // TODO : 일정이 유효한지 검사
 
     // 티켓 엔티티 생성
-    Ticket ticket = Ticket.builder()
-        .member(temp)
-        .ticketStatus(TicketStatus.BOOKED)
-        .build();
-    ticketRepository.save(ticket);
-    return ticket;
+    Ticket bookedTicket = Ticket.createBookedTicket(ticketRequest);
+    Ticket ticket = ticketRepository.save(bookedTicket);
+    return CreateTicketResponse.toTicketResponse(ticket);
   }
 
   @Override

@@ -6,9 +6,10 @@ import com.kb.wallet.ticket.dto.TicketDTO;
 import org.springframework.data.domain.Page;
 
 public interface TicketService {
+
   Page<Ticket> findAllBookedTickets(Long id, int page, int size);
 
-  Ticket saveTicket(Member member, TicketDTO.TicketRequest ticketRequest);
+  CreateTicketResponse saveTicket(Member member, CreateTicketRequest ticketRequest);
 
   void deleteTicket(Member member, long ticketId);
 

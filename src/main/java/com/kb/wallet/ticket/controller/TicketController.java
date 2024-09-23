@@ -2,7 +2,10 @@ package com.kb.wallet.ticket.controller;
 
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.domain.Ticket;
-import com.kb.wallet.ticket.dto.TicketDTO;
+import com.kb.wallet.ticket.domain.TicketExchange;
+import com.kb.wallet.ticket.dto.TicketExchangeDTO;
+import com.kb.wallet.ticket.dto.request.CreateTicketRequest;
+import com.kb.wallet.ticket.dto.response.CreateTicketResponse;
 import com.kb.wallet.ticket.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,10 +26,10 @@ public class TicketController {
   }
 
   @PostMapping
-  public ResponseEntity<Ticket> createTicket(
+  public ResponseEntity<CreateTicketResponse> createTicket(
       @AuthenticationPrincipal Member member,
-      @RequestBody TicketDTO.TicketRequest ticketRequest) {
-    Ticket ticket = ticketService.saveTicket(member, ticketRequest);
+      @RequestBody CreateTicketRequest ticketRequest) {
+    CreateTicketResponse ticket = ticketService.saveTicket(member, ticketRequest);
     return ResponseEntity.ok(ticket);
   }
 
