@@ -1,12 +1,15 @@
 package com.kb.wallet.global.util;
 
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.crypto.fpe.FPEFF1Engine;
 import org.bouncycastle.crypto.params.FPEParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Hex;
 
 public class FPEEncryption {
@@ -22,8 +25,8 @@ public class FPEEncryption {
   public String encrypt(String data, String tweak) throws Exception {
     FPEFF1Engine engine = new FPEFF1Engine();
 
-    byte[] tweakBytes = tweak.getBytes();
-    byte[] inputBytes = data.getBytes();
+    byte[] tweakBytes = tweak.getBytes(StandardCharsets.UTF_8);
+    byte[] inputBytes = data.getBytes(StandardCharsets.UTF_8);
 
     FPEParameters params = new FPEParameters(new KeyParameter(secretKey.getEncoded()), RADIX,
         tweakBytes);
@@ -32,13 +35,16 @@ public class FPEEncryption {
     byte[] outputBytes = new byte[inputBytes.length];
     engine.processBlock(inputBytes, 0, inputBytes.length, outputBytes, 0);
 
-    return new String(outputBytes);
+    // 데이터 처리 후 메모리에서 삭제
+    Arrays.fill(inputBytes, (byte) 0);
+    return Hex.toHexString(outputBytes);  // Hex로 출력 데이터 인코딩
   }
 
   // 비밀키 생성
   private SecretKey generateKey() throws NoSuchAlgorithmException {
     KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-    keyGen.init(128);  // AES 128비트 키
+    SecureRandom secureRandom = new SecureRandom();
+    keyGen.init(128, secureRandom);  // AES 128비트 키와 SecureRandom 사용
     return keyGen.generateKey();
   }
 
