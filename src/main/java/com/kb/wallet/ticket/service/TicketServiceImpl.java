@@ -12,7 +12,6 @@ import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.ScheduleRepository;
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
-import com.kb.wallet.ticket.dto.TicketDTO;
 import com.kb.wallet.ticket.exception.TicketException;
 import com.kb.wallet.ticket.repository.TicketMapper;
 import com.kb.wallet.ticket.repository.TicketRepository;

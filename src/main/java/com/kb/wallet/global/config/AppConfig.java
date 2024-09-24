@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @ComponentScan(basePackages = {
-        "com.kb.wallet"
+    "com.kb.wallet"
 })
 @PropertySource("classpath:application.properties")
 @MapperScan(
@@ -37,7 +37,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
     basePackages = {
         "com.kb.wallet.member.repository",
         "com.kb.wallet.ticket.repository",
-        "com.kb.wallet.seat.repository"
+        "com.kb.wallet.seat.repository",
         "com.kb.wallet.musical.repository"
 
     },
@@ -46,7 +46,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaRepositories(basePackages = {
     "com.kb.wallet.member.repository",
     "com.kb.wallet.ticket.repository",
-    "com.kb.wallet.seat.repository"
+    "com.kb.wallet.seat.repository",
     "com.kb.wallet.musical.repository",
     "com.kb.wallet.account.repository"
 
@@ -61,7 +61,8 @@ public class AppConfig {
   public ObjectMapper objectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule()); // LocalDate와 LocalDateTime을 지원
-    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false); // 날짜를 타임스탬프가 아닌 ISO 8601 형식으로 출력
+    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
+        false); // 날짜를 타임스탬프가 아닌 ISO 8601 형식으로 출력
     return objectMapper;
   }
 
@@ -91,7 +92,8 @@ public class AppConfig {
   public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
     LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
     emf.setDataSource(dataSource);
-    emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain", "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain"
+    emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain",
+        "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain",
         "com.kb.wallet.seat.domain");  // JPA 엔티티가 있는 패키지 설정
     emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
