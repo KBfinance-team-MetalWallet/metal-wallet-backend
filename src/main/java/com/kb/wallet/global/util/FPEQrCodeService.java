@@ -17,8 +17,9 @@ public class FPEQrCodeService {
   }
 
   // Decrypt QR code data
-  public String decryptQrCodeData(String encryptedData, String tweak, String key) throws Exception {
-    return fpeDecryption.decryptWithStringKey(encryptedData, tweak, key);
+  public String decryptQrCodeData(String encryptedData, String tweak, String key,
+      String expectedHMAC) throws Exception {
+    return fpeDecryption.decryptWithStringKey(encryptedData, tweak, key, expectedHMAC);
   }
 
   // Get the secret key as a string
