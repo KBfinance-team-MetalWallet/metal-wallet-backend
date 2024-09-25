@@ -1,15 +1,34 @@
 package com.kb.wallet.ticket.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.TicketDTO;
+import com.kb.wallet.ticket.model.TicketQrInfo;
 import com.kb.wallet.ticket.repository.TicketMapper;
 import com.kb.wallet.ticket.repository.TicketRepository;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import javax.imageio.ImageIO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import com.kb.wallet.ticket.dto.response.TicketUsageResponse;
 
+@Slf4j
 @Service
 public class TicketServiceImpl implements TicketService{
 
@@ -43,20 +62,31 @@ public class TicketServiceImpl implements TicketService{
   }
 
   @Override
+  public Ticket findTicket(Long memberId, Long ticketId) {
+    return ticketRepository.findByIdAndMemberId(memberId, ticketId).orElseThrow(() -> new RuntimeException("해당 id의 티켓이 없습니다."));
+  }
+
+  @Override
   public Page<Ticket> findAllUserTicket(Long id, int page, int size) {
     id = 1L; // TODO: 이거 로그인 구현 시 지워야 함
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     return ticketRepository.findTicketsByMemberId(id, pageable);
   }
 
+
   @Override
-  public void checkTicket(long ticketId) {
+  @Async("taskExecutor")
+  public CompletableFuture<Void> checkTicket(Long memberId, Long ticketId) {
+    isTicketAvailable(memberId, ticketId);
+
     // TODO : GlobalException로 바꿔 주세요.
     Ticket ticket = ticketRepository.findById(ticketId)
         .orElseThrow(() -> new RuntimeException());
 
     ticket.setTicketStatus(TicketStatus.CHECKED);
     ticketRepository.save(ticket);
+
+    return CompletableFuture.completedFuture(null);
   }
 
   @Override
@@ -84,4 +114,36 @@ public class TicketServiceImpl implements TicketService{
     }
   }
 
+  @Override
+  public void isTicketAvailable(Long memberId, Long ticketId) {
+    boolean isTicketAvailable = ticketRepository.existsByMemberIdAndIdAndTicketStatus(memberId, ticketId,
+        TicketStatus.BOOKED);
+    log.info("isTicketAvailable");
+    log.info(String.valueOf(isTicketAvailable));
+    if(!isTicketAvailable) {
+      log.info(String.valueOf(isTicketAvailable) + ": false");
+      throw new IllegalArgumentException("The ticket is not available for use.");
+    }
+  }
+
+  @Override
+  public String generateTicketQRCode(Long memberId, Long ticketId) throws IOException, WriterException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    String qrData = objectMapper.writeValueAsString(new TicketQrInfo(memberId, ticketId));
+    int qrImagewidth = 250;
+    int qrImageheight = 250;
+
+    QRCodeWriter qrCodeWriter = new QRCodeWriter();
+    //QR px 정보 저장
+    BitMatrix bitMatrix = qrCodeWriter.encode(qrData, BarcodeFormat.QR_CODE, qrImagewidth, qrImageheight);
+    BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
+
+    // 이미지를 Base64로 인코딩
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ImageIO.write(qrImage, "png", baos);
+    byte[] qrBytes = baos.toByteArray();
+    String qrBase64 = Base64.getEncoder().encodeToString(qrBytes);
+
+    return qrBase64;
+  }
 }
