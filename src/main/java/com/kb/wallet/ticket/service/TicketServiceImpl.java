@@ -68,8 +68,7 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   public void checkTicket(long ticketId) {
-    Ticket ticket = ticketRepository.findById(ticketId)
-        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+    Ticket ticket = findTicketById(ticketId);
 
     ticket.setTicketStatus(TicketStatus.CHECKED);
     ticketRepository.save(ticket);
@@ -86,8 +85,7 @@ public class TicketServiceImpl implements TicketService {
     member = Member.builder()
         .id(1L)
         .build();
-    Ticket ticket = ticketRepository.findById(exchangeRequest.getTicketId())
-        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+    Ticket ticket = findTicketById(exchangeRequest.getTicketId());
 
     checkTicketOwner(ticket, member);
     checkIfTicketIsBooked(ticket);
@@ -115,6 +113,11 @@ public class TicketServiceImpl implements TicketService {
     return ticketExchanges.map(TicketExchangeResponse::createTicketExchangeResponse);
   }
 
+  private Ticket findTicketById(Long id) {
+    return ticketRepository.findById(id)
+        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+  }
+
   private void compareWithMusicalDate(TicketExchangeRequest exchangeRequest) {
     LocalTime localTime = convertStringToLocalTime(exchangeRequest.getPreferredSchedule());
     if (!scheduleRepository.existsByStartTime(localTime)) {
@@ -131,8 +134,7 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   public void deleteTicket(Member member, long ticketId) {
-    Ticket ticket = ticketRepository.findById(ticketId)
-        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+    Ticket ticket = findTicketById(ticketId);
 
     checkTicketOwner(ticket, member);
     checkIfTicketIsBooked(ticket);
