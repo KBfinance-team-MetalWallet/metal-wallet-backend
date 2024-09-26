@@ -55,7 +55,7 @@ public class MusicalServiceImpl implements MusicalService {
         Musical musical = musicalRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Musical not found"));
         musical.setTitle(request.getTitle());
-        musical.setRank(request.getRank());
+        musical.setRanking(request.getRanking());
         musical.setPlace(request.getPlace());
         musical.setPlaceDetail(request.getPlaceDetail());
         musical.setTicketingStartDate(request.getTicketingStartDate());
