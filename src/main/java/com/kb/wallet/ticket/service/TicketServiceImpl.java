@@ -1,6 +1,9 @@
 package com.kb.wallet.ticket.service;
 
-import com.kb.wallet.global.common.status.ErrorCode;
+import static com.kb.wallet.global.common.status.ErrorCode.BAD_REQUEST_ERROR;
+import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERROR;
+import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
+
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.seat.constant.Grade;
 import com.kb.wallet.ticket.constant.TicketStatus;
@@ -10,13 +13,14 @@ import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
+import com.kb.wallet.ticket.exception.TicketException;
 import com.kb.wallet.ticket.repository.ScheduleRepository;
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
-import com.kb.wallet.ticket.exception.TicketException;
 import com.kb.wallet.ticket.repository.TicketMapper;
 import com.kb.wallet.ticket.repository.TicketRepository;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -65,7 +69,7 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public void checkTicket(long ticketId) {
     Ticket ticket = ticketRepository.findById(ticketId)
-        .orElseThrow(() -> new TicketException(ErrorCode.TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
 
     ticket.setTicketStatus(TicketStatus.CHECKED);
     ticketRepository.save(ticket);
@@ -79,8 +83,14 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public TicketExchangeResponse createTicketExchange(Member member,
       TicketExchangeRequest exchangeRequest) {
+    member = Member.builder()
+        .id(1L)
+        .build();
+    Ticket ticket = ticketRepository.findById(exchangeRequest.getTicketId())
+        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
 
-    Ticket ticket = checkTicketValidation(exchangeRequest);
+    checkTicketOwner(ticket, member);
+    checkIfTicketIsBooked(ticket);
 
     compareWithMusicalDate(exchangeRequest);
 
@@ -90,11 +100,10 @@ public class TicketServiceImpl implements TicketService {
     // TODO : 티켓 교환 알고리즘 작성해야 함 .
 
     // TODO : 로그인 이전엔 여기 null이라 에러뜹니다.
-    checkOwner(member, ticket);
 
     TicketExchange ticketExchange = TicketExchange.toTicketExchange(ticket, exchangeRequest);
-    TicketExchange saved = ticketExchangeRepository.save(ticketExchange);
-    return TicketExchangeResponse.createTicketExchangeResponse(saved);
+    ticketExchangeRepository.save(ticketExchange);
+    return TicketExchangeResponse.createTicketExchangeResponse(ticketExchange);
   }
 
   @Override
@@ -106,41 +115,24 @@ public class TicketServiceImpl implements TicketService {
     return ticketExchanges.map(TicketExchangeResponse::createTicketExchangeResponse);
   }
 
-  private Ticket checkTicketValidation(TicketExchangeRequest exchangeRequest) {
-    Ticket ticket = ticketRepository.findById(exchangeRequest.getTicketId())
-        .orElseThrow(() -> new RuntimeException());
-
-    if (ticket.getTicketStatus() != TicketStatus.BOOKED) {
-      throw new RuntimeException("INVALID_TICKET");
-    }
-    return ticket;
-  }
-
   private void compareWithMusicalDate(TicketExchangeRequest exchangeRequest) {
     LocalTime localTime = convertStringToLocalTime(exchangeRequest.getPreferredSchedule());
     if (!scheduleRepository.existsByStartTime(localTime)) {
-      throw new RuntimeException("NO_MATCHED_START_TIME");
+      throw new TicketException(BAD_REQUEST_ERROR, "요청 시간이 뮤지컬 예약 시작 시간과 맞지 않습니다.");
     }
   }
 
   private void compareWithOriginalSeatGrade(Ticket ticket, TicketExchangeRequest exchangeRequest) {
     int preferredGrade = exchangeRequest.getPreferredSeatIndex() / GRADE_DIVISOR;
     if (ticket.getSeat().getSection().getGrade() != Grade.fromValue(preferredGrade)) {
-      throw new RuntimeException("SECTION_NOT_MATCH");
-    }
-  }
-
-  private void checkOwner(Member member, Ticket ticket) {
-    if (ticket.getMember() != member) {
-      // TODO : ticket error TICKET_OWNER_MISMATCH
-      throw new RuntimeException();
+      throw new TicketException(BAD_REQUEST_ERROR, "선택한 좌석 등급이 기존 티켓과 맞지 않습니다.");
     }
   }
 
   @Override
   public void deleteTicket(Member member, long ticketId) {
     Ticket ticket = ticketRepository.findById(ticketId)
-        .orElseThrow(() -> new TicketException(ErrorCode.TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
 
     checkTicketOwner(ticket, member);
     checkIfTicketIsBooked(ticket);
@@ -151,14 +143,14 @@ public class TicketServiceImpl implements TicketService {
   }
 
   private void checkTicketOwner(Ticket ticket, Member member) {
-    if(ticket.getMember().getId() != member.getId()) {
-      throw new TicketException(ErrorCode.FORBIDDEN_ERROR, "해당 티켓의 소유자가 아닙니다.");
+    if (!Objects.equals(ticket.getMember().getId(), member.getId())) {
+      throw new TicketException(TICKET_NOT_FOUND_ERROR, "해당 티켓의 소유자가 아닙니다.");
     }
   }
 
   private void checkIfTicketIsBooked(Ticket ticket) {
-    if(ticket.getTicketStatus() != TicketStatus.BOOKED) {
-      throw new TicketException(ErrorCode.FORBIDDEN_ERROR, "해당 티켓의 소유자가 아닙니다.");
+    if (ticket.getTicketStatus() != TicketStatus.BOOKED) {
+      throw new TicketException(TICKET_STATUS_INVALID, "예약된 티켓이 아닙니다.");
     }
   }
 
