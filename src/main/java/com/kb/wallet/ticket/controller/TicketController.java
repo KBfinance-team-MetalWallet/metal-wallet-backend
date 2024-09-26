@@ -53,7 +53,7 @@ public class TicketController {
   @PreAuthorize("hasRole('ADMIN')")
   // 시큐리티 필터 없어서 아직 여긴 role에 따른 인가 구분 못함
   public ResponseEntity<?> updateTicket(@PathVariable(name = "ticketId") long ticketId) {
-    ticketService.checkTicket(ticketId);
+    ticketService.updateStatusChecked(ticketId);
     return ResponseEntity.ok().build();
   }
 

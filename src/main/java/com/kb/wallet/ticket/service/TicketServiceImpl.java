@@ -39,7 +39,6 @@ public class TicketServiceImpl implements TicketService {
 
   private final int GRADE_DIVISOR = 10;
 
-
   @Override
   public TicketResponse saveTicket(Member member, TicketRequest ticketRequest) {
     // 일정 테이블에서 일정 찾아서 넣어줘야 함.
@@ -67,69 +66,10 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public void checkTicket(long ticketId) {
+  public void updateStatusChecked(long ticketId) {
     Ticket ticket = findTicketById(ticketId);
-
     ticket.setTicketStatus(TicketStatus.CHECKED);
     ticketRepository.save(ticket);
-  }
-
-  private LocalTime convertStringToLocalTime(String scheduleStr) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-    return LocalTime.parse(scheduleStr, formatter);
-  }
-
-  @Override
-  public TicketExchangeResponse createTicketExchange(Member member,
-      TicketExchangeRequest exchangeRequest) {
-    member = Member.builder()
-        .id(1L)
-        .build();
-    Ticket ticket = findTicketById(exchangeRequest.getTicketId());
-
-    checkTicketOwner(ticket, member);
-    checkIfTicketIsBooked(ticket);
-
-    compareWithMusicalDate(exchangeRequest);
-
-    compareWithOriginalSeatGrade(ticket, exchangeRequest);
-
-
-    // TODO : 티켓 교환 알고리즘 작성해야 함 .
-
-    // TODO : 로그인 이전엔 여기 null이라 에러뜹니다.
-
-    TicketExchange ticketExchange = TicketExchange.toTicketExchange(ticket, exchangeRequest);
-    ticketExchangeRepository.save(ticketExchange);
-    return TicketExchangeResponse.createTicketExchangeResponse(ticketExchange);
-  }
-
-  @Override
-  public Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page,
-      int size) {
-    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<TicketExchange> ticketExchanges = ticketExchangeRepository.findByTicketMember(member,
-        pageable);
-    return ticketExchanges.map(TicketExchangeResponse::createTicketExchangeResponse);
-  }
-
-  private Ticket findTicketById(Long id) {
-    return ticketRepository.findById(id)
-        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
-  }
-
-  private void compareWithMusicalDate(TicketExchangeRequest exchangeRequest) {
-    LocalTime localTime = convertStringToLocalTime(exchangeRequest.getPreferredSchedule());
-    if (!scheduleRepository.existsByStartTime(localTime)) {
-      throw new TicketException(BAD_REQUEST_ERROR, "요청 시간이 뮤지컬 예약 시작 시간과 맞지 않습니다.");
-    }
-  }
-
-  private void compareWithOriginalSeatGrade(Ticket ticket, TicketExchangeRequest exchangeRequest) {
-    int preferredGrade = exchangeRequest.getPreferredSeatIndex() / GRADE_DIVISOR;
-    if (ticket.getSeat().getSection().getGrade() != Grade.fromValue(preferredGrade)) {
-      throw new TicketException(BAD_REQUEST_ERROR, "선택한 좌석 등급이 기존 티켓과 맞지 않습니다.");
-    }
   }
 
   @Override
@@ -142,6 +82,59 @@ public class TicketServiceImpl implements TicketService {
     // soft delete
     ticket.setTicketStatus(TicketStatus.CANCELED);
     ticketRepository.save(ticket);
+  }
+
+  @Override
+  public Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page,
+      int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    Page<TicketExchange> ticketExchanges = ticketExchangeRepository.findByTicketMember(member,
+        pageable);
+    return ticketExchanges.map(TicketExchangeResponse::createTicketExchangeResponse);
+  }
+
+  @Override
+  public TicketExchangeResponse createTicketExchange(Member member,
+      TicketExchangeRequest exchangeRequest) {
+    member = Member.builder()
+        .id(1L)
+        .build();
+    Ticket ticket = findTicketById(exchangeRequest.getTicketId());
+
+    checkTicketOwner(ticket, member);
+    checkIfTicketIsBooked(ticket);
+    checkMusicalDate(exchangeRequest);
+    checkOriginalSeatGrade(ticket, exchangeRequest);
+
+    // TODO : 티켓 교환 알고리즘 작성해야 함 .
+
+    TicketExchange ticketExchange = TicketExchange.toTicketExchange(ticket, exchangeRequest);
+    ticketExchangeRepository.save(ticketExchange);
+    return TicketExchangeResponse.createTicketExchangeResponse(ticketExchange);
+  }
+
+  private LocalTime convertStringToLocalTime(String scheduleStr) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+    return LocalTime.parse(scheduleStr, formatter);
+  }
+
+  private Ticket findTicketById(Long id) {
+    return ticketRepository.findById(id)
+        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+  }
+
+  private void checkMusicalDate(TicketExchangeRequest exchangeRequest) {
+    LocalTime localTime = convertStringToLocalTime(exchangeRequest.getPreferredSchedule());
+    if (!scheduleRepository.existsByStartTime(localTime)) {
+      throw new TicketException(BAD_REQUEST_ERROR, "요청 시간이 뮤지컬 예약 시작 시간과 맞지 않습니다.");
+    }
+  }
+
+  private void checkOriginalSeatGrade(Ticket ticket, TicketExchangeRequest exchangeRequest) {
+    int preferredGrade = exchangeRequest.getPreferredSeatIndex() / GRADE_DIVISOR;
+    if (ticket.getSeat().getSection().getGrade() != Grade.fromValue(preferredGrade)) {
+      throw new TicketException(BAD_REQUEST_ERROR, "선택한 좌석 등급이 기존 티켓과 맞지 않습니다.");
+    }
   }
 
   private void checkTicketOwner(Ticket ticket, Member member) {

@@ -15,7 +15,7 @@ public interface TicketService {
 
   void deleteTicket(Member member, long ticketId);
 
-  void checkTicket(long ticketId);
+  void updateStatusChecked(long ticketId);
 
   TicketExchangeResponse createTicketExchange(Member member,
       TicketExchangeRequest exchangeRequest);
