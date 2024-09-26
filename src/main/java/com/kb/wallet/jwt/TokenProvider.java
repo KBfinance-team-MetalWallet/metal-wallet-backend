@@ -1,5 +1,7 @@
 package com.kb.wallet.jwt;
 
+import com.kb.wallet.member.constant.RoleType;
+import com.kb.wallet.member.domain.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -14,15 +16,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TokenProvider implements InitializingBean {
@@ -61,20 +64,30 @@ public class TokenProvider implements InitializingBean {
     }
 
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
                 .getBody();
 
+        log.debug("JWT Claims: " + claims);
+
+        // 이메일과 역할 정보를 추출
+        String email = claims.getSubject();
+        String roleString = claims.get("role", String.class);
+        RoleType role = RoleType.valueOf(roleString);
+
+        // 권한 목록 생성
         Collection<? extends GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_USER"));
+                new SimpleGrantedAuthority(roleString));
 
-        // TODO ADMIN 기능 추가될 때 수정 필요
-//        Collection<? extends GrantedAuthority> authorities =
-//                Arrays.stream(claims.get("role").toString().split(","))
-//                        .map(SimpleGrantedAuthority::new)
-//                        .toList();
+        // Member 객체 생성 (예: 생성자를 통해 모든 멤버 정보 설정, 필요에 따라 수정)
+        Member member = new Member();
+        member.setEmail(email);
+        member.setRole(role);
 
-        User principal = new User(claims.getSubject(), "", authorities);
-        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+        // Authentication 객체 생성 및 반환
+        return new UsernamePasswordAuthenticationToken(member, token, authorities);
     }
 
     public HashMap<String, String> validateToken(String token) {
