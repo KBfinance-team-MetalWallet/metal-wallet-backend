@@ -73,7 +73,6 @@ public class TicketServiceImpl implements TicketService{
     return ticketRepository.findTicketsByMemberId(id, pageable);
   }
 
-
   @Override
   @Async("taskExecutor")
   public CompletableFuture<Void> checkTicket(Long memberId, Long ticketId) {
@@ -92,7 +91,7 @@ public class TicketServiceImpl implements TicketService{
   @Override
   public void deleteTicket(Member member, long ticketId) {
     Ticket ticket = ticketRepository.findById(ticketId)
-        .orElseThrow(() -> new RuntimeException());
+        .orElseThrow(() -> new TicketException(ErrorCode.TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
 
     checkTicketOwner(ticket, member);
     checkIfTicketIsBooked(ticket);
@@ -104,13 +103,13 @@ public class TicketServiceImpl implements TicketService{
 
   private void checkTicketOwner(Ticket ticket, Member member) {
     if(ticket.getMember().getId() != member.getId()) {
-      throw new RuntimeException();
+      throw new TicketException(ErrorCode.FORBIDDEN_ERROR, "해당 티켓의 소유자가 아닙니다.");
     }
   }
 
   private void checkIfTicketIsBooked(Ticket ticket) {
     if(ticket.getTicketStatus() != TicketStatus.BOOKED) {
-      throw new RuntimeException();
+      throw new TicketException(ErrorCode.FORBIDDEN_ERROR, "해당 티켓의 소유자가 아닙니다.");
     }
   }
 
