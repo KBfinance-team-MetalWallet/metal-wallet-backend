@@ -16,7 +16,7 @@ import lombok.Setter;
 public class MusicalCreationRequest {
     private Long id;
     private String title;
-    private int rank;
+    private int ranking;
     private String place;
     private String placeDetail;
     private LocalDate ticketingStartDate;
@@ -26,7 +26,7 @@ public class MusicalCreationRequest {
     public static Musical toMusical(MusicalCreationRequest request){
         return Musical.builder()
             .title(request.getTitle())
-            .rank(request.getRank())
+            .ranking(request.getRanking())
             .place(request.getPlace())
             .placeDetail(request.getPlaceDetail())
             .ticketingStartDate(request.getTicketingStartDate())

@@ -29,18 +29,15 @@ public class Musical {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
     @NotNull
     private String title;
 
-    @Column
     @NotNull
-    private int rank;
+    private int ranking;
 
-    @Column
     @NotNull
     private String place;
-    @Column
+
     @NotNull
     private String placeDetail;
 
@@ -49,7 +46,6 @@ public class Musical {
     @NotNull
     private LocalDate ticketingEndDate;
 
-    @Column
     @NotNull
     private int runningTime;
     // Todo : Url(링크) 속성도 추후에 활용해야 함. 현재 CRUD에는 필요하지 않아서 사용X.
@@ -66,15 +62,4 @@ public class Musical {
 //    @NotNull
 //    private String placeImageUrl;
 
-
-    public Musical(Long id, String title, int rank, String place, String placeDetail) {
-        this.id = id;
-        this.title = title;
-        this.rank = rank;
-        this.place = place;
-        this.placeDetail = placeDetail;
-        this.ticketingStartDate = ticketingStartDate;
-        this.ticketingEndDate = ticketingEndDate;
-        this.runningTime = runningTime;
-    }
 }
