@@ -15,5 +15,5 @@ public class TicketExchangeRequest {
   private Long ticketId;
   private String preferredDate;
   private String preferredSchedule;
-  private int preferredSeatIndex; // 좌석 최대 개수 300개
+  private int preferredSeatIndex;
 }
