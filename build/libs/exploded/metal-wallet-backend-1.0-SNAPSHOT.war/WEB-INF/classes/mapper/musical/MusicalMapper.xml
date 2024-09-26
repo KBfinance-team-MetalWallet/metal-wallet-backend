@@ -8,7 +8,7 @@
   <resultMap id="musicalResultMap" type="Member" autoMapping="true">
     <id property="id" column="id"/>
     <result property="title" column="title"/>
-    <result property="rank" column="rank"/>
+    <result property="ranking" column="ranking"/>
     <result property="place" column="place"/>
     <result property="placeDetail" column="place_detail"/>
     <result property="ticketingStartDate" column="ticketing_start_date"/>
@@ -21,19 +21,19 @@
   </resultMap>
 
   <select id="findAll" resultMap="musicalResultMap">
-    SELECT title, rank,place,placeDetail,ticketingStartDate,ticketingEndDate,runningTime
+    SELECT title, ranking,place,placeDetail,ticketingStartDate,ticketingEndDate,runningTime
     FROM musical
   </select>
 
   <select id="findById" parameterType="Long" resultMap="musicalResultMap">
-    SELECT title, rank,place,placeDetail,ticketingStartDate,ticketingEndDate,runningTime
+    SELECT title, ranking,place,placeDetail,ticketingStartDate,ticketingEndDate,runningTime
     FROM musical
     WHERE id = #{id}
   </select>
 
   <insert id="save" useGeneratedKeys="true" keyProperty="id">
-    insert into musical (title, rank,place,placeDetail,ticketingStartDate,ticketingEndDate,runningTime)
-    values (#{title},#{rank},#{place}
+    insert into musical (title, ranking,place,placeDetail,ticketingStartDate,ticketingEndDate,runningTime)
+    values (#{title},#{ranking},#{place}
            ,#{placeDetail},#{ticketingStartDate},#{ticketingEndDate},#{runningTime})
   </insert>
 

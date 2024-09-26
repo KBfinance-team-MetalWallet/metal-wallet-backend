@@ -1,7 +1,9 @@
 package com.kb.wallet.ticket.domain;
 
 import com.kb.wallet.member.domain.Member;
+import com.kb.wallet.seat.domain.Seat;
 import com.kb.wallet.ticket.constant.TicketStatus;
+import com.kb.wallet.ticket.dto.request.TicketRequest;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,6 +48,10 @@ public class Ticket {
     // enum의 값을 index가 아닌 텍스트 값 그대로 저장하고 싶을 때 위의 어노테이션 사용
     private TicketStatus ticketStatus;
 
+    @OneToOne
+    @JoinColumn(name = "seat_id")  // 외래 키 컬럼 지정
+    private Seat seat;
+
     @Column(updatable = false)
     @CreatedDate
     private LocalDateTime createdAt;
@@ -54,4 +61,11 @@ public class Ticket {
 
     @Column
     private LocalDateTime cancelUntil;
+
+    // TODO : 변환 내용 완성해야 함
+    public static Ticket createBookedTicket(TicketRequest ticketRequest) {
+        return Ticket.builder()
+            .ticketStatus(TicketStatus.BOOKED)
+            .build();
+    }
 }
