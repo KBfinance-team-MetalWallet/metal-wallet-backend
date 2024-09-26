@@ -6,10 +6,12 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.TicketDTO;
+import com.kb.wallet.ticket.exception.TicketException;
 import com.kb.wallet.ticket.model.TicketQrInfo;
 import com.kb.wallet.ticket.repository.TicketMapper;
 import com.kb.wallet.ticket.repository.TicketRepository;
@@ -113,7 +115,6 @@ public class TicketServiceImpl implements TicketService{
     }
   }
 
-  @Override
   public void isTicketAvailable(Long memberId, Long ticketId) {
     boolean isTicketAvailable = ticketRepository.existsByMemberIdAndIdAndTicketStatus(memberId, ticketId,
         TicketStatus.BOOKED);
