@@ -75,7 +75,7 @@ public class TicketServiceImpl implements TicketService {
     ticketRepository.save(ticket);
   }
 
-  public LocalTime convertStringToLocalTime(String scheduleStr) {
+  private LocalTime convertStringToLocalTime(String scheduleStr) {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
     return LocalTime.parse(scheduleStr, formatter);
   }
