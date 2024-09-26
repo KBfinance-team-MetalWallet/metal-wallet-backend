@@ -9,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @RequiredArgsConstructor
+@Slf4j
 public class JwtFilter extends OncePerRequestFilter {
 
     private final TokenProvider tokenProvider;
@@ -26,6 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
 
         String requestURI = request.getRequestURI();
+        log.info("doFilterInternal requestURI: {}", requestURI);
 
         if (requestURI.contains("/api/members/register") ||
                 requestURI.contains("/api/members/login") ||
@@ -65,6 +68,7 @@ public class JwtFilter extends OncePerRequestFilter {
         resultMap.put("result", "FAIL");
         try {
             String jwt = resolveToken(request);
+            log.debug("jwt: {}", jwt);
             resultMap = tokenProvider.validateToken(jwt);
             if (jwt == null || !resultMap.get("result").equals("SUCCESS")) {
 
@@ -73,7 +77,13 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             Authentication authentication = tokenProvider.getAuthentication(jwt);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authentication); // 스프링 시큐리티 컨텍스트에 저장
+
+            // 인증 정보 확인
+            log.debug("Authenticated user: {}, Authorities: {}", authentication.getName(),
+                    authentication.getAuthorities());
+
             request.setAttribute("msg", authentication.getName());
 
             filterChain.doFilter(request, response);
