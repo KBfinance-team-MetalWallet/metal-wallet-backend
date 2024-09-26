@@ -7,14 +7,27 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.kb.wallet.global.common.status.ErrorCode;
+import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERROR;
+import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
+
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
-import com.kb.wallet.ticket.dto.TicketDTO;
+import com.kb.wallet.ticket.domain.TicketExchange;
+import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
+import com.kb.wallet.ticket.dto.request.TicketRequest;
+import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.exception.TicketException;
+import com.kb.wallet.ticket.repository.TicketExchangeRepository;
 import com.kb.wallet.ticket.model.TicketQrInfo;
 import com.kb.wallet.ticket.repository.TicketMapper;
 import com.kb.wallet.ticket.repository.TicketRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,19 +45,18 @@ import com.kb.wallet.ticket.dto.response.TicketUsageResponse;
 
 @Slf4j
 @Service
-public class TicketServiceImpl implements TicketService{
+@RequiredArgsConstructor
+public class TicketServiceImpl implements TicketService {
+
+  private final TicketCheckService ticketCheckService;
 
   private final TicketRepository ticketRepository;
+  private final TicketExchangeRepository ticketExchangeRepository;
   private final TicketMapper ticketMapper;
 
-  @Autowired
-  public TicketServiceImpl(TicketRepository ticketRepository, TicketMapper ticketMapper) {
-    this.ticketRepository = ticketRepository;
-    this.ticketMapper = ticketMapper;
-  }
 
   @Override
-  public Ticket saveTicket(Member member, TicketDTO.TicketRequest ticketRequest) {
+  public TicketResponse saveTicket(Member member, TicketRequest ticketRequest) {
     // 일정 테이블에서 일정 찾아서 넣어줘야 함.
     // TODO : 임의 member 생성.. 로그인 구현 시 삭제 해야 함
     Member temp = new Member();
@@ -55,12 +67,9 @@ public class TicketServiceImpl implements TicketService{
     // TODO : 일정이 유효한지 검사
 
     // 티켓 엔티티 생성
-    Ticket ticket = Ticket.builder()
-        .member(temp)
-        .ticketStatus(TicketStatus.BOOKED)
-        .build();
-    ticketRepository.save(ticket);
-    return ticket;
+    Ticket bookedTicket = Ticket.createBookedTicket(ticketRequest);
+    Ticket ticket = ticketRepository.save(bookedTicket);
+    return TicketResponse.toTicketResponse(ticket);
   }
 
   @Override
@@ -69,20 +78,21 @@ public class TicketServiceImpl implements TicketService{
   }
 
   @Override
-  public Page<Ticket> findAllUserTicket(Long id, int page, int size) {
+  public Page<TicketResponse> findAllBookedTickets(Long id, int page, int size) {
     id = 1L; // TODO: 이거 로그인 구현 시 지워야 함
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    return ticketRepository.findTicketsByMemberId(id, pageable);
+    Page<Ticket> ticketsByMemberIdAndTicketStatus =
+        ticketRepository.findTicketsByMemberIdAndTicketStatus(id, TicketStatus.BOOKED, pageable);
+    return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
   }
 
   @Override
   @Async("taskExecutor")
-  public CompletableFuture<Void> checkTicket(Long memberId, Long ticketId) {
+  public CompletableFuture<Void> updateStatusChecked(Long memberId, Long ticketId) {
     isTicketAvailable(memberId, ticketId);
 
     // TODO : GlobalException로 바꿔 주세요.
-    Ticket ticket = ticketRepository.findById(ticketId)
-        .orElseThrow(() -> new RuntimeException());
+    Ticket ticket = findTicketById(ticketId);
 
     ticket.setTicketStatus(TicketStatus.CHECKED);
     ticketRepository.save(ticket);
@@ -92,27 +102,55 @@ public class TicketServiceImpl implements TicketService{
 
   @Override
   public void deleteTicket(Member member, long ticketId) {
-    Ticket ticket = ticketRepository.findById(ticketId)
-        .orElseThrow(() -> new TicketException(ErrorCode.TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+    Ticket ticket = findTicketById(ticketId);
 
-    checkTicketOwner(ticket, member);
-    checkIfTicketIsBooked(ticket);
+    ticketCheckService.checkTicketOwner(ticket, member);
+    ticketCheckService.checkIfTicketIsBooked(ticket);
 
-    // soft delete
     ticket.setTicketStatus(TicketStatus.CANCELED);
     ticketRepository.save(ticket);
   }
 
-  private void checkTicketOwner(Ticket ticket, Member member) {
-    if(ticket.getMember().getId() != member.getId()) {
-      throw new TicketException(ErrorCode.FORBIDDEN_ERROR, "해당 티켓의 소유자가 아닙니다.");
-    }
+  @Override
+  public Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page,
+      int size) {
+    member = Member.builder()
+        .id(1L)
+        .build();
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    Page<TicketExchange> ticketExchanges = ticketExchangeRepository.findByTicketMember(member,
+        pageable);
+    return ticketExchanges.map(TicketExchangeResponse::createTicketExchangeResponse);
   }
 
-  private void checkIfTicketIsBooked(Ticket ticket) {
-    if(ticket.getTicketStatus() != TicketStatus.BOOKED) {
-      throw new TicketException(ErrorCode.FORBIDDEN_ERROR, "해당 티켓의 소유자가 아닙니다.");
-    }
+  @Override
+  public TicketExchangeResponse createTicketExchange(Member member,
+      TicketExchangeRequest exchangeRequest) {
+    member = Member.builder()
+        .id(1L)
+        .build();
+    Ticket ticket = findTicketById(exchangeRequest.getTicketId());
+
+    ticketCheckService.checkTicketOwner(ticket, member);
+    ticketCheckService.checkIfTicketIsBooked(ticket);
+    ticketCheckService.checkMusicalDate(exchangeRequest);
+    ticketCheckService.checkOriginalSeatGrade(ticket, exchangeRequest);
+
+    // TODO : 티켓 교환 알고리즘 작성해야 함 .
+
+    TicketExchange ticketExchange = TicketExchange.toTicketExchange(ticket, exchangeRequest);
+    ticketExchangeRepository.save(ticketExchange);
+
+    // 신청 대상인 기존 티켓 상태 변경
+    ticket.setTicketStatus(EXCHANGE_REQUESTED);
+    ticketRepository.save(ticket);
+
+    return TicketExchangeResponse.createTicketExchangeResponse(ticketExchange);
+  }
+
+  private Ticket findTicketById(Long id) {
+    return ticketRepository.findById(id)
+        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
   }
 
   public void isTicketAvailable(Long memberId, Long ticketId) {

@@ -6,9 +6,10 @@ import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.domain.Ticket;
-import com.kb.wallet.ticket.dto.TicketDTO;
-import com.kb.wallet.ticket.dto.request.TicketQrCreationRequest;
-import com.kb.wallet.ticket.dto.response.TicketUsageResponse;
+import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
+import com.kb.wallet.ticket.dto.request.TicketRequest;
+import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.service.TicketService;
 import java.io.IOException;
 import java.util.concurrent.CompletionException;
@@ -34,19 +35,19 @@ public class TicketController {
   }
 
   @PostMapping
-  public ResponseEntity<Ticket> createTicket(
+  public ResponseEntity<TicketResponse> createTicket(
       @AuthenticationPrincipal Member member,
-      TicketDTO.TicketRequest ticketRequest) {
-    Ticket ticket = ticketService.saveTicket(member, ticketRequest);
+      @RequestBody TicketRequest ticketRequest) {
+    TicketResponse ticket = ticketService.saveTicket(member, ticketRequest);
     return ResponseEntity.ok(ticket);
   }
 
   @GetMapping
-  public ResponseEntity<Page<Ticket>> getUserTickets(
+  public ResponseEntity<Page<TicketResponse>> getUserTickets(
       @AuthenticationPrincipal Member member,
       @RequestParam(name = "page", defaultValue = "0") int page,
       @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<Ticket> tickets = ticketService.findAllUserTicket(member.getId(), page, size);
+    Page<TicketResponse> tickets = ticketService.findAllBookedTickets(member.getId(), page, size);
     return ResponseEntity.ok(tickets);
   }
 
@@ -84,7 +85,7 @@ public class TicketController {
   public ResponseEntity<?> updateTicket(@PathVariable(name = "ticketId") long ticketId) {
     Long memberId = 1L;
     //TODO: 비동기 HttpStatus 반환해야 함
-    ticketService.checkTicket(memberId, ticketId).handle((result, ex) -> {
+    ticketService.updateStatusChecked(memberId, ticketId).handle((result, ex) -> {
       if (ex != null) {
         Throwable cause = ex instanceof CompletionException ? ex.getCause() : ex;
 
@@ -109,4 +110,25 @@ public class TicketController {
     ticketService.deleteTicket(member, ticketId);
     return ResponseEntity.ok().build();
   }
+
+  @GetMapping("/exchange")
+  public ResponseEntity<Page<TicketExchangeResponse>> getUserExchangedTickets(
+      @AuthenticationPrincipal Member member,
+      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "size", defaultValue = "10") int size
+  ) {
+    Page<TicketExchangeResponse> userExchangedTickets = ticketService.getUserExchangedTickets(
+        member, page, size);
+    return ResponseEntity.ok(userExchangedTickets);
+  }
+
+  @PostMapping("/exchange")
+  public ResponseEntity<TicketExchangeResponse> createTicketExchange(
+      @AuthenticationPrincipal Member member,
+      @RequestBody TicketExchangeRequest exchangeRequest) {
+    TicketExchangeResponse ticketExchange = ticketService.createTicketExchange(member,
+        exchangeRequest);
+    return ResponseEntity.ok(ticketExchange);
+  }
+
 }

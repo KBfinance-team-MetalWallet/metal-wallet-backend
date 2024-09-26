@@ -14,4 +14,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
   Optional<Ticket>findByIdAndMemberId(Long memberId, Long ticketId);
   boolean existsByMemberIdAndIdAndTicketStatus(Long memberId, Long ticketId, TicketStatus used);
+
+  Page<Ticket> findTicketsByMemberIdAndTicketStatus(Long memberId, TicketStatus status,
+      Pageable pageable);
+
+  Optional<Ticket> findById(Long ticketId);
 }
