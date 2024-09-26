@@ -2,7 +2,6 @@ package com.kb.wallet.member.controller;
 
 import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
-import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.dto.request.LoginMemberRequest;
 import com.kb.wallet.member.dto.request.RegisterMemberRequest;
 import com.kb.wallet.member.dto.response.RegisterMemberResponse;
@@ -15,6 +14,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
 
     private final MemberService memberService;
+    private final AuthenticationManager authenticationManager;
 
     @Lazy
     private final TokenProvider tokenProvider;
@@ -47,32 +52,38 @@ public class MemberController {
         log.info("Login member: {}", request);
 
         HashMap<String, Object> map = new HashMap<>();
-        Member member = memberService.getMemberByEmail(request.getEmail());
 
-        // 사용자 체크
-        if (member == null) {
+        try {
+            // 인증 요청을 만든다
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(request.getEmail(),
+                            request.getPassword());
+
+            // AuthenticationManager를 통해 인증을 시도한다
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+
+            // 인증이 성공하면 JWT 토큰을 생성한다
+            String role = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst() // 첫 번째 권한을 가져오기 (예: "ROLE_USER")
+                    .orElse("ROLE_USER");
+
+            String accessToken = tokenProvider.createToken(authentication.getName(),
+                    role);
+
+            map.put("result", "success");
+            map.put("accessToken", accessToken);
+
+            // 헤더에 토큰 추가
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+
+            return new ResponseEntity<>(map, httpHeaders, HttpStatus.OK);
+
+        } catch (AuthenticationException e) {
             map.put("result", "fail");
-            map.put("email", request.getEmail());
-            map.put("message", "사용자를 찾을 수 없습니다.");
-            return new ResponseEntity<>(map, HttpStatus.OK);
+            map.put("message", "Login failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(map); // UNAUTHORIZED 반환
         }
-
-        // 패스워드 체크
-        if (!encoder.matches(request.getPassword(), member.getPassword())) {
-            map.put("result", "fail");
-            map.put("email", request.getEmail());
-            map.put("message", "패스워드가 일치하지 않습니다");
-            return new ResponseEntity<>(map, HttpStatus.OK);
-        }
-
-        String accessToken = tokenProvider.createToken(member.getEmail(), member.getRole().name());
-
-        map.put("result", "success");
-        map.put("accessToken", accessToken);
-
-        // 헤더에 정보 추가
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        return new ResponseEntity<>(map, httpHeaders, HttpStatus.OK);
     }
 }
