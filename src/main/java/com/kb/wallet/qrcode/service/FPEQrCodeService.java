@@ -1,4 +1,6 @@
-package com.kb.wallet.qrcode;
+package com.kb.wallet.qrcode.service;
+
+import com.kb.wallet.qrcode.dto.EncrypeDataDto;
 
 public interface FPEQrCodeService {
 
