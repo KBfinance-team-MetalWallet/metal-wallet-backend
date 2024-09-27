@@ -51,9 +51,7 @@ public class AccountServiceImpl implements AccountService {
             throw new CustomException(ErrorCode.FORBIDDEN_ERROR) {
             };
         }
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.ACCOUNT_NOT_FOUND_ERROR) {
-                });
+        Account account = getAccount(id);
         accountRepository.delete(account);
     }
 
