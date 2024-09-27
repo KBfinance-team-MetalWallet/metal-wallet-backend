@@ -15,57 +15,59 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MusicalServiceImpl implements MusicalService {
-    private final MusicalRepository musicalRepository;
 
-    @Autowired
-    public MusicalServiceImpl(MusicalRepository musicalRepository) {
-        this.musicalRepository = musicalRepository;
-    }
+  private final MusicalRepository musicalRepository;
 
-    @Override
-    @Transactional("jpaTransactionManager")
-    public Musical saveMusical(MusicalCreationRequest request) {
-        Musical musical = MusicalCreationRequest.toMusical(request);
-        return musicalRepository.save(musical);
-    }
+  @Autowired
+  public MusicalServiceImpl(MusicalRepository musicalRepository) {
+    this.musicalRepository = musicalRepository;
+  }
 
-    @Override
-    public Page<Musical> findAllMusicals(int page, int size) {
-        Pageable pageable = PageRequest.of(page,size);
-        return musicalRepository.findAll(pageable);
-    }
+  @Override
+  @Transactional("jpaTransactionManager")
+  public Musical saveMusical(MusicalCreationRequest request) {
+    Musical musical = MusicalCreationRequest.toMusical(request);
+    return musicalRepository.save(musical);
+  }
 
-    @Override
-    public Musical findById(Long id) {
-        return musicalRepository.findById(id).orElse(null);
-    }
+  @Override
+  public Page<Musical> findAllMusicals(int page, int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    return musicalRepository.findAll(pageable);
+  }
 
-    @Override
-    @Transactional("jpaTransactionManager")
-    public void deleteMusical(Long id) {
-        Musical musical = musicalRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Musical not found"));
-        musicalRepository.delete(musical);
-    }
+  @Override
+  public Musical findById(Long musicalId) {
+    return musicalRepository.findById(musicalId).orElse(null);
+  }
+
+  @Override
+  @Transactional("jpaTransactionManager")
+  public void deleteMusical(Long musicalId) {
+    Musical musical = musicalRepository.findById(musicalId)
+        .orElseThrow(() -> new RuntimeException("Musical not found"));
+    musicalRepository.delete(musical);
+  }
 
 
-    @Override
-    @Transactional("jpaTransactionManager")
-    public MusicalInfoUpdateResponse updateMusicalInfo(Long id, MusicalInfoUpdateRequest request) {
-        Musical musical = musicalRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Musical not found"));
-        musical.setTitle(request.getTitle());
-        musical.setRanking(request.getRanking());
-        musical.setPlace(request.getPlace());
-        musical.setPlaceDetail(request.getPlaceDetail());
-        musical.setTicketingStartDate(request.getTicketingStartDate());
-        musical.setTicketingEndDate(request.getTicketingEndDate());
-        musical.setRunningTime(request.getRunningTime());
+  @Override
+  @Transactional("jpaTransactionManager")
+  public MusicalInfoUpdateResponse updateMusicalInfo(Long musicalId,
+      MusicalInfoUpdateRequest request) {
+    Musical musical = musicalRepository.findById(musicalId)
+        .orElseThrow(() -> new RuntimeException("Musical not found"));
+    musical.setTitle(request.getTitle());
+    musical.setRanking(request.getRanking());
+    musical.setPlace(request.getPlace());
+    musical.setPlaceDetail(request.getPlaceDetail());
+    musical.setTicketingStartDate(request.getTicketingStartDate());
+    musical.setTicketingEndDate(request.getTicketingEndDate());
+    musical.setRunningTime(request.getRunningTime());
 
-        musicalRepository.save(musical);
-        return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(musical);
+    musicalRepository.save(musical);
+    return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(musical);
 
-    }
+  }
 }
 
 

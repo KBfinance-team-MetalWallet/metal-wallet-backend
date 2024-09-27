@@ -10,59 +10,68 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Builder
 @RestController
 @Slf4j
 @RequestMapping("/musicals")
 public class MusicalController {
-    private final  MusicalService musicalService;
 
-    @Autowired
-    public MusicalController(MusicalService musicalService) {
-        this.musicalService = musicalService;
-    }
+  private final MusicalService musicalService;
 
-    @GetMapping
-    public ResponseEntity<Page<Musical>> findAll(
-        @RequestParam(name = "page", defaultValue = "0") int page,
-        @RequestParam(name = "size", defaultValue = "10") int size
+  @Autowired
+  public MusicalController(MusicalService musicalService) {
+    this.musicalService = musicalService;
+  }
 
-    ) {
-        Page<Musical> musicals = musicalService.findAllMusicals(page, size);
-        return ResponseEntity.ok(musicals);
-    }
+  @GetMapping
+  public ResponseEntity<Page<Musical>> findAll(
+      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "size", defaultValue = "10") int size
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Musical> findById(@PathVariable(name="id") Long id) {
-        Musical musical = musicalService.findById(id);
-        return ResponseEntity.ok(musical);
-    }
+  ) {
+    Page<Musical> musicals = musicalService.findAllMusicals(page, size);
+    return ResponseEntity.ok(musicals);
+  }
 
-    @PostMapping
-    public ResponseEntity<Musical> createMusical(@RequestBody MusicalCreationRequest request) {
-        Musical savedMusical = musicalService.saveMusical(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedMusical);
-    }
+  @GetMapping("/{musicalId}")
+  public ResponseEntity<Musical> findById(@PathVariable(name = "musicalId") Long MusicalId) {
+    Musical musical = musicalService.findById(MusicalId);
+    return ResponseEntity.ok(musical);
+  }
+
+  @PostMapping
+  public ResponseEntity<Musical> createMusical(@RequestBody MusicalCreationRequest request) {
+    Musical savedMusical = musicalService.saveMusical(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(savedMusical);
+  }
 
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable (name="id") Long id) {
-        musicalService.deleteMusical(id);
-        return ResponseEntity.noContent().build();
-    }
+  @DeleteMapping("/{musicalId}")
+  public ResponseEntity<String> delete(@PathVariable(name = "musicalId") Long MusicalId) {
+    musicalService.deleteMusical(MusicalId);
+    return ResponseEntity.noContent().build();
+  }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateMusicalInfo(
-        @PathVariable(name = "id") Long id,
-        @RequestBody MusicalInfoUpdateRequest request) {
-        /**
-         * TODO : Login Authentication 추가 예정
-         */
-        musicalService.updateMusicalInfo(id, request);
-        return ResponseEntity.ok().build();
-    }
+  @PutMapping("/{musicalId}")
+  public ResponseEntity<Void> updateMusicalInfo(
+      @PathVariable(name = "musicalId") Long musicalId,
+      @RequestBody MusicalInfoUpdateRequest request) {
+    /**
+     * TODO : Login Authentication 추가 예정
+     */
+    musicalService.updateMusicalInfo(musicalId, request);
+    return ResponseEntity.ok().build();
+  }
 
 
 }
