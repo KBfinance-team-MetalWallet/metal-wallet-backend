@@ -90,7 +90,7 @@ public class AppConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
         emf.setDataSource(dataSource);
-        emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain",
+        emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain", "com.kb.wallet.seat.domain",
                 "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain");
         emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
@@ -120,7 +120,8 @@ public class AppConfig {
         SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
         sessionFactory.setDataSource(dataSource);
         sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain,"
-                + "com.kb.wallet.ticket.domain,"
+            + "com.kb.wallet.ticket.domain,"
+            + "com.kb.wallet.seat.domain,"
                 + "com.kb.wallet.musical.domain");
 //    sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain,com.kb.wallet.ticket.domain,com.kb.wallet.musical.domain");
 
