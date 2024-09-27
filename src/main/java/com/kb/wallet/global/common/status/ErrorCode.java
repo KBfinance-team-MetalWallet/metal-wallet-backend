@@ -6,12 +6,8 @@ import lombok.Getter;
 public enum ErrorCode {
   /**
    * ******************************* Global Error CodeList ***************************************
-   * HTTP Status Code
-   * 400 : Bad Request
-   * 401 : Unauthorized
-   * 403 : Forbidden
-   * 404 : Not Found
-   * 500 : Internal Server Error
+   * HTTP Status Code 400 : Bad Request 401 : Unauthorized 403 : Forbidden 404 : Not Found 500 :
+   * Internal Server Error
    * *********************************************************************************************
    */
   // 잘못된 서버 요청
@@ -58,6 +54,13 @@ public enum ErrorCode {
   TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다"),
   TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다"),
 
+  // QR 코드 관련 에러 코드
+  ENCRYPTION_ERROR(500, "EN001", "QR 코드 암호화 중 오류가 발생했습니다."),
+  DECRYPTION_ERROR(500, "QR002", "QR 코드 복호화 중 오류가 발생했습니다."),
+  QR_CODE_INVALID(400, "QR003", "유효하지 않은 QR 코드입니다."),
+  QR_CODE_NOT_FOUND(404, "QR004", "QR 코드가 존재하지 않습니다."),
+  INVALID_SECRET_KEY(500, "QR005", "유효하지 않은 비밀키입니다."),
+  INVALID_IV(500, "QR006", "유효하지 않은 IV입니다."),
   /**
    * ******************************* Custom Error CodeList ***************************************
    */
