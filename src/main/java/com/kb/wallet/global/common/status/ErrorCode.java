@@ -49,6 +49,8 @@ public enum ErrorCode {
   // 서버가 처리 할 방법을 모르는 경우 발생
   INTERNAL_SERVER_ERROR(500, "G999", "서버 내부 오류"),
 
+  // Musical Errors
+  MUSICAL_NOT_FOUND(404, "MU003", "요청한 뮤지컬을 찾을 수 없습니다."),
 
   // Ticket Errors
   TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다"),
