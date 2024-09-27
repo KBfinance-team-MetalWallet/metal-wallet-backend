@@ -3,12 +3,11 @@ package com.kb.wallet.account.controller;
 import com.kb.wallet.account.dto.AccountRequest;
 import com.kb.wallet.account.dto.AccountResponse;
 import com.kb.wallet.account.service.AccountService;
+import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.member.domain.Member;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,25 +30,25 @@ public class AccountController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AccountResponse>> getAccounts(
+    public ApiResponse<List<AccountResponse>> getAccounts(
             @AuthenticationPrincipal Member member) {
-        return ResponseEntity.ok(accountService.getAccounts(member.getEmail()));
+        return ApiResponse.ok(accountService.getAccounts(member.getEmail()));
     }
 
     @PostMapping
-    public ResponseEntity<Void> createAccount(
+    public ApiResponse<Void> createAccount(
             @AuthenticationPrincipal Member member,
             @RequestBody AccountRequest accountRequest) {
         accountService.createAccount(accountRequest, member.getEmail());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ApiResponse.ok();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAccount(
+    public ApiResponse<Void> deleteAccount(
             @AuthenticationPrincipal Member member,
             @PathVariable(name = "id") Long id) {
         accountService.deleteAccount(id, member.getEmail());
-        return ResponseEntity.noContent().build();
+        return ApiResponse.ok();
     }
 }
 
