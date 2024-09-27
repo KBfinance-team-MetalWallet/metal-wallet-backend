@@ -1,47 +1,39 @@
 package com.kb.wallet.ticket.service;
 
+import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERROR;
+import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
+import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-import com.kb.wallet.global.common.status.ErrorCode;
-import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERROR;
-import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
+
+import com.kb.wallet.global.exception.CustomException;
 
 import com.kb.wallet.member.domain.Member;
+import com.kb.wallet.member.service.MemberService;
+
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.domain.TicketExchange;
-import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
-import com.kb.wallet.ticket.dto.request.TicketRequest;
-import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
-import com.kb.wallet.ticket.dto.response.TicketResponse;
-import com.kb.wallet.ticket.exception.TicketException;
+import com.kb.wallet.ticket.dto.request.*;
+import com.kb.wallet.ticket.dto.response.*;
+
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
 import com.kb.wallet.ticket.model.TicketQrInfo;
-import com.kb.wallet.ticket.repository.TicketMapper;
-import com.kb.wallet.ticket.repository.TicketRepository;
+import com.kb.wallet.ticket.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+
+import org.springframework.data.domain.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Base64;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import javax.imageio.ImageIO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import com.kb.wallet.ticket.dto.response.TicketUsageResponse;
 
 @Slf4j
 @Service
@@ -49,27 +41,24 @@ import com.kb.wallet.ticket.dto.response.TicketUsageResponse;
 public class TicketServiceImpl implements TicketService {
 
   private final TicketCheckService ticketCheckService;
-
   private final TicketRepository ticketRepository;
   private final TicketExchangeRepository ticketExchangeRepository;
   private final TicketMapper ticketMapper;
+  private final MemberService memberService;
+
 
 
   @Override
   public TicketResponse saveTicket(Member member, TicketRequest ticketRequest) {
-    // 일정 테이블에서 일정 찾아서 넣어줘야 함.
-    // TODO : 임의 member 생성.. 로그인 구현 시 삭제 해야 함
-    Member temp = new Member();
-    temp.setId(1L);
-
+    Member memberFromDB = memberService.getMemberByEmail(member.getEmail());
     // TODO : 뮤지컬이 유효한지 검사
 
     // TODO : 일정이 유효한지 검사
 
     // 티켓 엔티티 생성
-    Ticket bookedTicket = Ticket.createBookedTicket(ticketRequest);
-    Ticket ticket = ticketRepository.save(bookedTicket);
-    return TicketResponse.toTicketResponse(ticket);
+    Ticket bookedTicket = Ticket.createBookedTicket(memberFromDB, ticketRequest);
+    Ticket savedTicket = ticketRepository.save(bookedTicket);
+    return TicketResponse.toTicketResponse(savedTicket);
   }
 
   @Override
@@ -86,18 +75,9 @@ public class TicketServiceImpl implements TicketService {
     return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
   }
 
-  @Override
-  @Async("taskExecutor")
-  public CompletableFuture<Void> updateStatusChecked(Long memberId, Long ticketId) {
-    isTicketAvailable(memberId, ticketId);
-
-    // TODO : GlobalException로 바꿔 주세요.
-    Ticket ticket = findTicketById(ticketId);
-
+  public void updateStatusChecked(Ticket ticket) {
     ticket.setTicketStatus(TicketStatus.CHECKED);
     ticketRepository.save(ticket);
-
-    return CompletableFuture.completedFuture(null);
   }
 
   @Override
@@ -148,26 +128,34 @@ public class TicketServiceImpl implements TicketService {
     return TicketExchangeResponse.createTicketExchangeResponse(ticketExchange);
   }
 
-  private Ticket findTicketById(Long id) {
+  @Override
+  public Ticket findTicketById(Long id) {
     return ticketRepository.findById(id)
-        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
-  }
-
-  public void isTicketAvailable(Long memberId, Long ticketId) {
-    boolean isTicketAvailable = ticketRepository.existsByMemberIdAndIdAndTicketStatus(memberId, ticketId,
-        TicketStatus.BOOKED);
-    log.info("isTicketAvailable");
-    log.info(String.valueOf(isTicketAvailable));
-    if(!isTicketAvailable) {
-      log.info(String.valueOf(isTicketAvailable) + ": false");
-      throw new IllegalArgumentException("The ticket is not available for use.");
-    }
+        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
   }
 
   @Override
-  public String generateTicketQRCode(Long memberId, Long ticketId) throws IOException, WriterException {
+  public boolean isTicketAvailable(Long memberId, Ticket ticket) {
+    //TODO: 토큰 검증
+    //TODO: 복호화
+    //TODO: domain에서 처리해야 함
+    memberService.findById(memberId);
+    //qr 복호화해서 id member table에서 확인
+
+    if(!ticket.getMember().getId().equals(memberId) ||
+        !ticket.getTicketStatus().equals(TicketStatus.BOOKED)) {
+      throw new CustomException(TICKET_STATUS_INVALID);
+    }
+
+    return true;
+  }
+
+  @Override
+  public byte[] generateTicketQRCode(String email, Long ticketId) throws IOException, WriterException {
+    Member memeber = memberService.getMemberByEmail(email);
+
     ObjectMapper objectMapper = new ObjectMapper();
-    String qrData = objectMapper.writeValueAsString(new TicketQrInfo(memberId, ticketId));
+    String qrData = objectMapper.writeValueAsString(new TicketQrInfo(memeber.getId(), ticketId));
     int qrImagewidth = 250;
     int qrImageheight = 250;
 
@@ -178,10 +166,9 @@ public class TicketServiceImpl implements TicketService {
 
     // 이미지를 Base64로 인코딩
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ImageIO.write(qrImage, "png", baos);
+    MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
     byte[] qrBytes = baos.toByteArray();
-    String qrBase64 = Base64.getEncoder().encodeToString(qrBytes);
 
-    return qrBase64;
+    return qrBytes;
   }
 }

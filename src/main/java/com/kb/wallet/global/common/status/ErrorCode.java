@@ -53,10 +53,13 @@ public enum ErrorCode {
   // 서버가 처리 할 방법을 모르는 경우 발생
   INTERNAL_SERVER_ERROR(500, "G999", "서버 내부 오류"),
 
+  // Member Errors
+  MEMBER_NOT_FOUND_ERROR(404, "ME001", "사용자를 찾을 수 없습니다."),
+  MEMBER_STATUS_INVALID(400, "ME002", "사용자의 ID가 유효하지 않습니다"),
 
   // Ticket Errors
-  TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다"),
-  TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다"),
+  TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다."),
+  TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다."),
   TICKET_NOT_USABLE(400, "TI003", "티켓을 사용할 수 없습니다."),
 
   /**
