@@ -44,8 +44,8 @@ public class MusicalController {
   }
 
   @GetMapping("/{musicalId}")
-  public ResponseEntity<Musical> findById(@PathVariable(name = "musicalId") Long MusicalId) {
-    Musical musical = musicalService.findById(MusicalId);
+  public ResponseEntity<Musical> findById(@PathVariable(name = "musicalId") Long musicalId) {
+    Musical musical = musicalService.findById(musicalId);
     return ResponseEntity.ok(musical);
   }
 
@@ -57,8 +57,8 @@ public class MusicalController {
 
 
   @DeleteMapping("/{musicalId}")
-  public ResponseEntity<String> delete(@PathVariable(name = "musicalId") Long MusicalId) {
-    musicalService.deleteMusical(MusicalId);
+  public ResponseEntity<String> delete(@PathVariable(name = "musicalId") Long musicalId) {
+    musicalService.deleteMusical(musicalId);
     return ResponseEntity.noContent().build();
   }
 
