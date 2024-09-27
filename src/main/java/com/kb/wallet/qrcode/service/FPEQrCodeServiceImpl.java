@@ -1,4 +1,4 @@
-package com.kb.wallet.qrcode;
+package com.kb.wallet.qrcode.service;
 
 import static com.kb.wallet.global.common.status.ErrorCode.DECRYPTION_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.ENCRYPTION_ERROR;
@@ -6,6 +6,7 @@ import static com.kb.wallet.global.common.status.ErrorCode.INVALID_TYPE_VALUE;
 
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.global.util.BouncyCastleUtil;
+import com.kb.wallet.qrcode.dto.EncrypeDataDto;
 import java.util.Base64;
 import javax.crypto.SecretKey;
 import org.springframework.stereotype.Service;
@@ -66,14 +67,12 @@ public class FPEQrCodeServiceImpl implements FPEQrCodeService {
     }
   }
 
-  // 입력 데이터 유효성 검사
   private void validateInputData(String data) {
     if (data == null || data.isEmpty()) {
       throw new CustomException(INVALID_TYPE_VALUE, "암호화할 데이터는 null이거나 비어 있을 수 없습니다.");
     }
   }
 
-  // 암호화된 데이터 유효성 검사
   private void validateEncryptedData(String encryptedData) {
     if (encryptedData == null || encryptedData.isEmpty()) {
       throw new CustomException(INVALID_TYPE_VALUE, "복호화할 데이터는 null이거나 비어 있을 수 없습니다.");
