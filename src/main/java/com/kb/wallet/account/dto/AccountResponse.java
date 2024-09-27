@@ -1,5 +1,6 @@
 package com.kb.wallet.account.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kb.wallet.account.domain.Account;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +19,7 @@ public class AccountResponse {
     private Long id;
     private String accountNumber;
     private Integer balance;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
     public static List<AccountResponse> toAccountsResponseList(List<Account> accounts) {
