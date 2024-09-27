@@ -1,5 +1,7 @@
 package com.kb.wallet.global.util;
 
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.Security;
@@ -53,13 +55,15 @@ public class BouncyCastleUtil {
 
   public static void validateSecretKey(SecretKey secretKey) {
     if (secretKey == null || secretKey.getEncoded().length != (KEY_SIZE / 8)) {
-      throw new IllegalArgumentException("유효하지 않은 비밀키입니다. AES-256은 256비트 키가 필요합니다.");
+      throw new CustomException(ErrorCode.INVALID_SECRET_KEY,
+          "유효하지 않은 비밀키입니다. AES-256은 256비트 키가 필요합니다.");
     }
   }
 
   public static void validateIv(byte[] iv) {
     if (iv == null || iv.length != IV_SIZE) {
-      throw new IllegalArgumentException("유효하지 않은 IV입니다. AES는 16바이트 IV가 필요합니다.");
+      throw new CustomException(ErrorCode.INVALID_IV,
+          "유효하지 않은 IV입니다. AES는 16바이트 IV가 필요합니다.");
     }
   }
 
