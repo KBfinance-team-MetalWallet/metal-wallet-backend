@@ -13,10 +13,10 @@ public class CustomException extends RuntimeException implements CustomError {
         this.errorCode = errorCode;
     }
 
-    protected CustomException(ErrorCode errorCode, String customMessage) {
-        super(customMessage);
-        this.errorCode = errorCode;
-    }
+  public CustomException(ErrorCode errorCode, String customMessage) {
+    super(customMessage);
+    this.errorCode = errorCode;
+  }
 
     @Override
     public ErrorCode getErrorCode() {
