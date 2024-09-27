@@ -89,6 +89,9 @@ dependencies {
     // Servlet API for Tomcat 9
     compileOnly('javax.servlet:javax.servlet-api:4.0.1')
 
+    // BouncyCastle
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+
     // Test dependencies
     testImplementation "org.springframework:spring-test:${springVersion}"
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")

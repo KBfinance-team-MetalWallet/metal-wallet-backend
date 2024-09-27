@@ -13,7 +13,7 @@ public class CustomException extends RuntimeException implements CustomError {
     this.errorCode = errorCode;
   }
 
-  protected CustomException(ErrorCode errorCode, String customMessage) {
+  public CustomException(ErrorCode errorCode, String customMessage) {
     super(customMessage);
     this.errorCode = errorCode;
   }
