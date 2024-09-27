@@ -1,4 +1,4 @@
-package com.kb.wallet.qrcode;
+package com.kb.wallet.qrcode.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
