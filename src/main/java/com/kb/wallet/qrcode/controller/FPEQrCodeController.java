@@ -1,7 +1,10 @@
-package com.kb.wallet.qrcode;
+package com.kb.wallet.qrcode.controller;
 
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
+import com.kb.wallet.qrcode.dto.EncrypeDataDto;
+import com.kb.wallet.qrcode.service.FPEQrCodeService;
 import java.util.HashMap;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +23,11 @@ public class FPEQrCodeController {
   private final FPEQrCodeService fpeQrCodeService;
 
   @PostMapping("/encrypt")
-  public ResponseEntity<HashMap<String, Object>> encrypt(@RequestBody Map<String, String> paramMap)
+  public ResponseEntity<HashMap<String, Object>> encrypt(@RequestBody EncrypeDataDto dto)
       throws Exception {
-    String data = paramMap.get("data");
-
+    String data = dto.getEncryptedData();
     log.info("Encrypting data: {}", data);
 
-    // 서비스에서 암호화 처리
     EncrypeDataDto encryptedDataDto = fpeQrCodeService.encrypt(data);
     HashMap<String, Object> response = new HashMap<>();
     response.put("dto", encryptedDataDto);
@@ -34,23 +35,33 @@ public class FPEQrCodeController {
     return ResponseEntity.ok(response);
   }
 
+
   @GetMapping("/key")
   public ResponseEntity<String> getSecretKey() {
-    // 서비스에서 SecretKey 처리
     String secretKeyString = fpeQrCodeService.getSecretKeyAsString();
     return ResponseEntity.ok(secretKeyString);
   }
 
   @PostMapping("/decrypt")
-  public ResponseEntity<HashMap<String, String>> decrypt(@RequestBody EncrypeDataDto dto)
-      throws Exception {
+  public ResponseEntity<HashMap<String, String>> decrypt(@RequestBody EncrypeDataDto dto) {
     log.info("Decrypting data with security code: {}", dto.getSecurityCode());
 
-    // 서비스에서 복호화 처리
-    String decryptedText = fpeQrCodeService.decrypt(dto);
+    String decryptedText;
+    try {
+      decryptedText = fpeQrCodeService.decrypt(dto);
+    } catch (CustomException e) {
+      log.error("CustomException 발생: {}", e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      log.error("예외 발생: {}", e.getMessage());
+      throw new CustomException(ErrorCode.DECRYPTION_ERROR,
+          "복호화 중 오류가 발생했습니다.");
+    }
+
     HashMap<String, String> response = new HashMap<>();
     response.put("decryptedText", decryptedText);
 
     return ResponseEntity.ok(response);
   }
+
 }
