@@ -59,11 +59,10 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public Page<TicketResponse> findAllBookedTickets(Long id, int page, int size) {
-    id = 1L; // TODO: 이거 로그인 구현 시 지워야 함
+  public Page<TicketResponse> findAllBookedTickets(String email, int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<Ticket> ticketsByMemberIdAndTicketStatus =
-        ticketRepository.findTicketsByMemberIdAndTicketStatus(id, TicketStatus.BOOKED, pageable);
+        ticketRepository.findTicketsByMemberIdAndTicketStatus(email, TicketStatus.BOOKED, pageable);
     return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
   }
 

@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 public interface TicketService {
   Ticket findTicket(Long memberId, Long ticketId);
   Ticket findTicketById(Long id);
-  Page<TicketResponse> findAllBookedTickets(Long id, int page, int size);
+  Page<TicketResponse> findAllBookedTickets(String email, int page, int size);
 
   TicketResponse saveTicket(Member member, TicketRequest ticketRequest);
 
