@@ -71,12 +71,6 @@ public enum ErrorCode {
     // Transaction Insert Error
     INSERT_ERROR(200, "9999", "Transaction 삽입 오류 발생"),
 
-    /**
-     * ******************************* Custom Error CodeList
-     * ***************************************
-     */
-    // Transaction Insert Error
-    INSERT_ERROR(200, "9999", "Transaction 삽입 오류 발생"),
 
     // Transaction Update Error
     UPDATE_ERROR(200, "9999", "Transaction 수정 오류 발생"),

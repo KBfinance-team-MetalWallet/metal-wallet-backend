@@ -47,10 +47,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(transactionManager = "jpaTransactionManager")
     public void deleteAccount(Long id, String email) {
-        if (!isAccountOwnedByMember(id, email)) {
-            throw new CustomException(ErrorCode.FORBIDDEN_ERROR) {
-            };
-        }
+        // TODO : id 가 memberId인지 확인해야함.
         Account account = getAccount(id);
         accountRepository.delete(account);
     }
@@ -60,10 +57,5 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.ACCOUNT_NOT_FOUND_ERROR) {
                 });
-    }
-
-    public boolean isAccountOwnedByMember(Long id, String email) {
-        Account account = getAccount(id);
-        return account.getMember().getEmail().equals(email);
     }
 }
