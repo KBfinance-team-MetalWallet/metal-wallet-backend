@@ -3,12 +3,18 @@ package com.kb.wallet.ticket.controller;
 import com.google.zxing.WriterException;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
+import com.kb.wallet.member.service.MemberService;
+import com.kb.wallet.qrcode.dto.EncrypeDataDto;
+import com.kb.wallet.qrcode.service.FPEQrCodeService;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.*;
 import com.kb.wallet.ticket.dto.response.*;
 import com.kb.wallet.ticket.service.TicketService;
 import java.io.IOException;
+import java.util.Base64;
+import javax.crypto.SecretKey;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -18,13 +24,19 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/tickets")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class TicketController {
 
   private final TicketService ticketService;
+  private final MemberService memberService;
+  private final FPEQrCodeService fpeQrCodeService;
   @Lazy
   private final TokenProvider tokenProvider;
+
+
+  private final SecretKey secretKey;
+  private final byte[] iv;
 
   @PostMapping
   public ResponseEntity<TicketResponse> createTicket(
@@ -53,14 +65,22 @@ public class TicketController {
   }
 
   @PostMapping("{ticketId}/qr")
-  public ResponseEntity<QrCreationResponse> generateQRCode(
+  public void generateQRCode (
+//      public ResponseEntity<QrCreationResponse> generateQRCode (
       @AuthenticationPrincipal Member member,
       @PathVariable(name = "ticketId") Long ticketId) throws IOException, WriterException {
 
     String token = tokenProvider.createToken(ticketId);
-    byte[] qrBytes = ticketService.generateTicketQRCode(member.getEmail(), ticketId);
-    QrCreationResponse qrCreationResponse = QrCreationResponse.toQrCreationResponse(token, qrBytes, 30);
-    return ResponseEntity.ok(qrCreationResponse);
+    Member loginedMemeber = memberService.getMemberByEmail(member.getEmail());
+
+    //TODO: byte[] -> String으로 변환할 것
+    //  String encryptedData = util.encrypt()
+
+    //TODO: qr 생성은 클라이언트에서 처리하도록 변경할 것
+
+    //TODO: qrCreationResponse로 반환해야함 = qrCreationResponse
+    //  이 DTO에는 token, qrBytes, secord값이 담김
+//    return ResponseEntity.ok(qrCreationResponse);
   }
 
   @PutMapping("/use")

@@ -4,13 +4,6 @@ import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERRO
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
 import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-
 import com.kb.wallet.global.exception.CustomException;
 
 import com.kb.wallet.member.domain.Member;
@@ -23,15 +16,14 @@ import com.kb.wallet.ticket.dto.request.*;
 import com.kb.wallet.ticket.dto.response.*;
 
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
-import com.kb.wallet.ticket.model.TicketQrInfo;
+
 import com.kb.wallet.ticket.repository.*;
+
+import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import javax.imageio.ImageIO;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +37,9 @@ public class TicketServiceImpl implements TicketService {
   private final TicketExchangeRepository ticketExchangeRepository;
   private final TicketMapper ticketMapper;
   private final MemberService memberService;
+
+  private final SecretKey secretKey;
+  private final byte[] iv;
 
 
 
@@ -136,11 +131,7 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   public boolean isTicketAvailable(Long memberId, Ticket ticket) {
-    //TODO: 토큰 검증
-    //TODO: 복호화
-    //TODO: domain에서 처리해야 함
     memberService.findById(memberId);
-    //qr 복호화해서 id member table에서 확인
 
     if(!ticket.getMember().getId().equals(memberId) ||
         !ticket.getTicketStatus().equals(TicketStatus.BOOKED)) {
@@ -148,27 +139,5 @@ public class TicketServiceImpl implements TicketService {
     }
 
     return true;
-  }
-
-  @Override
-  public byte[] generateTicketQRCode(String email, Long ticketId) throws IOException, WriterException {
-    Member memeber = memberService.getMemberByEmail(email);
-
-    ObjectMapper objectMapper = new ObjectMapper();
-    String qrData = objectMapper.writeValueAsString(new TicketQrInfo(memeber.getId(), ticketId));
-    int qrImagewidth = 250;
-    int qrImageheight = 250;
-
-    QRCodeWriter qrCodeWriter = new QRCodeWriter();
-    //QR px 정보 저장
-    BitMatrix bitMatrix = qrCodeWriter.encode(qrData, BarcodeFormat.QR_CODE, qrImagewidth, qrImageheight);
-    BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
-
-    // 이미지를 Base64로 인코딩
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
-    byte[] qrBytes = baos.toByteArray();
-
-    return qrBytes;
   }
 }
