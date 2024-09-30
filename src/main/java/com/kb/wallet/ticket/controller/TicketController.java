@@ -4,16 +4,11 @@ import com.google.zxing.WriterException;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
-import com.kb.wallet.qrcode.dto.EncrypeDataDto;
-import com.kb.wallet.qrcode.service.FPEQrCodeService;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.*;
 import com.kb.wallet.ticket.dto.response.*;
 import com.kb.wallet.ticket.service.TicketService;
 import java.io.IOException;
-import java.util.Base64;
-import javax.crypto.SecretKey;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -30,13 +25,8 @@ public class TicketController {
 
   private final TicketService ticketService;
   private final MemberService memberService;
-  private final FPEQrCodeService fpeQrCodeService;
   @Lazy
   private final TokenProvider tokenProvider;
-
-
-  private final SecretKey secretKey;
-  private final byte[] iv;
 
   @PostMapping
   public ResponseEntity<TicketResponse> createTicket(

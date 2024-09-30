@@ -81,7 +81,7 @@ public enum ErrorCode {
     // Transaction Update Error
     UPDATE_ERROR(200, "9999", "Transaction 수정 오류 발생"),
     // Transaction Delete Error
-    DELETE_ERROR(200, "9999", "Transaction 삭제 오류 발생"),
+    DELETE_ERROR(200, "9999", "Transaction 삭제 오류 발생");
 
 
     /**

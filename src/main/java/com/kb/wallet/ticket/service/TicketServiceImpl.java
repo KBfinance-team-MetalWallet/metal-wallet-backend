@@ -19,7 +19,6 @@ import com.kb.wallet.ticket.repository.TicketExchangeRepository;
 
 import com.kb.wallet.ticket.repository.*;
 
-import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.*;
@@ -38,8 +37,6 @@ public class TicketServiceImpl implements TicketService {
   private final TicketMapper ticketMapper;
   private final MemberService memberService;
 
-  private final SecretKey secretKey;
-  private final byte[] iv;
 
 
 
