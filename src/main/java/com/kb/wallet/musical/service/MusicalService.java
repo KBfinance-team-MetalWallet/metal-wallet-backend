@@ -13,9 +13,6 @@ public interface MusicalService {
     // 새로운 뮤지컬 생성
     Musical saveMusical(MusicalCreationRequest request);
 
-    // 새로운 뮤지컬 생성
-    Musical saveMusical(MusicalCreationRequest request);
-
     // 모든 뮤지컬 조회
     Page<Musical> findAllMusicals(int page, int size);
 
