@@ -27,8 +27,10 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<AccountResponse> getAccounts(String email) {
-        Member member = memberService.getMemberByEmail(email);
-        List<Account> accounts = accountRepository.findAllByMember(member);
+        List<Account> accounts = accountRepository.findAllByMember(email);
+        if(accounts.isEmpty() || accounts.size() == 0) {
+            throw new CustomException(ErrorCode.ACCOUNT_NOT_FOUND_ERROR);
+        }
         return AccountResponse.toAccountsResponseList(accounts);
     }
 
