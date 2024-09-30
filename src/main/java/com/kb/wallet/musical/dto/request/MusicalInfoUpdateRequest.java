@@ -11,12 +11,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MusicalInfoUpdateRequest {
-    private Long id;
-    private String title;
-    private int ranking;
-    private String place;
-    private String placeDetail;
-    private LocalDate ticketingStartDate;
-    private LocalDate ticketingEndDate;
-    private int runningTime;
+
+  private Long musicalId;
+  private String title;
+  private int ranking;
+  private String place;
+  private String placeDetail;
+  private LocalDate ticketingStartDate;
+  private LocalDate ticketingEndDate;
+  private int runningTime;
 }
