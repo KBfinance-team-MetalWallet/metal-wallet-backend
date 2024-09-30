@@ -14,24 +14,25 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class MusicalCreationRequest {
-    private Long id;
-    private String title;
-    private int ranking;
-    private String place;
-    private String placeDetail;
-    private LocalDate ticketingStartDate;
-    private LocalDate ticketingEndDate;
-    private int runningTime;
 
-    public static Musical toMusical(MusicalCreationRequest request){
-        return Musical.builder()
-            .title(request.getTitle())
-            .ranking(request.getRanking())
-            .place(request.getPlace())
-            .placeDetail(request.getPlaceDetail())
-            .ticketingStartDate(request.getTicketingStartDate())
-            .ticketingEndDate(request.getTicketingEndDate())
-            .runningTime(request.getRunningTime())
-            .build();
-    }
+  private Long musicalId;
+  private String title;
+  private int ranking;
+  private String place;
+  private String placeDetail;
+  private LocalDate ticketingStartDate;
+  private LocalDate ticketingEndDate;
+  private int runningTime;
+
+  public static Musical toMusical(MusicalCreationRequest request) {
+    return Musical.builder()
+        .title(request.getTitle())
+        .ranking(request.getRanking())
+        .place(request.getPlace())
+        .placeDetail(request.getPlaceDetail())
+        .ticketingStartDate(request.getTicketingStartDate())
+        .ticketingEndDate(request.getTicketingEndDate())
+        .runningTime(request.getRunningTime())
+        .build();
+  }
 }

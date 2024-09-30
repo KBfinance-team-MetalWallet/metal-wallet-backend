@@ -56,6 +56,8 @@ public enum ErrorCode {
   /**
    * ******************************* Custom Error CodeList ***************************************
    */
+  // Musical Errors
+  MUSICAL_NOT_FOUND(404, "MU003", "요청한 뮤지컬을 찾을 수 없습니다."),
   // Member Errors
   MEMBER_NOT_FOUND_ERROR(404, "ME001", "사용자를 찾을 수 없습니다."),
   MEMBER_STATUS_INVALID(400, "ME002", "사용자의 ID가 유효하지 않습니다"),
