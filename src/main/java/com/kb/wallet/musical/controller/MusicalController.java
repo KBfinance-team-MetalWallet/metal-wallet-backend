@@ -31,62 +31,59 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/musicals")
 public class MusicalController {
 
-    private final MusicalService musicalService;
+  private final MusicalService musicalService;
 
-    @Autowired
-    public MusicalController(MusicalService musicalService) {
-        this.musicalService = musicalService;
-    }
+  @Autowired
+  public MusicalController(MusicalService musicalService) {
+    this.musicalService = musicalService;
+  }
 
-    @GetMapping
-    public ResponseEntity<Page<Musical>> findAll(
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size
+  @GetMapping
+  public ResponseEntity<Page<Musical>> findAll(
+      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "size", defaultValue = "10") int size) {
+    Page<Musical> musicals = musicalService.findAllMusicals(page, size);
+    return ResponseEntity.ok(musicals);
+  }
 
-    ) {
-        Page<Musical> musicals = musicalService.findAllMusicals(page, size);
-        return ResponseEntity.ok(musicals);
-    }
+  @GetMapping("/{musicalId}")
+  public ResponseEntity<Musical> findById(@PathVariable(name = "musicalId") Long musicalId) {
+    Musical musical = musicalService.findById(musicalId);
+    return ResponseEntity.ok(musical);
+  }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Musical> findById(@PathVariable(name = "id") Long id) {
-        Musical musical = musicalService.findById(id);
-        return ResponseEntity.ok(musical);
-    }
+  @PostMapping
+  public ResponseEntity<Musical> createMusical(@RequestBody MusicalCreationRequest request) {
+    Musical savedMusical = musicalService.saveMusical(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(savedMusical);
+  }
 
-    @PostMapping
-    public ResponseEntity<Musical> createMusical(@RequestBody MusicalCreationRequest request) {
-        Musical savedMusical = musicalService.saveMusical(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedMusical);
-    }
+  @DeleteMapping("/{musicalId}")
+  public ResponseEntity<String> delete(@PathVariable(name = "musicalId") Long musicalId) {
+    musicalService.deleteMusical(musicalId);
+    return ResponseEntity.noContent().build();
+  }
 
+  @PutMapping("/{musicalId}")
+  public ResponseEntity<Void> updateMusicalInfo(
+      @PathVariable(name = "musicalId") Long musicalId,
+      @RequestBody MusicalInfoUpdateRequest request) {
+    /**
+     * TODO : Login Authentication 추가 예정
+     */
+    musicalService.updateMusicalInfo(musicalId, request);
+    return ResponseEntity.ok().build();
+  }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable(name = "id") Long id) {
-        musicalService.deleteMusical(id);
-        return ResponseEntity.noContent().build();
-    }
+  @GetMapping("/{id}/seats-availability")
+  public ApiResponse<List<MusicalSeatAvailabilityResponse>> checkSeatAvailability(
+          @AuthenticationPrincipal Member member,
+          @PathVariable(name = "id") Long id,
+          @RequestParam("date") String date) {
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateMusicalInfo(
-            @PathVariable(name = "id") Long id,
-            @RequestBody MusicalInfoUpdateRequest request) {
-        /**
-         * TODO : Login Authentication 추가 예정
-         */
-        musicalService.updateMusicalInfo(id, request);
-        return ResponseEntity.ok().build();
-    }
+      List<MusicalSeatAvailabilityResponse> responses = musicalService.checkSeatAvailability(id,
+              date);
 
-    @GetMapping("/{id}/seats-availability")
-    public ApiResponse<List<MusicalSeatAvailabilityResponse>> checkSeatAvailability(
-            @AuthenticationPrincipal Member member,
-            @PathVariable(name = "id") Long id,
-            @RequestParam("date") String date) {
-
-        List<MusicalSeatAvailabilityResponse> responses = musicalService.checkSeatAvailability(id,
-                date);
-
-        return ApiResponse.ok(responses);
-    }
+      return ApiResponse.ok(responses);
+  }
 }

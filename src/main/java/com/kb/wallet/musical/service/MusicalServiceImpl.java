@@ -1,5 +1,7 @@
 package com.kb.wallet.musical.service;
 
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
@@ -30,56 +32,77 @@ public class MusicalServiceImpl implements MusicalService {
         this.customMusicalRepository = customMusicalRepository;
     }
 
-    @Override
-    @Transactional("jpaTransactionManager")
-    public Musical saveMusical(MusicalCreationRequest request) {
-        Musical musical = MusicalCreationRequest.toMusical(request);
-        return musicalRepository.save(musical);
+  @Autowired
+  public MusicalServiceImpl(MusicalRepository musicalRepository) {
+    this.musicalRepository = musicalRepository;
+  }
+
+
+  @Override
+  @Transactional("jpaTransactionManager")
+  public Musical saveMusical(MusicalCreationRequest request) {
+    Musical musical = MusicalCreationRequest.toMusical(request);
+    return musicalRepository.save(musical);
+  }
+
+  @Override
+  public Page<Musical> findAllMusicals(int page, int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    return musicalRepository.findAll(pageable);
+  }
+
+  @Override
+  public Musical findById(Long musicalId) {
+    return musicalRepository.findById(musicalId).orElse(null);
+  }
+
+  @Override
+  @Transactional("jpaTransactionManager")
+  public void deleteMusical(Long musicalId) {
+    try {
+      Musical musical = musicalRepository.findById(musicalId)
+          .orElseThrow(
+              () -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND, "요청한 뮤지컬을 찾을 수 없습니다."));
+      musicalRepository.delete(musical);
+    } catch (CustomException ce) {
+      throw ce;
+    } catch (Exception e) {
+      throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "뮤지컬 삭제 중 오류가 발생했습니다.");
+    }
+  }
+
+  @Override
+  @Transactional("jpaTransactionManager")
+  public MusicalInfoUpdateResponse updateMusicalInfo(Long musicalId,
+      MusicalInfoUpdateRequest request) {
+    Musical musical = musicalRepository.findById(musicalId)
+        .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND, "요청한 뮤지컬을 찾을 수 없습니다."));
+
+    try {
+      Musical updatedMusical = Musical.builder()
+          .id(musical.getId())
+          .title(request.getTitle())
+          .ranking(request.getRanking())
+          .place(request.getPlace())
+          .placeDetail(request.getPlaceDetail())
+          .ticketingStartDate(request.getTicketingStartDate())
+          .ticketingEndDate(request.getTicketingEndDate())
+          .runningTime(request.getRunningTime())
+          .build();
+
+      Musical savedMusical = musicalRepository.save(updatedMusical);
+      return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(savedMusical);
+    } catch (Exception e) {
+      throw new CustomException(ErrorCode.ENCRYPTION_ERROR, "Musical 정보 업데이트 중 오류가 발생했습니다.");
     }
 
-    @Override
-    public Page<Musical> findAllMusicals(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return musicalRepository.findAll(pageable);
-    }
-
-    @Override
-    public Musical findById(Long id) {
-        return musicalRepository.findById(id).orElse(null);
-    }
-
-    @Override
-    @Transactional("jpaTransactionManager")
-    public void deleteMusical(Long id) {
-        Musical musical = musicalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Musical not found"));
-        musicalRepository.delete(musical);
-    }
-
-
-    @Override
-    @Transactional("jpaTransactionManager")
-    public MusicalInfoUpdateResponse updateMusicalInfo(Long id, MusicalInfoUpdateRequest request) {
-        Musical musical = musicalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Musical not found"));
-        musical.setTitle(request.getTitle());
-        musical.setRanking(request.getRanking());
-        musical.setPlace(request.getPlace());
-        musical.setPlaceDetail(request.getPlaceDetail());
-        musical.setTicketingStartDate(request.getTicketingStartDate());
-        musical.setTicketingEndDate(request.getTicketingEndDate());
-        musical.setRunningTime(request.getRunningTime());
-
-        musicalRepository.save(musical);
-        return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(musical);
-
-    }
 
     @Override
     public List<MusicalSeatAvailabilityResponse> checkSeatAvailability(Long id, String date) {
         LocalDate localDate = LocalDate.parse(date);
         return customMusicalRepository.findMusicalSeatAvailability(id, localDate);
     }
+  }
 }
 
 
