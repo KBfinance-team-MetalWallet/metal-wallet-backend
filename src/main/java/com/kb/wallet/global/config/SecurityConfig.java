@@ -85,10 +85,10 @@ public class SecurityConfig {
                                         "/favicon.ico",
                                         "/error",
                                         "/api/home",
-                                        "/api/musicals")
+                                        "/api/musicals/**")
                                 .permitAll()
+                                .antMatchers("/api/musicals/*/seats-availability").authenticated()
                                 .antMatchers("/api/musicals/*/schedule/**").authenticated()
-                                .antMatchers("/api/musicals/*/seat-availability/**").authenticated()
                                 .antMatchers("/api/musicals/*/booking/queue").authenticated()
                                 .antMatchers("/api/musicals/*/seats/reserve").authenticated()
                                 .antMatchers("/api/musicals/*/tickets").authenticated()
