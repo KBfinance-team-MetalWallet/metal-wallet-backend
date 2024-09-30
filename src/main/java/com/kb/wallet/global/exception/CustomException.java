@@ -8,10 +8,10 @@ public class CustomException extends RuntimeException implements CustomError {
 
     private final ErrorCode errorCode;
 
-    protected CustomException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
-    }
+  public CustomException(ErrorCode errorCode) {
+    super(errorCode.getMessage());
+    this.errorCode = errorCode;
+  }
 
   public CustomException(ErrorCode errorCode, String customMessage) {
     super(customMessage);

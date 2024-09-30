@@ -1,8 +1,10 @@
 package com.kb.wallet.member.service;
 
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.dto.request.RegisterMemberRequest;
-import com.kb.wallet.member.dto.response.RegisterMemberResponse;
+import com.kb.wallet.member.dto.response.*;
 import com.kb.wallet.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +17,12 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder encoder;
+
+    @Override
+    public MemberResponse findById(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND_ERROR));
+        return MemberResponse.toMemberResponse(member);
+    }
 
     @Override
     @Transactional(transactionManager = "jpaTransactionManager")

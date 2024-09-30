@@ -29,26 +29,26 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @ComponentScan(basePackages = {
-        "com.kb.wallet"
+    "com.kb.wallet"
 })
 @PropertySource("classpath:application.properties")
 @MapperScan(
 
-        basePackages = {
-                "com.kb.wallet.member.repository",
-                "com.kb.wallet.ticket.repository",
-                "com.kb.wallet.seat.repository",
-                "com.kb.wallet.musical.repository"
-
-        },
-        annotationClass = org.apache.ibatis.annotations.Mapper.class //해당패키지에서 @Mapper어노테이션이 선언된 인터페이스 찾기
-)
-@EnableJpaRepositories(basePackages = {
+    basePackages = {
         "com.kb.wallet.member.repository",
         "com.kb.wallet.ticket.repository",
         "com.kb.wallet.seat.repository",
-        "com.kb.wallet.musical.repository",
-        "com.kb.wallet.account.repository"
+        "com.kb.wallet.musical.repository"
+
+    },
+    annotationClass = org.apache.ibatis.annotations.Mapper.class //해당패키지에서 @Mapper어노테이션이 선언된 인터페이스 찾기
+)
+@EnableJpaRepositories(basePackages = {
+    "com.kb.wallet.member.repository",
+    "com.kb.wallet.ticket.repository",
+    "com.kb.wallet.seat.repository",
+    "com.kb.wallet.musical.repository",
+    "com.kb.wallet.account.repository"
 
 })
 @EnableJpaAuditing
@@ -89,9 +89,8 @@ public class AppConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
         emf.setDataSource(dataSource);
-        emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain",
-                "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain",
-                "com.kb.wallet.seat.domain");
+        emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain", "com.kb.wallet.seat.domain",
+                "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain");
         emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         // JPA Properties 설정
@@ -120,40 +119,42 @@ public class AppConfig {
         SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
         sessionFactory.setDataSource(dataSource);
         sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain,"
-                + "com.kb.wallet.ticket.domain,"
+            + "com.kb.wallet.ticket.domain,"
+            + "com.kb.wallet.seat.domain,"
                 + "com.kb.wallet.musical.domain");
 //    sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain,com.kb.wallet.ticket.domain,com.kb.wallet.musical.domain");
 
-        sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(
-                "classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
 
-        org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
-        configuration.setAutoMappingBehavior(
-                org.apache.ibatis.session.AutoMappingBehavior.PARTIAL); // Set AUTO_MAPPING_BEHAVIOR to PARTIAL
-        configuration.setMapUnderscoreToCamelCase(true);
-        sessionFactory.setConfiguration(configuration);
+    sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(
+        "classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
 
-        return sessionFactory.getObject();
-    }
+    org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
+    configuration.setAutoMappingBehavior(
+        org.apache.ibatis.session.AutoMappingBehavior.PARTIAL); // Set AUTO_MAPPING_BEHAVIOR to PARTIAL
+    configuration.setMapUnderscoreToCamelCase(true);
+    sessionFactory.setConfiguration(configuration);
 
-    @Bean
-    public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
-        return new SqlSessionTemplate(sqlSessionFactory);
-    }
+    return sessionFactory.getObject();
+  }
 
-    // MyBatis 트랜잭션 매니저
-    @Bean
-    public PlatformTransactionManager myBatisTransactionManager(DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
-    }
+  @Bean
+  public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
+    return new SqlSessionTemplate(sqlSessionFactory);
+  }
 
-    // 두 트랜잭션 매니저를 ChainedTransactionManager로 묶음
-    @Bean
-    public PlatformTransactionManager transactionManager(
-            @Qualifier("jpaTransactionManager") PlatformTransactionManager jpaTransactionManager,
-            @Qualifier("myBatisTransactionManager") PlatformTransactionManager myBatisTransactionManager) {
-        return new ChainedTransactionManager(jpaTransactionManager, myBatisTransactionManager);
-    }
+  // MyBatis 트랜잭션 매니저
+  @Bean
+  public PlatformTransactionManager myBatisTransactionManager(DataSource dataSource) {
+    return new DataSourceTransactionManager(dataSource);
+  }
+
+  // 두 트랜잭션 매니저를 ChainedTransactionManager로 묶음
+  @Bean
+  public PlatformTransactionManager transactionManager(
+      @Qualifier("jpaTransactionManager") PlatformTransactionManager jpaTransactionManager,
+      @Qualifier("myBatisTransactionManager") PlatformTransactionManager myBatisTransactionManager) {
+    return new ChainedTransactionManager(jpaTransactionManager, myBatisTransactionManager);
+  }
 
 }
 

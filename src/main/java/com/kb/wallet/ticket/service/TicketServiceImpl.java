@@ -1,53 +1,64 @@
 package com.kb.wallet.ticket.service;
 
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERROR;
+import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
 import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
 
+import com.kb.wallet.global.exception.CustomException;
+
 import com.kb.wallet.member.domain.Member;
+import com.kb.wallet.member.service.MemberService;
+
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.domain.TicketExchange;
-import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
-import com.kb.wallet.ticket.dto.request.TicketRequest;
-import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
-import com.kb.wallet.ticket.dto.response.TicketResponse;
-import com.kb.wallet.ticket.exception.TicketException;
+import com.kb.wallet.ticket.dto.request.*;
+import com.kb.wallet.ticket.dto.response.*;
+
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
-import com.kb.wallet.ticket.repository.TicketMapper;
-import com.kb.wallet.ticket.repository.TicketRepository;
+
+import com.kb.wallet.ticket.repository.*;
+
+import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+
+import org.springframework.data.domain.*;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
 
   private final TicketCheckService ticketCheckService;
-
   private final TicketRepository ticketRepository;
   private final TicketExchangeRepository ticketExchangeRepository;
   private final TicketMapper ticketMapper;
+  private final MemberService memberService;
+
+  private final SecretKey secretKey;
+  private final byte[] iv;
+
 
 
   @Override
   public TicketResponse saveTicket(Member member, TicketRequest ticketRequest) {
-    // 일정 테이블에서 일정 찾아서 넣어줘야 함.
-    // TODO : 임의 member 생성.. 로그인 구현 시 삭제 해야 함
-    Member temp = new Member();
-    temp.setId(1L);
-
+    Member memberFromDB = memberService.getMemberByEmail(member.getEmail());
     // TODO : 뮤지컬이 유효한지 검사
 
     // TODO : 일정이 유효한지 검사
 
     // 티켓 엔티티 생성
-    Ticket bookedTicket = Ticket.createBookedTicket(ticketRequest);
-    Ticket ticket = ticketRepository.save(bookedTicket);
-    return TicketResponse.toTicketResponse(ticket);
+    Ticket bookedTicket = Ticket.createBookedTicket(memberFromDB, ticketRequest);
+    Ticket savedTicket = ticketRepository.save(bookedTicket);
+    return TicketResponse.toTicketResponse(savedTicket);
+  }
+
+  @Override
+  public Ticket findTicket(Long memberId, Long ticketId) {
+    return ticketRepository.findByIdAndMemberId(memberId, ticketId).orElseThrow(() -> new RuntimeException("해당 id의 티켓이 없습니다."));
   }
 
   @Override
@@ -59,9 +70,7 @@ public class TicketServiceImpl implements TicketService {
     return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
   }
 
-  @Override
-  public void updateStatusChecked(long ticketId) {
-    Ticket ticket = findTicketById(ticketId);
+  public void updateStatusChecked(Ticket ticket) {
     ticket.setTicketStatus(TicketStatus.CHECKED);
     ticketRepository.save(ticket);
   }
@@ -114,9 +123,21 @@ public class TicketServiceImpl implements TicketService {
     return TicketExchangeResponse.createTicketExchangeResponse(ticketExchange);
   }
 
-  private Ticket findTicketById(Long id) {
+  @Override
+  public Ticket findTicketById(Long id) {
     return ticketRepository.findById(id)
-        .orElseThrow(() -> new TicketException(TICKET_NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
   }
 
+  @Override
+  public boolean isTicketAvailable(Long memberId, Ticket ticket) {
+    memberService.findById(memberId);
+
+    if(!ticket.getMember().getId().equals(memberId) ||
+        !ticket.getTicketStatus().equals(TicketStatus.BOOKED)) {
+      throw new CustomException(TICKET_STATUS_INVALID);
+    }
+
+    return true;
+  }
 }
