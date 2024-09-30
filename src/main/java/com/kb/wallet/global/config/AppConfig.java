@@ -71,10 +71,9 @@ public class AppConfig {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");  // log4jdbc 사용
         config.setJdbcUrl(
-                "jdbc:log4jdbc:mysql://localhost:3306/shop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8&useUnicode=true");
+                "jdbc:log4jdbc:mysql://localhost:3306/shop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true");
         config.setUsername("root");
         config.setPassword("1234");
-
         config.setConnectionTimeout(30000);
         config.setMinimumIdle(1);
         config.setMaximumPoolSize(5);
