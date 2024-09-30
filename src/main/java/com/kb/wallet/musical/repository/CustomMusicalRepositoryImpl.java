@@ -27,7 +27,8 @@ public class CustomMusicalRepositoryImpl implements CustomMusicalRepository {
                         "FROM Section sec " +
                         "JOIN sec.schedule s " +
                         "JOIN sec.musical m " +
-                        "WHERE m.id = :musicalId AND s.date = :specificDate";
+                        "WHERE m.id = :musicalId AND s.date = :specificDate " +
+                        "ORDER BY s.startTime ASC";
 
         List<MusicalSeatAvailabilityResponse> responses = entityManager.createQuery(jpql,
                         MusicalSeatAvailabilityResponse.class)
