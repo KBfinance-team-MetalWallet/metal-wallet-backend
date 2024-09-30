@@ -5,6 +5,8 @@ import com.kb.wallet.seat.constant.Grade;
 import com.kb.wallet.ticket.domain.Schedule;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -34,10 +36,11 @@ public class Section {
     private Schedule schedule;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Grade grade;
 
     @ColumnDefault("0")
     private int price;
 
-    private int totalSeat;
+    private int availableSeats;
 }
