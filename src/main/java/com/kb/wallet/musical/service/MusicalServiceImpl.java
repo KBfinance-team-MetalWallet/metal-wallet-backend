@@ -4,7 +4,11 @@ import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
+import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
+import com.kb.wallet.musical.repository.CustomMusicalRepository;
 import com.kb.wallet.musical.repository.MusicalRepository;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,11 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MusicalServiceImpl implements MusicalService {
+
     private final MusicalRepository musicalRepository;
+    private final CustomMusicalRepository customMusicalRepository;
 
     @Autowired
-    public MusicalServiceImpl(MusicalRepository musicalRepository) {
+    public MusicalServiceImpl(MusicalRepository musicalRepository,
+            CustomMusicalRepository customMusicalRepository) {
         this.musicalRepository = musicalRepository;
+        this.customMusicalRepository = customMusicalRepository;
     }
 
     @Override
@@ -31,7 +39,7 @@ public class MusicalServiceImpl implements MusicalService {
 
     @Override
     public Page<Musical> findAllMusicals(int page, int size) {
-        Pageable pageable = PageRequest.of(page,size);
+        Pageable pageable = PageRequest.of(page, size);
         return musicalRepository.findAll(pageable);
     }
 
@@ -44,7 +52,7 @@ public class MusicalServiceImpl implements MusicalService {
     @Transactional("jpaTransactionManager")
     public void deleteMusical(Long id) {
         Musical musical = musicalRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Musical not found"));
+                .orElseThrow(() -> new RuntimeException("Musical not found"));
         musicalRepository.delete(musical);
     }
 
@@ -53,7 +61,7 @@ public class MusicalServiceImpl implements MusicalService {
     @Transactional("jpaTransactionManager")
     public MusicalInfoUpdateResponse updateMusicalInfo(Long id, MusicalInfoUpdateRequest request) {
         Musical musical = musicalRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Musical not found"));
+                .orElseThrow(() -> new RuntimeException("Musical not found"));
         musical.setTitle(request.getTitle());
         musical.setRanking(request.getRanking());
         musical.setPlace(request.getPlace());
@@ -65,6 +73,12 @@ public class MusicalServiceImpl implements MusicalService {
         musicalRepository.save(musical);
         return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(musical);
 
+    }
+
+    @Override
+    public List<MusicalSeatAvailabilityResponse> checkSeatAvailability(Long id, String date) {
+        LocalDate localDate = LocalDate.parse(date);
+        return customMusicalRepository.findMusicalSeatAvailability(id, localDate);
     }
 }
 
