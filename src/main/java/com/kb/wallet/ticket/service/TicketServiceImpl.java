@@ -4,6 +4,7 @@ import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERRO
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
 import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
 
+import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
 
 import com.kb.wallet.member.domain.Member;
@@ -62,7 +63,7 @@ public class TicketServiceImpl implements TicketService {
   public Page<TicketResponse> findAllBookedTickets(String email, int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<Ticket> ticketsByMemberIdAndTicketStatus =
-        ticketRepository.findTicketsByMemberIdAndTicketStatus(email, TicketStatus.BOOKED, pageable);
+        ticketRepository.findTicketsByMemberAndTicketStatus(email, TicketStatus.BOOKED, pageable);
     return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
   }
 
@@ -72,14 +73,18 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public void deleteTicket(Member member, long ticketId) {
-    Ticket ticket = findTicketById(ticketId);
-
-    ticketCheckService.checkTicketOwner(ticket, member);
-    ticketCheckService.checkIfTicketIsBooked(ticket);
+  public void cancelTicket(String email, Long ticketId) {
+    Ticket ticket = ticketRepository.findByMember(ticketId, email)
+        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+    if(!ticket.isCancellable())
+      throw new CustomException(TICKET_STATUS_INVALID);
 
     ticket.setTicketStatus(TicketStatus.CANCELED);
     ticketRepository.save(ticket);
+  }
+
+  private void findByMemberAndTicketStatus() {
+
   }
 
   @Override

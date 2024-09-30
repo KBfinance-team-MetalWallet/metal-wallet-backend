@@ -17,7 +17,7 @@ public interface TicketService {
   TicketResponse saveTicket(Member member, TicketRequest ticketRequest);
 
 
-  void deleteTicket(Member member, long ticketId);
+  void cancelTicket(String email, Long ticketId);
   boolean isTicketAvailable(Long memberId, Ticket ticket);
   void updateStatusChecked(Ticket ticket);
   TicketExchangeResponse createTicketExchange(Member member,
