@@ -49,6 +49,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Member getMemberByEmail(String email) {
         return memberRepository.getByEmail(email)
-                .orElseThrow(() -> new CustomException(MEMBER_EMAIL_NOT_FOUND, "해당 이메일의 사용자가 없습니다!"));
+                .orElseThrow(() -> new CustomException(MEMBER_EMAIL_NOT_FOUND));
     }
 }
