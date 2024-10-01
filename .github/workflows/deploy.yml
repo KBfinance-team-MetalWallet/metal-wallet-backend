@@ -29,7 +29,7 @@ jobs:
         run: mv build/libs/*.war build/libs/metal-wallet-server.war
 
       - name: WAR 파일이 존재하는지 확인
-        run: ls build/libs/metal-wallet-server.war
+        run: cd build/libs
 
       - name: SCP로 EC2에 빌드된 파일 전송
         uses: appleboy/scp-action@v0.1.7
@@ -37,9 +37,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: build/libs/metal-wallet-server.war
+          source: metal-wallet-server.war
           target: /home/ubuntu/metal-wallet-server/tobe
-          strip-components: 2
 
       - name: EC2에서 서버 디렉토리 업데이트 및 application.properties 파일 생성
         uses: appleboy/ssh-action@v0.1.7
