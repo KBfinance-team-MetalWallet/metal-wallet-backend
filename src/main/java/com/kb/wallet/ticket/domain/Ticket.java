@@ -39,7 +39,7 @@ public class Ticket {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id")
   private Member member;
 
@@ -52,7 +52,7 @@ public class Ticket {
   // enum의 값을 index가 아닌 텍스트 값 그대로 저장하고 싶을 때 위의 어노테이션 사용
   private TicketStatus ticketStatus;
 
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "seat_id")  // 외래 키 컬럼 지정
   private Seat seat;
 
@@ -80,5 +80,13 @@ public class Ticket {
       .validUntil(musicalStartDateTime)
       .cancelUntil(cancelUntilDateTime)
       .build();
+  }
+  
+  public boolean isCancellable() {
+    return this.ticketStatus != TicketStatus.CANCELED && this.ticketStatus != TicketStatus.CHECKED;
+  }
+
+  public boolean isExchangeRequested() {
+    return this.ticketStatus == TicketStatus.EXCHANGE_REQUESTED;
   }
 }

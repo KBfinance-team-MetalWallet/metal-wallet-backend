@@ -1,9 +1,11 @@
 package com.kb.wallet.ticket.service;
 
+import static com.kb.wallet.global.common.status.ErrorCode.TICKET_EXCHANGE_NOT_FOUND_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
 import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
 
+import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
@@ -41,6 +43,7 @@ public class TicketServiceImpl implements TicketService {
   private final SeatService seatService;
 
 
+
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
   public List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest) {
@@ -60,7 +63,7 @@ public class TicketServiceImpl implements TicketService {
 
       // 티켓 저장
       Ticket savedTicket = ticketRepository.save(bookedTicket);
-
+      
       // 티켓 응답 추가
       responses.add(TicketResponse.toTicketResponse(savedTicket));
 
@@ -81,11 +84,10 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public Page<TicketResponse> findAllBookedTickets(Long id, int page, int size) {
-    id = 1L; // TODO: 이거 로그인 구현 시 지워야 함
+  public Page<TicketResponse> findAllBookedTickets(String email, int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<Ticket> ticketsByMemberIdAndTicketStatus =
-      ticketRepository.findTicketsByMemberIdAndTicketStatus(id, TicketStatus.BOOKED, pageable);
+        ticketRepository.findTicketsByMemberAndTicketStatus(email, TicketStatus.BOOKED, pageable);
     return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
   }
 
@@ -95,14 +97,32 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public void deleteTicket(Member member, long ticketId) {
-    Ticket ticket = findTicketById(ticketId);
-
-    ticketCheckService.checkTicketOwner(ticket, member);
-    ticketCheckService.checkIfTicketIsBooked(ticket);
+  public void cancelTicket(String email, Long ticketId) {
+    Ticket ticket = ticketRepository.findByMember(ticketId, email)
+        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+    if(!ticket.isCancellable())
+      throw new CustomException(TICKET_STATUS_INVALID);
 
     ticket.setTicketStatus(TicketStatus.CANCELED);
     ticketRepository.save(ticket);
+  }
+
+  @Override
+  public void cancelTicketExchange(String email, Long ticketId) {
+    Ticket ticket = ticketRepository.findByMember(ticketId, email)
+        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+
+    if(ticket.isExchangeRequested()) {
+      TicketExchange ticketExchange = ticketExchangeRepository.findByTicketId(ticketId)
+          .orElseThrow(() -> new CustomException(TICKET_EXCHANGE_NOT_FOUND_ERROR));
+
+      ticket.setTicketStatus(TicketStatus.BOOKED);
+      ticketRepository.save(ticket);
+
+      ticketExchangeRepository.delete(ticketExchange);
+    } else {
+      throw new CustomException(TICKET_STATUS_INVALID);
+    }
   }
 
   @Override
