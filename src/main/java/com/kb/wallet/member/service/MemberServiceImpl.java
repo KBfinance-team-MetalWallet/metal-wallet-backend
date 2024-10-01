@@ -1,5 +1,7 @@
 package com.kb.wallet.member.service;
 
+import static com.kb.wallet.global.common.status.ErrorCode.MEMBER_EMAIL_NOT_FOUND;
+
 import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
@@ -47,6 +49,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Member getMemberByEmail(String email) {
         return memberRepository.getByEmail(email)
-                .orElseThrow(() -> new RuntimeException("해당 이메일의 사용자가 없습니다!"));
+                .orElseThrow(() -> new CustomException(MEMBER_EMAIL_NOT_FOUND));
     }
 }

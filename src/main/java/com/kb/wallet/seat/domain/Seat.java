@@ -1,7 +1,6 @@
 package com.kb.wallet.seat.domain;
 
 import com.kb.wallet.ticket.domain.Schedule;
-import com.kb.wallet.ticket.domain.Ticket;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,7 +8,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,4 +35,11 @@ public class Seat {
   @Column
   private boolean isAvailable;
 
+  public void markAsUnavailable() {
+    this.isAvailable = false;
+  }
+
+  public void markAsAvailable() {
+    this.isAvailable = true;
+  }
 }

@@ -80,7 +80,7 @@ public class AppConfig {
     config.setIdleTimeout(600000);
     config.setMaxLifetime(1800000);
     config.setAutoCommit(true);
-
+    
     return new HikariDataSource(config);
   }
 

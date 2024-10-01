@@ -41,7 +41,6 @@ public class MemberController {
     @PostMapping("/register")
     public ResponseEntity<RegisterMemberResponse> registerMember(
             @RequestBody @Valid RegisterMemberRequest request) {
-        log.info("Registering member: {}", request);
         RegisterMemberResponse response = memberService.registerMember(request);
         return ResponseEntity.ok(response);
     }
@@ -49,8 +48,6 @@ public class MemberController {
     @PostMapping("/login")
     public ResponseEntity<HashMap<String, Object>> loginMember(
             @RequestBody @Valid LoginMemberRequest request) {
-        log.info("Login member: {}", request);
-
         HashMap<String, Object> map = new HashMap<>();
 
         try {
