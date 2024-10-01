@@ -10,10 +10,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MusicalRepository extends JpaRepository<Musical, Long> {
 
-    Page<Musical> findAll(Pageable pageable);
+  Page<Musical> findAll(Pageable pageable);
 
-    @Override
-    Optional<Musical> findById(Long musicalId);
+  @Override
+  Optional<Musical> findById(Long musicalId);
 
 }
 

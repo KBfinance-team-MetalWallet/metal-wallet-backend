@@ -57,6 +57,7 @@ public enum ErrorCode {
   // Member Errors
   MEMBER_NOT_FOUND_ERROR(404, "ME001", "사용자를 찾을 수 없습니다."),
   MEMBER_STATUS_INVALID(400, "ME002", "사용자의 ID가 유효하지 않습니다"),
+  MEMBER_EMAIL_NOT_FOUND(404, "ME003", "해당 사용자의 이메일을 찾을 수 없습니다."),
   // Ticket Errors
   TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다."),
   TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다."),
@@ -72,17 +73,22 @@ public enum ErrorCode {
 
   // Account Errors
   ACCOUNT_NOT_FOUND_ERROR(404, "AC001", "계좌를 찾을 수 없습니다"),
+
+  ACCOUNT_NOT_MATCH(404, "AC002", "계좌 명의가 불일치합니다."),
+
   // Transaction Insert Error
   INSERT_ERROR(200, "9999", "Transaction 삽입 오류 발생"),
   // Transaction Update Error
   UPDATE_ERROR(200, "9999", "Transaction 수정 오류 발생"),
   // Transaction Delete Error
+
   DELETE_ERROR(200, "9999", "Transaction 삭제 오류 발생"),
 
   // Seats Errors
   SEAT_NOT_FOUND_ERROR(404, "SE001", "좌석을 찾을 수 없습니다."),
   SEAT_ALREADY_BOOKED_ERROR(409, "SE002", "이미 예약된 좌석입니다."),
   NOT_ENOUGH_AVAILABLE_SEATS_ERROR(400, "SE003", "구역에 사용 가능한 좌석이 충분하지 않습니다.");
+
 
 
   /**

@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface CustomMusicalRepository {
 
-    List<MusicalSeatAvailabilityResponse> findMusicalSeatAvailability(Long musicalId,
-            LocalDate specificDate);
+  List<MusicalSeatAvailabilityResponse> findMusicalSeatAvailability(Long musicalId,
+      LocalDate specificDate);
 }

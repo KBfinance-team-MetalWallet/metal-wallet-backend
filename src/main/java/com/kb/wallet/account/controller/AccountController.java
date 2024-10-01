@@ -6,6 +6,7 @@ import com.kb.wallet.account.service.AccountService;
 import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.member.domain.Member;
 import java.util.List;
+import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,16 +39,16 @@ public class AccountController {
     @PostMapping
     public ApiResponse<Void> createAccount(
             @AuthenticationPrincipal Member member,
-            @RequestBody AccountRequest accountRequest) {
+            @RequestBody @Valid AccountRequest accountRequest) {
         accountService.createAccount(accountRequest, member.getEmail());
         return ApiResponse.ok();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{accountId}")
     public ApiResponse<Void> deleteAccount(
             @AuthenticationPrincipal Member member,
-            @PathVariable(name = "id") Long id) {
-        accountService.deleteAccount(id, member.getEmail());
+            @PathVariable(name = "accountId") Long accountId) {
+        accountService.deleteAccount(accountId, member.getEmail());
         return ApiResponse.ok();
     }
 }
