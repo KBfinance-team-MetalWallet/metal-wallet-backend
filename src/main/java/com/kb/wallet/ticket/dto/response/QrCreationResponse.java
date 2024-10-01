@@ -1,5 +1,6 @@
 package com.kb.wallet.ticket.dto.response;
 
+import java.security.PrivateKey;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,15 +13,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class QrCreationResponse {
-  private String token;
-  private byte[] qrBytes;
-  private int second;
 
-  public static QrCreationResponse toQrCreationResponse(String token, byte[] qrBytes, int second) {
+  private String token;
+  private String encodedTicketInfo;
+  private int second;
+  private PrivateKey privateKey;
+
+  public static QrCreationResponse toQrCreationResponse(String token, String encodedTicketInfo,
+      int second, PrivateKey privateKey) {
     return QrCreationResponse.builder()
         .token(token)
-        .qrBytes(qrBytes)
+        .encodedTicketInfo(encodedTicketInfo)
         .second(second)
+        .privateKey(privateKey)
         .build();
   }
 }
