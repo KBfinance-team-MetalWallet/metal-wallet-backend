@@ -1,10 +1,12 @@
 package com.kb.wallet.member.service;
 
 import static com.kb.wallet.global.common.status.ErrorCode.MEMBER_EMAIL_NOT_FOUND;
+import static com.kb.wallet.global.common.status.ErrorCode.PIN_NUMBER_NOT_MATCH;
 
 import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
+import com.kb.wallet.member.dto.request.PinNumberVerificationRequest;
 import com.kb.wallet.member.dto.request.RegisterMemberRequest;
 import com.kb.wallet.member.dto.response.*;
 import com.kb.wallet.member.repository.MemberRepository;
@@ -50,5 +52,13 @@ public class MemberServiceImpl implements MemberService {
     public Member getMemberByEmail(String email) {
         return memberRepository.getByEmail(email)
                 .orElseThrow(() -> new CustomException(MEMBER_EMAIL_NOT_FOUND));
+    }
+
+    @Override
+    public void checkPassword(String email, PinNumberVerificationRequest passwordRequest) {
+        Member member = getMemberByEmail(email);
+        if(encoder.matches(member.getPinNumber(), passwordRequest.getPinNumber())){
+            throw new CustomException(PIN_NUMBER_NOT_MATCH);
+        }
     }
 }

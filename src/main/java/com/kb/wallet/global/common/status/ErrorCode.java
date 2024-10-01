@@ -58,6 +58,7 @@ public enum ErrorCode {
   MEMBER_NOT_FOUND_ERROR(404, "ME001", "사용자를 찾을 수 없습니다."),
   MEMBER_STATUS_INVALID(400, "ME002", "사용자의 ID가 유효하지 않습니다"),
   MEMBER_EMAIL_NOT_FOUND(404, "ME003", "해당 사용자의 이메일을 찾을 수 없습니다."),
+  PIN_NUMBER_NOT_MATCH(404, "ME004", "일치하지 않는 핀 번호입니다."),
   // Ticket Errors
   TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다."),
   TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다."),

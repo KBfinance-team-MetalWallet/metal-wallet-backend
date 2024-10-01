@@ -1,18 +1,17 @@
 package com.kb.wallet.ticket.controller;
 
+import com.google.zxing.WriterException;
 import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
-import com.kb.wallet.qrcode.dto.request.DecryptionRequest;
-import com.kb.wallet.qrcode.dto.response.DecryptionResponse;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
-import com.kb.wallet.ticket.dto.response.QrCreationResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.service.TicketService;
+import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,65 +42,61 @@ public class TicketController {
 
   @PostMapping
   public ApiResponse<List<TicketResponse>> createTicket(
-      @AuthenticationPrincipal Member member,
-      @RequestBody TicketRequest ticketRequest) {
+    @AuthenticationPrincipal Member member,
+    @RequestBody TicketRequest ticketRequest) {
     List<TicketResponse> tickets = ticketService.saveTicket(member.getEmail(), ticketRequest);
     return ApiResponse.created(tickets);
   }
 
   @GetMapping
   public ApiResponse<Page<TicketResponse>> getUserTickets(
-      @AuthenticationPrincipal Member member,
-      @RequestParam(name = "page", defaultValue = "0") int page,
-      @RequestParam(name = "size", defaultValue = "10") int size) {
+    @AuthenticationPrincipal Member member,
+    @RequestParam(name = "page", defaultValue = "0") int page,
+    @RequestParam(name = "size", defaultValue = "10") int size) {
     Page<TicketResponse> tickets = ticketService.findAllBookedTickets(member.getEmail(), page,
-        size);
+      size);
     return ApiResponse.ok(tickets);
   }
 
   @GetMapping("/{ticketId}")
-  public ApiResponse<Ticket> getTicket(
-      @AuthenticationPrincipal Member member,
-      @PathVariable(name = "ticketId") Long ticketId) {
-    Member findMember = memberService.getMemberByEmail(member.getEmail());
-    Ticket ticket = ticketService.findTicket(2L, ticketId);
-//    Ticket ticket = ticketService.findTicket(findMember.getId(), ticketId);
-    return ApiResponse.ok(ticket);
+  public ApiResponse<TicketResponse> getTicket(
+    @AuthenticationPrincipal Member member,
+    @PathVariable(name = "ticketId") Long ticketId) {
+    TicketResponse response = ticketService.findTicket(member.getEmail(), ticketId);
+    return ApiResponse.ok(response);
   }
 
   @PostMapping("{ticketId}/qr")
-  public ResponseEntity<QrCreationResponse> generateQRCode(
-      @AuthenticationPrincipal Member member,
-      @PathVariable(name = "ticketId") Long ticketId) throws Exception {
-//    Member loginedMemeber = memberService.getMemberByEmail(member.getEmail());
-    log.info("Generating QR code. Member ID: {}, Ticket ID: {}", member.getId(), ticketId);
-    QrCreationResponse response = ticketService.generateQRCodeData(member.getEmail(), ticketId);
+  public void generateQRCode(
+//      public ResponseEntity<QrCreationResponse> generateQRCode (
+    @AuthenticationPrincipal Member member,
+    @PathVariable(name = "ticketId") Long ticketId) throws IOException, WriterException {
+
+    String token = tokenProvider.createToken(ticketId);
+    Member loginedMemeber = memberService.getMemberByEmail(member.getEmail());
 
     //TODO: byte[] -> String으로 변환할 것
     //  String encryptedData = util.encrypt()
+
     //TODO: qr 생성은 클라이언트에서 처리하도록 변경할 것
+
     //TODO: qrCreationResponse로 반환해야함 = qrCreationResponse
     //  이 DTO에는 token, qrBytes, secord값이 담김
-    return ResponseEntity.ok(response);
-
+//    return ResponseEntity.ok(qrCreationResponse);
   }
 
-  @PutMapping("use/{ticketId}")
-  // TODO : @PreAuthorize("hasRole('ADMIN')")
-  // TODO : 시큐리티 필터 없어서 아직 여긴 role에 따른 인가 구분 못함
-  public ResponseEntity<DecryptionResponse> updateTicket(
-      @AuthenticationPrincipal Member member,
-      @PathVariable(name = "ticketId") Long ticketId,
-      @RequestBody DecryptionRequest decryptionRequest) throws Exception {
-    System.out.println(" ************************");
+  @PutMapping("/use")
+//  @PreAuthorize("hasRole('ADMIN')")
+  // 시큐리티 필터 없어서 아직 여긴 role에 따른 인가 구분 못함
+  public ResponseEntity<?> updateTicket(
+    @AuthenticationPrincipal Member member) {
     //TODO: QrCreationResponse qrCreationResponse 를 request로 받는다
     //  복호화
-    //  qr 해서 받는 데이터 token, encryptedData, second
-    //  encryptedData 디코딩 -> 예약자의 memberId, 티켓 ID
+    //  qr 해서 받는 데이터 token, qrBytes, second
+    //  qrBytes 디코딩 -> 예약자의 memberId, 티켓 ID
     //TODO: 동시성 처리
-    DecryptionResponse decryptionResponse = ticketService.useTicket(member, decryptionRequest);
-
     Ticket ticket = ticketService.findTicketById(2L);
+
     if (ticketService.isTicketAvailable(2L, ticket)) {
       ticketService.updateStatusChecked(ticket);
     }
@@ -118,21 +113,21 @@ public class TicketController {
 
   @GetMapping("/exchange")
   public ResponseEntity<Page<TicketExchangeResponse>> getUserExchangedTickets(
-      @AuthenticationPrincipal Member member,
-      @RequestParam(name = "page", defaultValue = "0") int page,
-      @RequestParam(name = "size", defaultValue = "10") int size
+    @AuthenticationPrincipal Member member,
+    @RequestParam(name = "page", defaultValue = "0") int page,
+    @RequestParam(name = "size", defaultValue = "10") int size
   ) {
     Page<TicketExchangeResponse> userExchangedTickets = ticketService.getUserExchangedTickets(
-        member, page, size);
+      member, page, size);
     return ResponseEntity.ok(userExchangedTickets);
   }
 
   @PostMapping("/exchange")
   public ResponseEntity<TicketExchangeResponse> createTicketExchange(
-      @AuthenticationPrincipal Member member,
-      @RequestBody TicketExchangeRequest exchangeRequest) {
+    @AuthenticationPrincipal Member member,
+    @RequestBody TicketExchangeRequest exchangeRequest) {
     TicketExchangeResponse ticketExchange = ticketService.createTicketExchange(member,
-        exchangeRequest);
+      exchangeRequest);
     return ResponseEntity.ok(ticketExchange);
   }
 
