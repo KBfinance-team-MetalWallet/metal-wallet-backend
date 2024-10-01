@@ -61,9 +61,11 @@ public class TicketController {
 
   @GetMapping("/{ticketId}")
   public ApiResponse<Ticket> getTicket(
+      @AuthenticationPrincipal Member member,
       @PathVariable(name = "ticketId") Long ticketId) {
-    //TODO: MemberId 로그인 연동
-    Ticket ticket = ticketService.findTicket(1L, ticketId);
+    Member findMember = memberService.getMemberByEmail(member.getEmail());
+    Ticket ticket = ticketService.findTicket(2L, ticketId);
+//    Ticket ticket = ticketService.findTicket(findMember.getId(), ticketId);
     return ApiResponse.ok(ticket);
   }
 
