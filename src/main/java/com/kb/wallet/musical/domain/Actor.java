@@ -23,18 +23,18 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Actor {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    private String name;
+  private String name;
 
-    private String characterName;
+  private String characterName;
 
-    private String imageUrl;
+  private String imageUrl;
 
-    @ManyToOne
-    @JoinColumn(name = "schedule_id")
-    private Schedule schedule;
+  @ManyToOne
+  @JoinColumn(name = "schedule_id")
+  private Schedule schedule;
 
 }

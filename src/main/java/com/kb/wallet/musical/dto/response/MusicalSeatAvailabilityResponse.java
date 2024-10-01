@@ -10,13 +10,13 @@ import lombok.Setter;
 @Getter
 public class MusicalSeatAvailabilityResponse {
 
-    private long scheduleId;
-    private String time;
-    private List<String> actorNames;
-    private List<SectionAvailability> sections;
+  private long scheduleId;
+  private String time;
+  private List<String> actorNames;
+  private List<SectionAvailability> sections;
 
-    public MusicalSeatAvailabilityResponse(long scheduleId, LocalTime time) {
-        this.scheduleId = scheduleId;
-        this.time = time.toString();
-    }
+  public MusicalSeatAvailabilityResponse(long scheduleId, LocalTime time) {
+    this.scheduleId = scheduleId;
+    this.time = time.toString();
+  }
 }
