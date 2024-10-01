@@ -96,7 +96,7 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   public Ticket findTicket(Long memberId, Long ticketId) {
-    return ticketRepository.findByIdAndMemberId(memberId, ticketId)
+    return ticketRepository.findByIdAndMemberId(ticketId, memberId)
         .orElseThrow(() -> new RuntimeException("해당 id의 티켓이 없습니다."));
   }
 
