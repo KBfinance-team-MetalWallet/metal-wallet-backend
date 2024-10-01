@@ -3,7 +3,7 @@ name: Deploy To EC2
 on:
   push:
     branches:
-      - main
+      - deploy/ljr/dev
 
 jobs:
   deploy:
