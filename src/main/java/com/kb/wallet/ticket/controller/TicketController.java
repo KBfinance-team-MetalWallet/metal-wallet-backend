@@ -50,15 +50,16 @@ public class TicketController {
 
   @GetMapping
   public ApiResponse<Page<TicketResponse>> getUserTickets(
-      @AuthenticationPrincipal Member member,
-      @RequestParam(name = "page", defaultValue = "0") int page,
-      @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<TicketResponse> tickets = ticketService.findAllBookedTickets(member.getEmail(), page, size);
+    @AuthenticationPrincipal Member member,
+    @RequestParam(name = "page", defaultValue = "0") int page,
+    @RequestParam(name = "size", defaultValue = "10") int size) {
+    Page<TicketResponse> tickets = ticketService.findAllBookedTickets(member.getEmail(), page,
+      size);
     return ApiResponse.ok(tickets);
   }
 
   @GetMapping("/{ticketId}")
-  public ResponseEntity<Ticket> getTicket(
+  public ApiResponse<Ticket> getTicket(
     @PathVariable(name = "ticketId") Long ticketId) {
     //TODO: MemberId 로그인 연동
     Ticket ticket = ticketService.findTicket(1L, ticketId);
@@ -105,7 +106,7 @@ public class TicketController {
 
   @DeleteMapping("/{ticketId}")
   public ApiResponse<Void> cancelTicket(
-      @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
+    @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
     ticketService.cancelTicket(member.getEmail(), ticketId);
     return ApiResponse.ok();
   }
@@ -132,7 +133,7 @@ public class TicketController {
 
   @DeleteMapping("/exchange/{ticketId}")
   public ApiResponse<Void> cancelTicketExchange(
-      @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
+    @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
     ticketService.cancelTicketExchange(member.getEmail(), ticketId);
     return ApiResponse.ok();
   }
