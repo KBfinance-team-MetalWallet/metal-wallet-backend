@@ -12,6 +12,7 @@ import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -56,6 +57,33 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 public class AppConfig {
 
+  @Value("${spring.datasource.url}")
+  private String dbUrl;
+
+  @Value("${spring.datasource.username}")
+  private String dbUsername;
+
+  @Value("${spring.datasource.password}")
+  private String dbPassword;
+
+  @Value("${spring.datasource.hikari.minimum-idle}")
+  private int minimumIdle;
+
+  @Value("${spring.datasource.hikari.maximum-pool-size}")
+  private int maximumPoolSize;
+
+  @Value("${spring.datasource.hikari.connection-timeout}")
+  private long connectionTimeout;
+
+  @Value("${spring.datasource.hikari.idle-timeout}")
+  private long idleTimeout;
+
+  @Value("${spring.datasource.hikari.max-lifetime}")
+  private long maxLifetime;
+
+  @Value("${spring.datasource.driver-class-name}")
+  private String driverClassName;
+
   @Bean
   public ObjectMapper objectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
@@ -69,18 +97,16 @@ public class AppConfig {
   @Bean
   public DataSource dataSource() {
     HikariConfig config = new HikariConfig();
-    config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");  // log4jdbc 사용
-    config.setJdbcUrl(
-        "jdbc:log4jdbc:mysql://localhost:3306/shop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true");
-    config.setUsername("root");
-    config.setPassword("1234");
-    config.setConnectionTimeout(30000);
-    config.setMinimumIdle(1);
-    config.setMaximumPoolSize(5);
-    config.setIdleTimeout(600000);
-    config.setMaxLifetime(1800000);
+    config.setDriverClassName(driverClassName);
+    config.setJdbcUrl(dbUrl);
+    config.setUsername(dbUsername);
+    config.setPassword(dbPassword);
+    config.setConnectionTimeout(connectionTimeout);
+    config.setMinimumIdle(minimumIdle);
+    config.setMaximumPoolSize(maximumPoolSize);
+    config.setIdleTimeout(idleTimeout);
+    config.setMaxLifetime(maxLifetime);
     config.setAutoCommit(true);
-    
     return new HikariDataSource(config);
   }
 
@@ -123,7 +149,6 @@ public class AppConfig {
         + "com.kb.wallet.ticket.domain,"
         + "com.kb.wallet.seat.domain,"
         + "com.kb.wallet.musical.domain");
-//    sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain,com.kb.wallet.ticket.domain,com.kb.wallet.musical.domain");
 
     sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(
         "classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
@@ -157,5 +182,3 @@ public class AppConfig {
   }
 
 }
-
-
