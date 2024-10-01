@@ -33,7 +33,7 @@ public class Musical {
   private String title;
 
   @NotNull
-  private int ranking = 0;
+  private int ranking;
 
   @NotNull
   private String place;
