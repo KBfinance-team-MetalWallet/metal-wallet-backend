@@ -38,7 +38,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: ./build/libs/metal-wallet-server.war
-          target: /home/ubuntu/metal-wallet-server/tobe/metal-wallet-server.war
+          target: /home/ubuntu/metal-wallet-server/tobe
 
       - name: EC2에서 파일 확인
         uses: appleboy/ssh-action@v0.1.7
@@ -58,7 +58,7 @@ jobs:
           script: |
             rm -rf /home/ubuntu/metal-wallet-server/current
             mkdir /home/ubuntu/metal-wallet-server/current
-            mv /home/ubuntu/metal-wallet-server/tobe/metal-wallet-server.war /home/ubuntu/metal-wallet-server/current/metal-wallet-server.war
+            mv /home/ubuntu/metal-wallet-server/tobe/build/libs/metal-wallet-server.war /home/ubuntu/metal-wallet-server/current/metal-wallet-server.war
             echo "${{ secrets.APPLICATION_PROPERTIES }}" > /home/ubuntu/metal-wallet-server/current/application.properties
             cd /home/ubuntu/metal-wallet-server/current
             sudo fuser -k -n tcp 8080 || true
