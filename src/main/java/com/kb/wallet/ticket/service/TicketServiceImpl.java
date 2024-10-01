@@ -5,26 +5,29 @@ import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID
 import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
 
 import com.kb.wallet.global.exception.CustomException;
-
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
-
+import com.kb.wallet.seat.domain.Seat;
+import com.kb.wallet.seat.service.SeatService;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.domain.TicketExchange;
-import com.kb.wallet.ticket.dto.request.*;
-import com.kb.wallet.ticket.dto.response.*;
-
+import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
+import com.kb.wallet.ticket.dto.request.TicketRequest;
+import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
-
-import com.kb.wallet.ticket.repository.*;
-
+import com.kb.wallet.ticket.repository.TicketRepository;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.data.domain.*;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -34,28 +37,47 @@ public class TicketServiceImpl implements TicketService {
   private final TicketCheckService ticketCheckService;
   private final TicketRepository ticketRepository;
   private final TicketExchangeRepository ticketExchangeRepository;
-  private final TicketMapper ticketMapper;
   private final MemberService memberService;
-
-
+  private final SeatService seatService;
 
 
   @Override
-  public TicketResponse saveTicket(Member member, TicketRequest ticketRequest) {
-    Member memberFromDB = memberService.getMemberByEmail(member.getEmail());
-    // TODO : 뮤지컬이 유효한지 검사
+  @Transactional(transactionManager = "jpaTransactionManager")
+  public List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest) {
+    Member member = memberService.getMemberByEmail(email);
 
-    // TODO : 일정이 유효한지 검사
+    List<TicketResponse> responses = new ArrayList<>();
 
-    // 티켓 엔티티 생성
-    Ticket bookedTicket = Ticket.createBookedTicket(memberFromDB, ticketRequest);
-    Ticket savedTicket = ticketRepository.save(bookedTicket);
-    return TicketResponse.toTicketResponse(savedTicket);
+    for (Long seatId : ticketRequest.getSeatId()) {
+      Seat seat = seatService.getSeatById(seatId);
+
+      // 이미 예약된 좌석인지 체크
+      seatService.checkSeatAvailability(seat);
+
+      // 티켓 엔티티 생성
+      Ticket bookedTicket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(),
+        seat);
+
+      // 티켓 저장
+      Ticket savedTicket = ticketRepository.save(bookedTicket);
+
+      // 티켓 응답 추가
+      responses.add(TicketResponse.toTicketResponse(savedTicket));
+
+      // 해당 좌석은 더 이상 예약할 수 없도록 설정
+      seat.markAsUnavailable();
+
+      // 구역별 예약 가능 좌석 수 업데이트
+      seat.getSection().decrementAvailableSeats();
+    }
+
+    return responses;
   }
 
   @Override
   public Ticket findTicket(Long memberId, Long ticketId) {
-    return ticketRepository.findByIdAndMemberId(memberId, ticketId).orElseThrow(() -> new RuntimeException("해당 id의 티켓이 없습니다."));
+    return ticketRepository.findByIdAndMemberId(memberId, ticketId)
+      .orElseThrow(() -> new RuntimeException("해당 id의 티켓이 없습니다."));
   }
 
   @Override
@@ -63,7 +85,7 @@ public class TicketServiceImpl implements TicketService {
     id = 1L; // TODO: 이거 로그인 구현 시 지워야 함
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<Ticket> ticketsByMemberIdAndTicketStatus =
-        ticketRepository.findTicketsByMemberIdAndTicketStatus(id, TicketStatus.BOOKED, pageable);
+      ticketRepository.findTicketsByMemberIdAndTicketStatus(id, TicketStatus.BOOKED, pageable);
     return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
   }
 
@@ -85,22 +107,22 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   public Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page,
-      int size) {
+    int size) {
     member = Member.builder()
-        .id(1L)
-        .build();
+      .id(1L)
+      .build();
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<TicketExchange> ticketExchanges = ticketExchangeRepository.findByTicketMember(member,
-        pageable);
+      pageable);
     return ticketExchanges.map(TicketExchangeResponse::createTicketExchangeResponse);
   }
 
   @Override
   public TicketExchangeResponse createTicketExchange(Member member,
-      TicketExchangeRequest exchangeRequest) {
+    TicketExchangeRequest exchangeRequest) {
     member = Member.builder()
-        .id(1L)
-        .build();
+      .id(1L)
+      .build();
     Ticket ticket = findTicketById(exchangeRequest.getTicketId());
 
     ticketCheckService.checkTicketOwner(ticket, member);
@@ -123,15 +145,15 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public Ticket findTicketById(Long id) {
     return ticketRepository.findById(id)
-        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
   }
 
   @Override
   public boolean isTicketAvailable(Long memberId, Ticket ticket) {
     memberService.findById(memberId);
 
-    if(!ticket.getMember().getId().equals(memberId) ||
-        !ticket.getTicketStatus().equals(TicketStatus.BOOKED)) {
+    if (!ticket.getMember().getId().equals(memberId) ||
+      !ticket.getTicketStatus().equals(TicketStatus.BOOKED)) {
       throw new CustomException(TICKET_STATUS_INVALID);
     }
 
