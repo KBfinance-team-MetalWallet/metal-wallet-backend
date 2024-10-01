@@ -5,6 +5,7 @@ import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
+import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.repository.CustomMusicalRepository;
@@ -34,9 +35,10 @@ public class MusicalServiceImpl implements MusicalService {
 
     @Override
     @Transactional("jpaTransactionManager")
-    public Musical saveMusical(MusicalCreationRequest request) {
+    public MusicalCreationResponse saveMusical(MusicalCreationRequest request) {
         Musical musical = MusicalCreationRequest.toMusical(request);
-        return musicalRepository.save(musical);
+        Musical saved = musicalRepository.save(musical);
+        return MusicalCreationResponse.toMusical(saved);
     }
 
     @Override
@@ -53,17 +55,10 @@ public class MusicalServiceImpl implements MusicalService {
     @Override
     @Transactional("jpaTransactionManager")
     public void deleteMusical(Long musicalId) {
-        try {
-            Musical musical = musicalRepository.findById(musicalId)
-                    .orElseThrow(
-                            () -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
-                                    "요청한 뮤지컬을 찾을 수 없습니다."));
-            musicalRepository.delete(musical);
-        } catch (CustomException ce) {
-            throw ce;
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "뮤지컬 삭제 중 오류가 발생했습니다.");
-        }
+        Musical musical = musicalRepository.findById(musicalId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
+                                "요청한 뮤지컬을 찾을 수 없습니다."));
+        musicalRepository.delete(musical);
     }
 
     @Override

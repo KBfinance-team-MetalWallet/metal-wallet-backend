@@ -3,6 +3,7 @@ package com.kb.wallet.musical.service;
 import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
+import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import java.util.List;
@@ -11,7 +12,7 @@ import org.springframework.data.domain.Page;
 public interface MusicalService {
 
     // 새로운 뮤지컬 생성
-    Musical saveMusical(MusicalCreationRequest request);
+    MusicalCreationResponse saveMusical(MusicalCreationRequest request);
 
     // 모든 뮤지컬 조회
     Page<Musical> findAllMusicals(int page, int size);
