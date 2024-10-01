@@ -76,9 +76,11 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public Ticket findTicket(Long memberId, Long ticketId) {
-    return ticketRepository.findByIdAndMemberId(memberId, ticketId)
-      .orElseThrow(() -> new RuntimeException("해당 id의 티켓이 없습니다."));
+  public TicketResponse findTicket(String email, Long ticketId) {
+    Member member = memberService.getMemberByEmail(email);
+    Ticket ticket = ticketRepository.findByIdAndMember(ticketId, member)
+      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+    return TicketResponse.toTicketResponse(ticket);
   }
 
   @Override
