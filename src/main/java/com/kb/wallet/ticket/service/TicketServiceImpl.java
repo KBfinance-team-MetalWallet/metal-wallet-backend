@@ -1,5 +1,6 @@
 package com.kb.wallet.ticket.service;
 
+import static com.kb.wallet.global.common.status.ErrorCode.TICKET_EXCHANGE_NOT_FOUND_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
 import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
@@ -37,9 +38,6 @@ public class TicketServiceImpl implements TicketService {
   private final TicketExchangeRepository ticketExchangeRepository;
   private final TicketMapper ticketMapper;
   private final MemberService memberService;
-
-
-
 
   @Override
   public TicketResponse saveTicket(Member member, TicketRequest ticketRequest) {
@@ -83,8 +81,22 @@ public class TicketServiceImpl implements TicketService {
     ticketRepository.save(ticket);
   }
 
-  private void findByMemberAndTicketStatus() {
+  @Override
+  public void cancelTicketExchange(String email, Long ticketId) {
+    Ticket ticket = ticketRepository.findByMember(ticketId, email)
+        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
 
+    if(ticket.isExchangeRequested()) {
+      TicketExchange ticketExchange = ticketExchangeRepository.findByTicketId(ticketId)
+          .orElseThrow(() -> new CustomException(TICKET_EXCHANGE_NOT_FOUND_ERROR));
+
+      ticket.setTicketStatus(TicketStatus.BOOKED);
+      ticketRepository.save(ticket);
+
+      ticketExchangeRepository.delete(ticketExchange);
+    } else {
+      throw new CustomException(TICKET_STATUS_INVALID);
+    }
   }
 
   @Override

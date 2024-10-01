@@ -58,4 +58,8 @@ public class Ticket {
     public boolean isCancellable() {
         return this.ticketStatus != TicketStatus.CANCELED && this.ticketStatus != TicketStatus.CHECKED;
     }
+
+    public boolean isExchangeRequested() {
+        return this.ticketStatus == TicketStatus.EXCHANGE_REQUESTED;
+    }
 }

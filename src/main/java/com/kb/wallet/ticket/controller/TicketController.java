@@ -119,15 +119,10 @@ public class TicketController {
     return ResponseEntity.ok(ticketExchange);
   }
 
-  @DeleteMapping("/exchange")
+  @DeleteMapping("/exchange/{ticketId}")
   public ApiResponse<Void> cancelTicketExchange(
-      @AuthenticationPrincipal Member member,
-      @RequestBody TicketExchangeCancelRequest request
-      ) {
-    //유저 email 체크
-
-    //티켓 상태 변경
-    //티켓교환 테이블 삭제
+      @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
+    ticketService.cancelTicketExchange(member.getEmail(), ticketId);
     return ApiResponse.ok();
   }
 }

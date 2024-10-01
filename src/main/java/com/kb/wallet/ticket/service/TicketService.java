@@ -16,12 +16,12 @@ public interface TicketService {
 
   TicketResponse saveTicket(Member member, TicketRequest ticketRequest);
 
-
   void cancelTicket(String email, Long ticketId);
   boolean isTicketAvailable(Long memberId, Ticket ticket);
   void updateStatusChecked(Ticket ticket);
   TicketExchangeResponse createTicketExchange(Member member,
       TicketExchangeRequest exchangeRequest);
+  void cancelTicketExchange(String email, Long ticketId);
 
   Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page, int size);
 }
