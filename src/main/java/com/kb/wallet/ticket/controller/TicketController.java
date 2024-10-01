@@ -1,6 +1,7 @@
 package com.kb.wallet.ticket.controller;
 
 import com.google.zxing.WriterException;
+import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
@@ -117,5 +118,17 @@ public class TicketController {
     TicketExchangeResponse ticketExchange = ticketService.createTicketExchange(member,
         exchangeRequest);
     return ResponseEntity.ok(ticketExchange);
+  }
+
+  @DeleteMapping("/exchange")
+  public ApiResponse<Void> cancelTicketExchange(
+      @AuthenticationPrincipal Member member,
+      @RequestBody TicketExchangeCancelRequest request
+      ) {
+    //유저 email 체크
+
+    //티켓 상태 변경
+    //티켓교환 테이블 삭제
+    return ApiResponse.ok();
   }
 }
