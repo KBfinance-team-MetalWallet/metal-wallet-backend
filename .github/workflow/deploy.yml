@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - deploy/ljr
+  workflow_dispatch:  # 수동 실행을 위한 트리거
 
 jobs:
   deploy:
@@ -49,4 +50,4 @@ jobs:
             echo "${{ secrets.APPLICATION_PROPERTIES }}" > /home/ubuntu/metal-wallet-server/current/application.properties
             cd /home/ubuntu/metal-wallet-server/current
             sudo fuser -k -n tcp 8080 || true
-            sudo systemctl restart tomcat 
+            sudo systemctl restart tomcat
