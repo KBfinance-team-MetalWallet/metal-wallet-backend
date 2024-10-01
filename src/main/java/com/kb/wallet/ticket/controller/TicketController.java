@@ -38,21 +38,20 @@ public class TicketController {
   }
 
   @GetMapping
-  public ResponseEntity<Page<TicketResponse>> getUserTickets(
+  public ApiResponse<Page<TicketResponse>> getUserTickets(
       @AuthenticationPrincipal Member member,
       @RequestParam(name = "page", defaultValue = "0") int page,
       @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<TicketResponse> tickets = ticketService.findAllBookedTickets(member.getId(), page, size);
-    return ResponseEntity.ok(tickets);
+    Page<TicketResponse> tickets = ticketService.findAllBookedTickets(member.getEmail(), page, size);
+    return ApiResponse.ok(tickets);
   }
 
   @GetMapping("/{ticketId}")
-  public ResponseEntity<Ticket> getTicket(
+  public ApiResponse<Ticket> getTicket(
       @PathVariable(name = "ticketId") Long ticketId) {
     //TODO: MemberId 로그인 연동
-//    Ticket ticket = ticketService.findTicket(member.getId(), ticketId);
     Ticket ticket = ticketService.findTicket(1L, ticketId);
-    return ResponseEntity.ok(ticket);
+    return ApiResponse.ok(ticket);
   }
 
   @PostMapping("{ticketId}/qr")
@@ -94,10 +93,10 @@ public class TicketController {
   }
 
   @DeleteMapping("/{ticketId}")
-  public ResponseEntity<?> deleteTicket(
+  public ApiResponse<Void> cancelTicket(
       @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
-    ticketService.deleteTicket(member, ticketId);
-    return ResponseEntity.ok().build();
+    ticketService.cancelTicket(member.getEmail(), ticketId);
+    return ApiResponse.ok();
   }
 
   @GetMapping("/exchange")

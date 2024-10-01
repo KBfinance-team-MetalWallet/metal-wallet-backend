@@ -12,12 +12,12 @@ import org.springframework.data.domain.Page;
 public interface TicketService {
   Ticket findTicket(Long memberId, Long ticketId);
   Ticket findTicketById(Long id);
-  Page<TicketResponse> findAllBookedTickets(Long id, int page, int size);
+  Page<TicketResponse> findAllBookedTickets(String email, int page, int size);
 
   TicketResponse saveTicket(Member member, TicketRequest ticketRequest);
 
 
-  void deleteTicket(Member member, long ticketId);
+  void cancelTicket(String email, Long ticketId);
   boolean isTicketAvailable(Long memberId, Ticket ticket);
   void updateStatusChecked(Ticket ticket);
   TicketExchangeResponse createTicketExchange(Member member,

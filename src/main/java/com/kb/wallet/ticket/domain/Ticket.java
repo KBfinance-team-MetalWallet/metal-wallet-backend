@@ -24,7 +24,7 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
@@ -33,8 +33,8 @@ public class Ticket {
     // enum의 값을 index가 아닌 텍스트 값 그대로 저장하고 싶을 때 위의 어노테이션 사용
     private TicketStatus ticketStatus;
 
-    @OneToOne
-    @JoinColumn(name = "seat_id")  // 외래 키 컬럼 지정
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seat_id")
     private Seat seat;
 
     @Column(updatable = false)
@@ -53,5 +53,9 @@ public class Ticket {
             .member(member)
             .ticketStatus(TicketStatus.BOOKED)
             .build();
+    }
+
+    public boolean isCancellable() {
+        return this.ticketStatus != TicketStatus.CANCELED && this.ticketStatus != TicketStatus.CHECKED;
     }
 }
