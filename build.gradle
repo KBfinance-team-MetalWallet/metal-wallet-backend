@@ -83,6 +83,10 @@ dependencies {
     // JSON
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.3'
 
+    // QR
+    implementation group: 'com.google.zxing', name: 'core', version: '3.4.1'
+    implementation group: 'com.google.zxing', name: 'javase', version: '3.4.1'
+
     // Servlet API for Tomcat 9
     compileOnly('javax.servlet:javax.servlet-api:4.0.1')
 

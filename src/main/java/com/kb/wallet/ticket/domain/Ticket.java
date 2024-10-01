@@ -5,23 +5,8 @@ import com.kb.wallet.seat.domain.Seat;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import java.time.LocalDateTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import javax.persistence.*;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -63,8 +48,9 @@ public class Ticket {
     private LocalDateTime cancelUntil;
 
     // TODO : 변환 내용 완성해야 함
-    public static Ticket createBookedTicket(TicketRequest ticketRequest) {
+    public static Ticket createBookedTicket(Member member, TicketRequest ticketRequest) {
         return Ticket.builder()
+            .member(member)
             .ticketStatus(TicketStatus.BOOKED)
             .build();
     }

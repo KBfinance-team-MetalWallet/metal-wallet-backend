@@ -6,8 +6,12 @@ import lombok.Getter;
 public enum ErrorCode {
   /**
    * ******************************* Global Error CodeList ***************************************
-   * HTTP Status Code 400 : Bad Request 401 : Unauthorized 403 : Forbidden 404 : Not Found 500 :
-   * Internal Server Error
+   * HTTP Status Code
+   * 400 : Bad Request
+   * 401 : Unauthorized
+   * 403 : Forbidden
+   * 404 : Not Found
+   * 500 : Internal Server Error
    * *********************************************************************************************
    */
   // 잘못된 서버 요청
@@ -49,13 +53,18 @@ public enum ErrorCode {
     // 서버가 처리 할 방법을 모르는 경우 발생
     INTERNAL_SERVER_ERROR(500, "G999", "서버 내부 오류"),
 
-
-    // Ticket Errors
-    TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다"),
-    TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다"),
-
-    // Account Errors
-    ACCOUNT_NOT_FOUND_ERROR(404, "AC001", "계좌를 찾을 수 없습니다"),
+  /**
+   * ******************************* Custom Error CodeList ***************************************
+   */
+  // Musical Errors
+  MUSICAL_NOT_FOUND(404, "MU003", "요청한 뮤지컬을 찾을 수 없습니다."),
+  // Member Errors
+  MEMBER_NOT_FOUND_ERROR(404, "ME001", "사용자를 찾을 수 없습니다."),
+  MEMBER_STATUS_INVALID(400, "ME002", "사용자의 ID가 유효하지 않습니다"),
+  // Ticket Errors
+  TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다."),
+  TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다."),
+  TICKET_NOT_USABLE(400, "TI003", "티켓을 사용할 수 없습니다."),
 
     // QR 코드 관련 에러 코드
     ENCRYPTION_ERROR(500, "EN001", "QR 코드 암호화 중 오류가 발생했습니다."),
@@ -65,20 +74,15 @@ public enum ErrorCode {
     INVALID_SECRET_KEY(500, "QR005", "유효하지 않은 비밀키입니다."),
     INVALID_IV(500, "QR006", "유효하지 않은 IV입니다."),
   
-    /**
-     * ******************************* Custom Error CodeList ***************************************
-     */
+    // Account Errors
+    ACCOUNT_NOT_FOUND_ERROR(404, "AC001", "계좌를 찾을 수 없습니다"),
     // Transaction Insert Error
     INSERT_ERROR(200, "9999", "Transaction 삽입 오류 발생"),
-
-
     // Transaction Update Error
     UPDATE_ERROR(200, "9999", "Transaction 수정 오류 발생"),
-
     // Transaction Delete Error
-    DELETE_ERROR(200, "9999", "Transaction 삭제 오류 발생"),
+    DELETE_ERROR(200, "9999", "Transaction 삭제 오류 발생");
 
-    ; // End
 
     /**
      * ******************************* Error Code Constructor
