@@ -79,7 +79,7 @@ public class AppConfig {
         config.setMaximumPoolSize(5);
         config.setIdleTimeout(600000);
         config.setMaxLifetime(1800000);
-        config.setAutoCommit(true);
+        config.setAutoCommit(false);
 
         return new HikariDataSource(config);
     }
