@@ -7,6 +7,7 @@ import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
+import com.kb.wallet.musical.dto.response.MusicalResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.repository.CustomMusicalRepository;
 import com.kb.wallet.musical.repository.MusicalRepository;
@@ -28,7 +29,7 @@ public class MusicalServiceImpl implements MusicalService {
 
   @Autowired
   public MusicalServiceImpl(MusicalRepository musicalRepository,
-      CustomMusicalRepository customMusicalRepository) {
+    CustomMusicalRepository customMusicalRepository) {
     this.musicalRepository = musicalRepository;
     this.customMusicalRepository = customMusicalRepository;
   }
@@ -42,9 +43,10 @@ public class MusicalServiceImpl implements MusicalService {
   }
 
   @Override
-  public Page<Musical> findAllMusicals(int page, int size) {
+  public Page<MusicalResponse> findAllMusicals(int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
-    return musicalRepository.findAll(pageable);
+    Page<Musical> musicals = musicalRepository.findAll(pageable);
+    return musicals.map(MusicalResponse::convertToResponse);
   }
 
   @Override
@@ -56,30 +58,30 @@ public class MusicalServiceImpl implements MusicalService {
   @Transactional("jpaTransactionManager")
   public void deleteMusical(Long musicalId) {
     Musical musical = musicalRepository.findById(musicalId)
-        .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
-            "요청한 뮤지컬을 찾을 수 없습니다."));
+      .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
+        "요청한 뮤지컬을 찾을 수 없습니다."));
     musicalRepository.delete(musical);
   }
 
   @Override
   @Transactional("jpaTransactionManager")
   public MusicalInfoUpdateResponse updateMusicalInfo(Long musicalId,
-      MusicalInfoUpdateRequest request) {
+    MusicalInfoUpdateRequest request) {
     Musical musical = musicalRepository.findById(musicalId)
-        .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
-            "요청한 뮤지컬을 찾을 수 없습니다."));
+      .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
+        "요청한 뮤지컬을 찾을 수 없습니다."));
 
     try {
       Musical updatedMusical = Musical.builder()
-          .id(musical.getId())
-          .title(request.getTitle())
-          .ranking(request.getRanking())
-          .place(request.getPlace())
-          .placeDetail(request.getPlaceDetail())
-          .ticketingStartDate(request.getTicketingStartDate())
-          .ticketingEndDate(request.getTicketingEndDate())
-          .runningTime(request.getRunningTime())
-          .build();
+        .id(musical.getId())
+        .title(request.getTitle())
+        .ranking(request.getRanking())
+        .place(request.getPlace())
+        .placeDetail(request.getPlaceDetail())
+        .ticketingStartDate(request.getTicketingStartDate())
+        .ticketingEndDate(request.getTicketingEndDate())
+        .runningTime(request.getRunningTime())
+        .build();
 
       Musical savedMusical = musicalRepository.save(updatedMusical);
       return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(savedMusical);

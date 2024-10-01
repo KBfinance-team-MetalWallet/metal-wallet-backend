@@ -1,7 +1,6 @@
 package com.kb.wallet.musical.domain;
 
 import java.time.LocalDate;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -43,23 +42,19 @@ public class Musical {
 
   @NotNull
   private LocalDate ticketingStartDate;
+
   @NotNull
   private LocalDate ticketingEndDate;
 
   @NotNull
   private int runningTime;
-  // Todo : Url(링크) 속성도 추후에 활용해야 함. 현재 CRUD에는 필요하지 않아서 사용X.
-//    @Column
-//    @NotNull
-//    private String noticeImageUrl;
-//    @Column
-//    @NotNull
-//    private String posterImageUrl;
-//    @Column
-//    @NotNull
-//    private String detailImageUrl;
-//    @Column
-//    @NotNull
-//    private String placeImageUrl;
+
+  private String posterImageUrl;
+
+  private String noticeImageUrl;
+
+  private String detailImageUrl;
+
+  private String placeImageUrl;
 
 }
