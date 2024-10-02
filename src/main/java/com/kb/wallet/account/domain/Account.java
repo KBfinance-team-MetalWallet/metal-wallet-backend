@@ -1,6 +1,7 @@
 package com.kb.wallet.account.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.kb.wallet.account.constant.BankName;
 import com.kb.wallet.member.domain.Member;
 import java.time.LocalDateTime;
 import javax.persistence.*;
@@ -31,6 +32,10 @@ public class Account {
 
     @ColumnDefault("0")
     private int balance;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private BankName bankName;
 
     @CreatedDate
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
