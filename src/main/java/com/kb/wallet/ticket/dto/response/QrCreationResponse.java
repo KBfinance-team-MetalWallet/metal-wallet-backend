@@ -12,15 +12,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class QrCreationResponse {
-  private String token;
-  private byte[] qrBytes;
-  private int second;
 
-  public static QrCreationResponse toQrCreationResponse(String token, byte[] qrBytes, int second) {
+  private String token;
+  private String encodedTicketInfo;
+  private int second;
+  private String privateKey;
+
+  public static QrCreationResponse toQrCreationResponse(String token, String encodedTicketInfo,
+      int second, String privateKey) {
     return QrCreationResponse.builder()
         .token(token)
-        .qrBytes(qrBytes)
+        .encodedTicketInfo(encodedTicketInfo)
         .second(second)
+        .privateKey(privateKey)
         .build();
   }
 }

@@ -17,17 +17,17 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
   Optional<Ticket> findByIdAndMember(Long ticketId, Member member);
 
   @Query("SELECT t FROM Ticket t "
-    + "WHERE t.id = :id "
-    + "AND t.member.email = :email ")
+      + "WHERE t.id = :id "
+      + "AND t.member.email = :email ")
   Optional<Ticket> findByMember(
-    @Param("id") Long id,
-    @Param("email") String email);
+      @Param("id") Long id,
+      @Param("email") String email);
 
   @Query("SELECT t FROM Ticket t WHERE t.member.email = :email AND t.ticketStatus = :status")
   Page<Ticket> findTicketsByMemberAndTicketStatus(
-    @Param("email") String email,
-    @Param("status") TicketStatus status,
-    Pageable pageable);
+      @Param("email") String email,
+      @Param("status") TicketStatus status,
+      Pageable pageable);
 
   Optional<Ticket> findById(Long ticketId);
 }

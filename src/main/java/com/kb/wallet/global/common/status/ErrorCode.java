@@ -72,6 +72,15 @@ public enum ErrorCode {
   INVALID_SECRET_KEY(500, "QR005", "유효하지 않은 비밀키입니다."),
   INVALID_IV(500, "QR006", "유효하지 않은 IV입니다."),
 
+  // RSA 알고리즘 관련 에러 코드
+  INVALID_KEY(400, "RSA001", "유효하지 않은 키입니다"),
+  INVALID_KEY_SIZE(500, "RSA002", "유효하지 않은 키 크기입니다"),
+  INVALID_KEY_TYPE(500, "RSA003", "RSA 키가 아닙니다"),
+  KEY_GENERATION_ERROR(500, "RSA004", "키 생성 중 오류가 발생했습니다"),
+  KEY_VALIDATION_ERROR(500, "RSA005", "키 검증 중 오류가 발생했습니다"),
+  KEY_CONVERSION_ERROR(500, "RSA006", "키 변환 중 오류가 발생했습니다"),
+  QR_CODE_GENERATION_ERROR(500, "RSA007", "QR Code 생성 중 오류가 발생했습니다."),
+
   // Account Errors
   ACCOUNT_NOT_FOUND_ERROR(404, "AC001", "계좌를 찾을 수 없습니다"),
 
@@ -89,7 +98,6 @@ public enum ErrorCode {
   SEAT_NOT_FOUND_ERROR(404, "SE001", "좌석을 찾을 수 없습니다."),
   SEAT_ALREADY_BOOKED_ERROR(409, "SE002", "이미 예약된 좌석입니다."),
   NOT_ENOUGH_AVAILABLE_SEATS_ERROR(400, "SE003", "구역에 사용 가능한 좌석이 충분하지 않습니다.");
-
 
 
   /**

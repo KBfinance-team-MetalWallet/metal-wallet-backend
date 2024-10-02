@@ -70,17 +70,17 @@ public class Ticket {
   public static Ticket createBookedTicket(Member member, Musical musical, Seat seat) {
 
     LocalDateTime musicalStartDateTime = LocalDateTime.of(seat.getSchedule().getDate(),
-      seat.getSchedule().getStartTime());
+        seat.getSchedule().getStartTime());
     LocalDateTime cancelUntilDateTime = musicalStartDateTime.minusDays(7); // 공연 시작 7일 전
 
     return Ticket.builder()
-      .member(member)
-      .musical(musical)
-      .ticketStatus(TicketStatus.BOOKED)
-      .seat(seat)
-      .validUntil(musicalStartDateTime)
-      .cancelUntil(cancelUntilDateTime)
-      .build();
+        .member(member)
+        .musical(musical)
+        .ticketStatus(TicketStatus.BOOKED)
+        .seat(seat)
+        .validUntil(musicalStartDateTime)
+        .cancelUntil(cancelUntilDateTime)
+        .build();
   }
 
   public boolean isCancellable() {
