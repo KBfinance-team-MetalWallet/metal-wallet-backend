@@ -11,6 +11,7 @@ public class MusicalResponse {
   private Long id;
   private String title;
   private String place;
+  private String placeDetail;
   private String ticketingStartDate;
   private String ticketingEndDate;
   private String posterImageUrl;
@@ -20,6 +21,7 @@ public class MusicalResponse {
       .id(musical.getId())
       .title(musical.getTitle())
       .place(musical.getPlace())
+      .placeDetail(musical.getPlaceDetail())
       .ticketingStartDate(musical.getTicketingStartDate().toString())
       .ticketingEndDate(musical.getTicketingEndDate().toString())
       .posterImageUrl(musical.getPosterImageUrl())
