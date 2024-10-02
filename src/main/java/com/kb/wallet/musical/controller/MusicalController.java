@@ -6,6 +6,7 @@ import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
+import com.kb.wallet.musical.dto.response.MusicalDetailResponse;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.service.MusicalService;
@@ -49,9 +50,10 @@ public class MusicalController {
   }
 
   @GetMapping("/{musicalId}")
-  public ResponseEntity<Musical> findById(@PathVariable(name = "musicalId") Long musicalId) {
+  public ApiResponse<MusicalDetailResponse> findById(
+    @PathVariable(name = "musicalId") Long musicalId) {
     Musical musical = musicalService.findById(musicalId);
-    return ResponseEntity.ok(musical);
+    return ApiResponse.ok(MusicalDetailResponse.convertToResponse(musical));
   }
 
   @PostMapping

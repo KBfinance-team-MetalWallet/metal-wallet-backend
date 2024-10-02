@@ -51,7 +51,8 @@ public class MusicalServiceImpl implements MusicalService {
 
   @Override
   public Musical findById(Long musicalId) {
-    return musicalRepository.findById(musicalId).orElse(null);
+    return musicalRepository.findById(musicalId)
+      .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND));
   }
 
   @Override
