@@ -12,7 +12,6 @@ public interface MusicalRepository extends JpaRepository<Musical, Long> {
 
   Page<Musical> findAll(Pageable pageable);
 
-  @Override
   Optional<Musical> findById(Long musicalId);
 
 }

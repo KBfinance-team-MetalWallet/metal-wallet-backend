@@ -5,6 +5,7 @@ import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
+import com.kb.wallet.musical.dto.response.MusicalResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -15,7 +16,7 @@ public interface MusicalService {
   MusicalCreationResponse saveMusical(MusicalCreationRequest request);
 
   // 모든 뮤지컬 조회
-  Page<Musical> findAllMusicals(int page, int size);
+  Page<MusicalResponse> findAllMusicals(int page, int size);
 
   // ID로 뮤지컬 조회
   Musical findById(Long musicalId);

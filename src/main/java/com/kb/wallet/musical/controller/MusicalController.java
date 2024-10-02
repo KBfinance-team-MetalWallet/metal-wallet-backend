@@ -6,6 +6,8 @@ import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
+import com.kb.wallet.musical.dto.response.MusicalDetailResponse;
+import com.kb.wallet.musical.dto.response.MusicalResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.service.MusicalService;
 import java.util.List;
@@ -40,22 +42,23 @@ public class MusicalController {
   }
 
   @GetMapping
-  public ResponseEntity<Page<Musical>> findAll(
-      @RequestParam(name = "page", defaultValue = "0") int page,
-      @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<Musical> musicals = musicalService.findAllMusicals(page, size);
-    return ResponseEntity.ok(musicals);
+  public ApiResponse<Page<MusicalResponse>> findAll(
+    @RequestParam(name = "page", defaultValue = "0") int page,
+    @RequestParam(name = "size", defaultValue = "10") int size) {
+    Page<MusicalResponse> responses = musicalService.findAllMusicals(page, size);
+    return ApiResponse.ok(responses);
   }
 
   @GetMapping("/{musicalId}")
-  public ResponseEntity<Musical> findById(@PathVariable(name = "musicalId") Long musicalId) {
+  public ApiResponse<MusicalDetailResponse> findById(
+    @PathVariable(name = "musicalId") Long musicalId) {
     Musical musical = musicalService.findById(musicalId);
-    return ResponseEntity.ok(musical);
+    return ApiResponse.ok(MusicalDetailResponse.convertToResponse(musical));
   }
 
   @PostMapping
   public ResponseEntity<MusicalCreationResponse> createMusical(
-      @RequestBody @Valid MusicalCreationRequest request) {
+    @RequestBody @Valid MusicalCreationRequest request) {
     MusicalCreationResponse savedMusical = musicalService.saveMusical(request);
     return ResponseEntity.ok(savedMusical);
   }
@@ -70,8 +73,8 @@ public class MusicalController {
   @PutMapping("/{musicalId}")
 //  @PreAuthorize("hasRole('ADMIN')") // 관리자만 뮤지컬 정보 업데이트 가능
   public ResponseEntity<Void> updateMusicalInfo(
-      @PathVariable(name = "musicalId") Long musicalId,
-      @RequestBody MusicalInfoUpdateRequest request) {
+    @PathVariable(name = "musicalId") Long musicalId,
+    @RequestBody MusicalInfoUpdateRequest request) {
     /**
      * TODO : Login Authentication 추가 예정
      */
@@ -81,13 +84,13 @@ public class MusicalController {
 
   @GetMapping("/{musicalId}/seats-availability")
   public ApiResponse<List<MusicalSeatAvailabilityResponse>> checkSeatAvailability(
-      @AuthenticationPrincipal Member member,
-      @PathVariable(name = "musicalId") Long musicalId,
-      @RequestParam("date") String date) {
+    @AuthenticationPrincipal Member member,
+    @PathVariable(name = "musicalId") Long musicalId,
+    @RequestParam("date") String date) {
 
     List<MusicalSeatAvailabilityResponse> responses = musicalService.checkSeatAvailability(
-        musicalId,
-        date);
+      musicalId,
+      date);
 
     return ApiResponse.ok(responses);
   }
