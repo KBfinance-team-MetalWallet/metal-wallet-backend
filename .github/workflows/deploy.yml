@@ -18,6 +18,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: application.properties 파일 생성
+        run: |
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" > src/main/resources/application.properties
+
       - name: Build with Gradle
         run: ./gradlew clean build
 
@@ -36,7 +40,7 @@ jobs:
           source: build/libs/metal-wallet-server.war
           target: /home/ubuntu/metal-wallet-server/tobe
 
-      - name: EC2에서 서버 디렉토리 업데이트 및 application.properties 파일 생성
+      - name: EC2에서 서버 디렉토리 업데이트 및 서버 재시작
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -45,8 +49,8 @@ jobs:
           script: |
             rm -rf /home/ubuntu/metal-wallet-server/current
             mkdir /home/ubuntu/metal-wallet-server/current
-            mv /home/ubuntu/metal-wallet-server/tobe/metal-wallet-server.war /home/ubuntu/metal-wallet-server/current/metal-wallet-server.war
-            echo "${{ secrets.APPLICATION_PROPERTIES }}" > /home/ubuntu/metal-wallet-server/current/application.properties
+            mv /home/ubuntu/metal-wallet-server/tobe/build/libs/metal-wallet-server.war /home/ubuntu/metal-wallet-server/current/metal-wallet-server.war
+            cp /home/ubuntu/metal-wallet-server/current/metal-wallet-server.war /opt/tomcat/latest/webapps/metal-wallet-server.war
             cd /home/ubuntu/metal-wallet-server/current
             sudo fuser -k -n tcp 8080 || true
             sudo systemctl restart tomcat
