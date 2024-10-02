@@ -1,8 +1,8 @@
 package com.kb.wallet.ticket.repository;
 
+import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,22 +13,21 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
-  Page<Ticket> findTicketsByMemberId(Long memberId, Pageable pageable);
 
-  Optional<Ticket>findByIdAndMemberId(Long memberId, Long ticketId);
-  boolean existsByMemberIdAndIdAndTicketStatus(Long memberId, Long ticketId, TicketStatus used);
+  Optional<Ticket> findByIdAndMember(Long ticketId, Member member);
+
   @Query("SELECT t FROM Ticket t "
-    + "WHERE t.id = :id "
-    + "AND t.member.email = :email ")
+      + "WHERE t.id = :id "
+      + "AND t.member.email = :email ")
   Optional<Ticket> findByMember(
-    @Param("id") Long id,
-    @Param("email") String email);
+      @Param("id") Long id,
+      @Param("email") String email);
 
   @Query("SELECT t FROM Ticket t WHERE t.member.email = :email AND t.ticketStatus = :status")
   Page<Ticket> findTicketsByMemberAndTicketStatus(
-    @Param("email") String email,
-    @Param("status") TicketStatus status,
-    Pageable pageable);
+      @Param("email") String email,
+      @Param("status") TicketStatus status,
+      Pageable pageable);
 
   Optional<Ticket> findById(Long ticketId);
 }
