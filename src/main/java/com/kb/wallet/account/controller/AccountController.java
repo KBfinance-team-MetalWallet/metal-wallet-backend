@@ -5,12 +5,12 @@ import com.kb.wallet.account.dto.response.AccountResponse;
 import com.kb.wallet.account.dto.response.TransactionRecordResponse;
 import com.kb.wallet.account.service.AccountService;
 import com.kb.wallet.global.common.response.ApiResponse;
+import com.kb.wallet.global.common.response.CursorResponse;
 import com.kb.wallet.member.domain.Member;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,13 +56,13 @@ public class AccountController {
   }
 
   @GetMapping("/{accountId}/transaction-records")
-  public ApiResponse<Page<TransactionRecordResponse>> getAccountTransactionRecords(
+  public ApiResponse<CursorResponse<TransactionRecordResponse>> getAccountTransactionRecords(
       @AuthenticationPrincipal Member member,
       @PathVariable(name = "accountId") Long accountId,
-      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "cursor", required = false) Long cursor,
       @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<TransactionRecordResponse> transactionRecords = accountService.getAccountTransactionRecords(
-        member, accountId, page, size);
+    CursorResponse<TransactionRecordResponse> transactionRecords = accountService.getAccountTransactionRecords(
+        member.getEmail(), accountId, cursor, size);
     return ApiResponse.ok(transactionRecords);
   }
 }

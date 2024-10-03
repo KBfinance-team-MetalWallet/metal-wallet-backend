@@ -1,4 +1,4 @@
-package com.kb.wallet.account.dto;
+package com.kb.wallet.account.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kb.wallet.account.domain.Account;
@@ -32,7 +32,7 @@ public class AccountResponse {
                 .accountNumber(account.getNumber())
                 .balance(account.getBalance())
                 .bankLogo(account.getBankLogo())
-                .bankName(account.getBankName())
+                .bankName(String.valueOf(account.getBankName()))
                 .createdAt(account.getCreatedAt())
                 .build()
         )

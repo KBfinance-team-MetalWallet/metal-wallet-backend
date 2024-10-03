@@ -4,19 +4,26 @@ import static com.kb.wallet.global.common.status.ErrorCode.ACCOUNT_NOT_MATCH;
 
 import com.kb.wallet.account.constant.BankName;
 import com.kb.wallet.account.domain.Account;
+import com.kb.wallet.account.domain.TransactionRecord;
 import com.kb.wallet.account.dto.request.AccountRequest;
 import com.kb.wallet.account.dto.response.AccountResponse;
 import com.kb.wallet.account.dto.response.TransactionRecordResponse;
 import com.kb.wallet.account.repository.AccountRepository;
+import com.kb.wallet.account.repository.TransactionRecordRepository;
+import com.kb.wallet.global.common.response.CursorResponse;
 import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountServiceImpl implements AccountService {
 
   private final AccountRepository accountRepository;
+  private final TransactionRecordRepository transactionRecordRepository;
   private final MemberService memberService;
 
   @Override
@@ -66,8 +74,37 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public Page<TransactionRecordResponse> getAccountTransactionRecords(Member member, Long accountId,
-      int page, int size) {
-    return null;
+  @Transactional(transactionManager = "jpaTransactionManager")
+  public CursorResponse<TransactionRecordResponse> getAccountTransactionRecords(String email,
+      Long accountId,
+      Long cursor, int size) {
+    Account singleAccount = getSingleAccount(accountId);
+    String memberEmailByAccountId = singleAccount.getMember().getEmail();
+
+    if (!Objects.equals(memberEmailByAccountId, email)) {
+      throw new CustomException(ACCOUNT_NOT_MATCH);
+    }
+
+    PageRequest pageRequest = PageRequest.of(0, size, Sort.by("createdAt").descending());
+    List<TransactionRecord> transactionRecords;
+
+    if (cursor != null) {
+      transactionRecords = transactionRecordRepository.findAllByAccountAndIdLessThanOrderByCreatedAtDesc(
+          singleAccount, cursor, pageRequest);
+    } else {
+      // 첫 페이지 조회
+      transactionRecords = transactionRecordRepository.findAllByAccountOrderByCreatedAtDesc(
+          singleAccount, pageRequest);
+    }
+
+    List<TransactionRecordResponse> transactionRecordResponses = transactionRecords.stream()
+        .map(TransactionRecordResponse::toTransactionRecordResponse)
+        .collect(Collectors.toList());
+
+    // 다음 페이지를 위한 커서 설정 (마지막 데이터의 transactionId)
+    Long nextCursor = (transactionRecordResponses.size() < size) ? null
+        : transactionRecordResponses.get(transactionRecordResponses.size() - 1).getTransactionId();
+
+    return new CursorResponse<>(transactionRecordResponses, nextCursor);
   }
 }
