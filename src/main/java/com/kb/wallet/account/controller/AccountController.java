@@ -39,6 +39,14 @@ public class AccountController {
     return ApiResponse.ok(accountService.getAccounts(member.getEmail()));
   }
 
+  @GetMapping("/{accountId}")
+  public ApiResponse<AccountResponse> getSingleAccount(
+      @AuthenticationPrincipal Member member,
+      @PathVariable(name = "accountId") Long accountId) {
+    AccountResponse accountResponse = accountService.getSingleAccount(member.getEmail(), accountId);
+    return ApiResponse.ok(accountResponse);
+  }
+
   @PostMapping
   public ApiResponse<Void> createAccount(
       @AuthenticationPrincipal Member member,

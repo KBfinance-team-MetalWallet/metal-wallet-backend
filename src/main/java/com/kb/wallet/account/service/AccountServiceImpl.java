@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +69,18 @@ public class AccountServiceImpl implements AccountService {
     return accountRepository.findById(id)
         .orElseThrow(() -> new CustomException(ErrorCode.ACCOUNT_NOT_FOUND_ERROR) {
         });
+  }
+
+  @Override
+  @Transactional(transactionManager = "jpaTransactionManager")
+  public AccountResponse getSingleAccount(String email, Long accountId) {
+    Account singleAccount = this.getSingleAccount(accountId);
+    String memberEmailByAccountId = singleAccount.getMember().getEmail();
+
+    if (!Objects.equals(memberEmailByAccountId, email)) {
+      throw new CustomException(ACCOUNT_NOT_MATCH);
+    }
+    return AccountResponse.toAccountsResponseList(List.of(singleAccount)).get(0);
   }
 
   @Override

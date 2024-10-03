@@ -16,6 +16,8 @@ public interface AccountService {
   void deleteAccount(Long id, String email);
 
   Account getSingleAccount(Long id);
+  AccountResponse getSingleAccount(String email, Long accountId);
+
 
   CursorResponse<TransactionRecordResponse> getAccountTransactionRecords(String email, Long accountId,
       Long cursor, int size);
