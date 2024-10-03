@@ -13,6 +13,7 @@ import com.kb.wallet.musical.repository.CustomMusicalRepository;
 import com.kb.wallet.musical.repository.MusicalRepository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -95,6 +96,23 @@ public class MusicalServiceImpl implements MusicalService {
   public List<MusicalSeatAvailabilityResponse> checkSeatAvailability(Long id, String date) {
     LocalDate localDate = LocalDate.parse(date);
     return customMusicalRepository.findMusicalSeatAvailability(id, localDate);
+  }
+
+  @Override
+  public List<MusicalResponse> findAllMusicals(int size) {
+    List<Musical> musicals = musicalRepository.findAllByRankingAsc(PageRequest.of(0, size));
+    return musicals.stream()
+      .map(MusicalResponse::convertToResponse)
+      .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<MusicalResponse> findMusicalsAfterCursor(Long cursor, int size) {
+    List<Musical> musicals = musicalRepository.findAllAfterCursor(cursor,
+      PageRequest.of(0, size));
+    return musicals.stream()
+      .map(MusicalResponse::convertToResponse)
+      .collect(Collectors.toList());
   }
 }
 
