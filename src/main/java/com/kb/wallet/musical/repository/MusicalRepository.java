@@ -20,7 +20,7 @@ public interface MusicalRepository extends JpaRepository<Musical, Long> {
   @Query("SELECT m FROM Musical m ORDER BY m.ranking ASC")
   List<Musical> findAllByRankingAsc(Pageable pageable);
 
-  @Query("SELECT m FROM Musical m WHERE m.id > :cursor ORDER BY m.id ASC")
+  @Query("SELECT m FROM Musical m WHERE m.ranking > (SELECT m2.ranking FROM Musical m2 WHERE m2.id = :cursor) ORDER BY m.ranking ASC")
   List<Musical> findAllAfterCursor(@Param("cursor") Long cursor, Pageable pageable);
 }
 
