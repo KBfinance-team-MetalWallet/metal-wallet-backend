@@ -10,6 +10,7 @@ public class MusicalResponse {
 
   private Long id;
   private String title;
+  private int ranking;
   private String place;
   private String placeDetail;
   private String ticketingStartDate;
@@ -20,6 +21,7 @@ public class MusicalResponse {
     return MusicalResponse.builder()
       .id(musical.getId())
       .title(musical.getTitle())
+      .ranking(musical.getRanking())
       .place(musical.getPlace())
       .placeDetail(musical.getPlaceDetail())
       .ticketingStartDate(musical.getTicketingStartDate().toString())
