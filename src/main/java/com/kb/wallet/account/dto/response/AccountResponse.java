@@ -20,6 +20,7 @@ public class AccountResponse {
 
   private String bankLogo;
   private String bankName;
+  private String bankColor;
   private String color;
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
@@ -32,6 +33,7 @@ public class AccountResponse {
                 .accountNumber(account.getNumber())
                 .balance(account.getBalance())
                 .bankLogo(account.getBankLogo())
+                .bankColor(account.getColor())
                 .bankName(String.valueOf(account.getBankName()))
                 .createdAt(account.getCreatedAt())
                 .build()
