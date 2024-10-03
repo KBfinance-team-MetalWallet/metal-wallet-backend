@@ -30,4 +30,9 @@ public interface MusicalService {
   // 뮤지컬 일정마다 좌석정보 확인
   List<MusicalSeatAvailabilityResponse> checkSeatAvailability(Long id, String date);
 
+  // 모든 뮤지컬 조회 (커서 페이징, 처음 데이터를 가져올 때)
+  List<MusicalResponse> findAllMusicals(int size);
+
+  // 모든 뮤지컬 조회 (커서 페이징, 커서 이후의 데이터를 가져올 때)
+  List<MusicalResponse> findMusicalsAfterCursor(Long cursor, int size);
 }
