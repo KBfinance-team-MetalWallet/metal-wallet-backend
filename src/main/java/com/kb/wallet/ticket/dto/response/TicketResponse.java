@@ -20,6 +20,7 @@ public class TicketResponse {
   private String createdAt;
   private String validUntil;
   private String cancelUntil;
+  private String deviceId;
 
   public static TicketResponse toTicketResponse(Ticket ticket) {
     return TicketResponse.builder()
@@ -28,6 +29,7 @@ public class TicketResponse {
       .createdAt(ticket.getCreatedAt().toString())
       .validUntil(ticket.getValidUntil().toString())
       .cancelUntil(ticket.getCancelUntil().toString())
+      .deviceId(ticket.getDeviceId())
       .build();
   }
 
