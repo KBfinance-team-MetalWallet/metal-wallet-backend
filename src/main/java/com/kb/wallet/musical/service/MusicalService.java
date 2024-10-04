@@ -4,6 +4,8 @@ import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.data.domain.Page;
 
 public interface MusicalService {
@@ -22,5 +24,6 @@ public interface MusicalService {
     // ID로 뮤지컬 제목 업데이트
     MusicalInfoUpdateResponse updateMusicalInfo(Long id, MusicalInfoUpdateRequest request);
 
+  List<LocalDate> getScheduleDates(Long musicalId);
 
 }

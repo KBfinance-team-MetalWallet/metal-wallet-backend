@@ -1,15 +1,20 @@
 package com.kb.wallet.musical.controller;
 
+import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
+import com.kb.wallet.musical.dto.response.MusicalScheduleResponse;
 import com.kb.wallet.musical.service.MusicalService;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Builder
@@ -64,5 +69,18 @@ public class MusicalController {
         return ResponseEntity.ok().build();
     }
 
+  @GetMapping("/{musicalId}/dates")
+  public ResponseEntity<MusicalScheduleResponse> getScheduleDates(
+      @AuthenticationPrincipal Member member,
+      @PathVariable(name = "musicalId") Long musicalId) {
+
+    List<LocalDate> dates = musicalService.getScheduleDates(musicalId);
+
+    MusicalScheduleResponse response = MusicalScheduleResponse.builder()
+        .musicalId(musicalId)
+        .scheduleDate(dates)
+        .build();
+    return ResponseEntity.ok(response);
+  }
 
 }

@@ -1,16 +1,10 @@
 package com.kb.wallet.ticket.domain;
 
+import com.kb.wallet.musical.domain.Musical;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import javax.persistence.*;
+import lombok.*;
 
 @Entity
 @Getter
@@ -26,7 +20,9 @@ public class Schedule {
   @Column
   private LocalDate date;
 
-  // TODO : 뮤지컬 매핑 해줘야 함.
+  @ManyToOne
+  @JoinColumn(name = "musical_id", nullable = false)
+  private Musical musical;
 
   @Column
   private LocalTime startTime;

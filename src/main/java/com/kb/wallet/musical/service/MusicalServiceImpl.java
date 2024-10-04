@@ -5,6 +5,9 @@ import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
 import com.kb.wallet.musical.repository.MusicalRepository;
+import com.kb.wallet.ticket.service.ScheduleService;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -65,7 +68,12 @@ public class MusicalServiceImpl implements MusicalService {
         musicalRepository.save(musical);
         return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(musical);
 
-    }
+  }
+
+  @Override
+  public List<LocalDate> getScheduleDates(Long musicalId) {
+    return scheduleService.getScheduleDatesByMusicalId(musicalId);
+  }
 }
 
 
