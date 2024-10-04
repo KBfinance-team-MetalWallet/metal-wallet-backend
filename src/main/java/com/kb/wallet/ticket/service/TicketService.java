@@ -8,6 +8,7 @@ import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.response.QrCreationResponse;
+import com.kb.wallet.ticket.dto.response.SignedTicketResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
@@ -23,7 +24,7 @@ public interface TicketService {
   Page<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus, int page,
       int size);
 
-  List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest);
+  List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest, String deviceId);
 
   void cancelTicket(String email, Long ticketId);
 
@@ -32,7 +33,7 @@ public interface TicketService {
   void updateStatusChecked(Ticket ticket);
 
   TicketExchangeResponse createTicketExchange(Member member,
-      TicketExchangeRequest exchangeRequest);
+    TicketExchangeRequest exchangeRequest);
 
   void cancelTicketExchange(String email, Long ticketId);
 
@@ -44,5 +45,9 @@ public interface TicketService {
 
   void savePrivateKey(Long ticketId, String privateKey);
 
-  String getPrivateKey(Long ticketId);
+  SignedTicketResponse signTicket(Long ticketId) throws Exception;
+
+  boolean verifyTicketSignature(TicketResponse ticket, String signature, String deviceId)
+    throws Exception;
+
 }
