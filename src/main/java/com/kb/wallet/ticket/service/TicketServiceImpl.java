@@ -21,6 +21,7 @@ import com.kb.wallet.ticket.domain.TicketExchange;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.response.QrCreationResponse;
+import com.kb.wallet.ticket.dto.response.SignedTicketResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
@@ -63,33 +64,28 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
-  public List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest) {
+  public List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest,
+    String deviceId) {
     if (ticketRequest.getSeatId() == null || ticketRequest.getSeatId().isEmpty()) {
       throw new CustomException(ErrorCode.NOT_VALID_ERROR, "좌석 ID는 필수입니다.");
     }
+    if (ticketRequest.getDeviceId() == null || ticketRequest.getDeviceId().isEmpty()) {
+      throw new CustomException(ErrorCode.NOT_VALID_ERROR, "디바이스 ID는 필수입니다.");
+    }
     Member member = memberService.getMemberByEmail(email);
     List<TicketResponse> responses = new ArrayList<>();
-
     for (Long seatId : ticketRequest.getSeatId()) {
       Seat seat = seatService.getSeatById(seatId);
-
-      // 이미 예약된 좌석인지 체크
       seatService.checkSeatAvailability(seat);
-
-      // 티켓 엔티티 생성
       Ticket bookedTicket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(),
-          seat);
-
-      // 티켓 저장
+        seat);
+      bookedTicket.setDeviceId(ticketRequest.getDeviceId());
+      Ticket ticket = new Ticket();
+      ticket.setDeviceId(deviceId);
+      ticketRepository.save(ticket);
       Ticket savedTicket = ticketRepository.save(bookedTicket);
-
-      // 티켓 응답 추가
       responses.add(TicketResponse.toTicketResponse(savedTicket));
-
-      // 해당 좌석은 더 이상 예약할 수 없도록 설정
       seat.markAsUnavailable();
-
-      // 구역별 예약 가능 좌석 수 업데이트
       seat.getSection().decrementAvailableSeats();
     }
 
@@ -97,10 +93,68 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
+  public SignedTicketResponse signTicket(Long ticketId) throws Exception {
+    Ticket ticket = ticketRepository.findById(ticketId)
+      .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+
+    TicketResponse response = TicketResponse.toTicketResponse(ticket);
+    String ticketInfo = generateTicketData(response);
+    ticketInfo += "|deviceId:" + ticket.getDeviceId();
+    PrivateKey privateKey = rsaService.getPrivateKey();
+    String signature = rsaService.sign(ticketInfo, privateKey);
+
+    return SignedTicketResponse.builder()
+      .ticketInfo(response)
+      .signature(signature)
+      .build();
+  }
+
+  private String generateTicketData(TicketResponse response) {
+    return String.format("%d,%s,%s,%s,%s",
+      response.getId(),
+      response.getTicketStatus(),
+      response.getCreatedAt(),
+      response.getValidUntil(),
+      response.getCancelUntil());
+  }
+
+  @Override
+  public boolean verifyTicketSignature(TicketResponse ticket, String signature, String deviceId)
+    throws Exception {
+
+    String ticketInfo = String.format("%d|%s|%s|%s|%s",
+      ticket.getId(),
+      ticket.getTicketStatus(),
+      ticket.getCreatedAt(),
+      ticket.getValidUntil(),
+      ticket.getCancelUntil(),
+      deviceId
+    );
+
+    PublicKey publicKey = rsaService.getPublicKey();
+    boolean isSignatureValid = rsaService.verify(ticketInfo, signature, publicKey);
+    Ticket savedTicket = ticketRepository.findById(ticket.getId())
+      .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
+
+    if (!savedTicket.getDeviceId().equals(deviceId)) {
+      throw new CustomException(ErrorCode.DEVICE_ID_MISMATCH, "Device ID가 일치하지 않습니다.");
+    }
+    // 티켓 데이터 일치 여부 확인
+    boolean isTicketDataValid = savedTicket.getId().equals(ticket.getId()) &&
+      savedTicket.getTicketStatus().equals(ticket.getTicketStatus()) &&
+      savedTicket.getCreatedAt().toString().equals(ticket.getCreatedAt()) &&
+      savedTicket.getValidUntil().toString().equals(ticket.getValidUntil()) &&
+      savedTicket.getCancelUntil().toString().equals(ticket.getCancelUntil());
+
+    // 서명 유효성과 티켓 데이터 일치 여부를 모두 확인
+    return isSignatureValid && isTicketDataValid;
+  }
+
+  @Override
   public TicketResponse findTicket(String email, Long ticketId) {
     Member member = memberService.getMemberByEmail(email);
     Ticket ticket = ticketRepository.findByIdAndMember(ticketId, member)
-        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
     return TicketResponse.toTicketResponse(ticket);
   }
 
@@ -108,7 +162,7 @@ public class TicketServiceImpl implements TicketService {
   public Page<TicketResponse> findAllBookedTickets(String email, int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<Ticket> ticketsByMemberIdAndTicketStatus =
-        ticketRepository.findTicketsByMemberAndTicketStatus(email, TicketStatus.BOOKED, pageable);
+      ticketRepository.findTicketsByMemberAndTicketStatus(email, TicketStatus.BOOKED, pageable);
     return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
   }
 
@@ -120,7 +174,7 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public void cancelTicket(String email, Long ticketId) {
     Ticket ticket = ticketRepository.findByMember(ticketId, email)
-        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
     if (!ticket.isCancellable()) {
       throw new CustomException(TICKET_STATUS_INVALID);
     }
@@ -132,11 +186,11 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public void cancelTicketExchange(String email, Long ticketId) {
     Ticket ticket = ticketRepository.findByMember(ticketId, email)
-        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
 
     if (ticket.isExchangeRequested()) {
       TicketExchange ticketExchange = ticketExchangeRepository.findByTicketId(ticketId)
-          .orElseThrow(() -> new CustomException(TICKET_EXCHANGE_NOT_FOUND_ERROR));
+        .orElseThrow(() -> new CustomException(TICKET_EXCHANGE_NOT_FOUND_ERROR));
 
       ticket.setTicketStatus(TicketStatus.BOOKED);
       ticketRepository.save(ticket);
@@ -149,22 +203,22 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   public Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page,
-      int size) {
+    int size) {
     member = Member.builder()
-        .id(1L)
-        .build();
+      .id(1L)
+      .build();
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<TicketExchange> ticketExchanges = ticketExchangeRepository.findByTicketMember(member,
-        pageable);
+      pageable);
     return ticketExchanges.map(TicketExchangeResponse::createTicketExchangeResponse);
   }
 
   @Override
   public TicketExchangeResponse createTicketExchange(Member member,
-      TicketExchangeRequest exchangeRequest) {
+    TicketExchangeRequest exchangeRequest) {
     member = Member.builder()
-        .id(1L)
-        .build();
+      .id(1L)
+      .build();
     Ticket ticket = findTicketById(exchangeRequest.getTicketId());
 
     ticketCheckService.checkTicketOwner(ticket, member);
@@ -187,17 +241,12 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public Ticket findTicketById(Long id) {
     return ticketRepository.findById(id)
-        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
   }
 
   @Override
   public void savePrivateKey(Long ticketId, String privateKey) {
     privateKeyStorage.put(ticketId, privateKey);
-  }
-
-  @Override
-  public String getPrivateKey(Long ticketId) {
-    return privateKeyStorage.get(ticketId);
   }
 
   @Override
@@ -211,7 +260,7 @@ public class TicketServiceImpl implements TicketService {
       TicketResponse ticket = findTicket(member.getEmail(), ticketId);
       if (!isTicketAvailable(member.getId(), ticket)) {
         throw new CustomException(ErrorCode.TICKET_STATUS_INVALID,
-            "티켓 상태가 유효하지 않습니다.");
+          "티켓 상태가 유효하지 않습니다.");
       }
 
       String token = tokenProvider.createToken(ticketId);
@@ -224,7 +273,7 @@ public class TicketServiceImpl implements TicketService {
 
       long expirationTime = System.currentTimeMillis() + 300000; // 5분 후
       String plaintext = String.format("%d|%d", ticketId, expirationTime);
-      String encryptedData = rsaService.encrypt(plaintext, publicKeyString);
+      String encryptedData = rsaService.encrypt(plaintext, publicKey);
 
       savePrivateKey(ticketId, privateKeyString);
 
@@ -240,7 +289,7 @@ public class TicketServiceImpl implements TicketService {
     } catch (Exception e) {
       log.error("QR 코드 생성 중 오류가 발생했습니다.", e);
       throw new CustomException(ErrorCode.QR_CODE_GENERATION_ERROR,
-          "QR 코드 생성 중 오류가 발생했습니다.");
+        "QR 코드 생성 중 오류가 발생했습니다.");
     }
 
   }
@@ -272,11 +321,13 @@ public class TicketServiceImpl implements TicketService {
   @Override
   @Transactional("jpaTransactionManager")
   public DecryptionResponse useTicket(Member member, DecryptionRequest decryptionRequest)
-      throws Exception {
+    throws Exception {
     String encryptedText = decryptionRequest.getEncryptedText();
 
     // RSA 복호화
-    String decryptedText = rsaService.decrypt(encryptedText, decryptionRequest.getPrivateKey());
+    KeyPair keyPair = rsaService.generateKeyPair();
+    PrivateKey privateKey = keyPair.getPrivate();
+    String decryptedText = rsaService.decrypt(encryptedText, privateKey);
     // 복호화된 텍스트에서 티켓 ID와 만료 시간 추출
     String[] parts = decryptedText.split("\\|");
     if (parts.length != 2) {
@@ -287,7 +338,7 @@ public class TicketServiceImpl implements TicketService {
 
     System.out.println("expirationTime = " + expirationTime + "**************************");
     System.out.println(
-        "*************************ticketId = " + ticketId + "**************************");
+      "*************************ticketId = " + ticketId + "**************************");
 
     // 만료 시간 체크
     if (System.currentTimeMillis() > expirationTime) {
