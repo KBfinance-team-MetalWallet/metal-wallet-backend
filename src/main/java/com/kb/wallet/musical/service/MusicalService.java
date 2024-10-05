@@ -8,6 +8,7 @@ import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import java.util.List;
+import java.util.Set;
 
 public interface MusicalService {
 
@@ -32,5 +33,5 @@ public interface MusicalService {
   // 모든 뮤지컬 조회 (커서 페이징, 커서 이후의 데이터를 가져올 때)
   List<MusicalResponse> findMusicalsAfterCursor(Long cursor, int size);
 
-  List<String> getScheduleDates(Long musicalId);
+  Set<String> getScheduleDates(Long musicalId);
 }

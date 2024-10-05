@@ -117,7 +117,7 @@ public class MusicalController {
     @AuthenticationPrincipal Member member,
     @PathVariable(name = "musicalId") Long musicalId) {
 
-    List<String> dates = musicalService.getScheduleDates(musicalId);
+    List<String> dates = musicalService.getScheduleDates(musicalId).stream().toList();
 
     MusicalScheduleResponse response = MusicalScheduleResponse.builder()
       .musicalId(musicalId)

@@ -1,7 +1,7 @@
 package com.kb.wallet.ticket.service;
 
 import com.kb.wallet.ticket.repository.ScheduleRepository;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +15,9 @@ public class ScheduleServiceImpl implements ScheduleService {
   }
 
   @Override
-  public List<String> getScheduleDatesByMusicalId(Long musicalId) {
+  public Set<String> getScheduleDatesByMusicalId(Long musicalId) {
     return scheduleRepository.findByMusicalId(musicalId).stream()
       .map(schedule -> schedule.getDate().toString())
-      .collect(Collectors.toList());
+      .collect(Collectors.toSet());
   }
 }

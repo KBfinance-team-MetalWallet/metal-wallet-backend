@@ -1,8 +1,8 @@
 package com.kb.wallet.ticket.service;
 
-import java.util.List;
+import java.util.Set;
 
 public interface ScheduleService {
 
-  List<String> getScheduleDatesByMusicalId(Long musicalId);
+  Set<String> getScheduleDatesByMusicalId(Long musicalId);
 }

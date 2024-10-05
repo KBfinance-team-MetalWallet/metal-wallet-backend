@@ -14,6 +14,7 @@ import com.kb.wallet.musical.repository.MusicalRepository;
 import com.kb.wallet.ticket.service.ScheduleService;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -111,7 +112,7 @@ public class MusicalServiceImpl implements MusicalService {
   }
 
   @Override
-  public List<String> getScheduleDates(Long musicalId) {
+  public Set<String> getScheduleDates(Long musicalId) {
     return scheduleService.getScheduleDatesByMusicalId(musicalId);
   }
 }
