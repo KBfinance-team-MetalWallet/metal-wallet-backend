@@ -9,6 +9,7 @@ import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalDetailResponse;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
+import com.kb.wallet.musical.dto.response.MusicalScheduleResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.service.MusicalService;
 import java.util.List;
@@ -109,5 +110,19 @@ public class MusicalController {
       date);
 
     return ApiResponse.ok(responses);
+  }
+
+  @GetMapping("/{musicalId}/dates")
+  public ApiResponse<MusicalScheduleResponse> getScheduleDates(
+    @AuthenticationPrincipal Member member,
+    @PathVariable(name = "musicalId") Long musicalId) {
+
+    List<String> dates = musicalService.getScheduleDates(musicalId).stream().toList();
+
+    MusicalScheduleResponse response = MusicalScheduleResponse.builder()
+      .musicalId(musicalId)
+      .scheduleDate(dates)
+      .build();
+    return ApiResponse.ok(response);
   }
 }
