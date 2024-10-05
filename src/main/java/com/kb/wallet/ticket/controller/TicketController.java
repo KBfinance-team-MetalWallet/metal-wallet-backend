@@ -47,9 +47,9 @@ public class TicketController {
   @PostMapping
   public ApiResponse<List<TicketResponse>> createTicket(
     @AuthenticationPrincipal Member member,
-    @RequestBody TicketRequest ticketRequest, String deviceId) {
-    List<TicketResponse> tickets = ticketService.saveTicket(member.getEmail(), ticketRequest,
-      deviceId);
+    @RequestBody TicketRequest ticketRequest) {
+    List<TicketResponse> tickets = ticketService.saveTicket(member.getEmail(), ticketRequest
+    );
     return ApiResponse.created(tickets);
   }
 
@@ -92,19 +92,16 @@ public class TicketController {
   @PostMapping("encrypt/{ticketId}")
   public ResponseEntity<QrCreationResponse> generateEncryptData(
     @AuthenticationPrincipal Member member,
-//      @RequestBody EncryptionRequest encryptionRequest,
-    @PathVariable(name = "ticketId") Long ticketId) throws Exception {
-//    Member loginedMemeber = memberService.getMemberByEmail(member.getEmail());
-    log.info("Generating QR code. Member ID: {}, Ticket ID: {}", member.getId(), ticketId);
-    QrCreationResponse response = ticketService.generateQRCodeData(member.getEmail(), ticketId);
-
+    @PathVariable(name = "ticketId") Long ticketId,
+    @RequestParam String deviceID) throws Exception {
+    QrCreationResponse response = ticketService.generateQRCodeData(member.getEmail(), ticketId,
+      deviceID);
     //TODO: byte[] -> String으로 변환할 것
     //  String encryptedData = util.encrypt()
     //TODO: qr 생성은 클라이언트에서 처리하도록 변경할 것
     //TODO: qrCreationResponse로 반환해야함 = qrCreationResponse
     //  이 DTO에는 token, qrBytes, secord값이 담김
     return ResponseEntity.ok(response);
-
   }
 
 
@@ -142,8 +139,8 @@ public class TicketController {
     //TODO: 동시성 처리
     DecryptionResponse decryptionResponse = ticketService.useTicket(member, decryptionRequest);
 
-    Ticket ticket = ticketService.findTicketById(2L);
-    if (ticketService.isTicketAvailable(2L, TicketResponse.toTicketResponse(ticket))) {
+    Ticket ticket = ticketService.findTicketById(member.getId());
+    if (ticketService.isTicketAvailable(member.getId(), TicketResponse.toTicketResponse(ticket))) {
       ticketService.updateStatusChecked(ticket);
     }
 

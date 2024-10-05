@@ -21,11 +21,13 @@ public interface TicketService {
 
   Page<TicketResponse> findAllBookedTickets(String email, int page, int size);
 
-  List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest, String deviceId);
+  List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest);
 
   void cancelTicket(String email, Long ticketId);
 
   boolean isTicketAvailable(Long memberId, TicketResponse ticket);
+
+  boolean isTicketAvailable(Ticket ticket);
 
   void updateStatusChecked(Ticket ticket);
 
@@ -38,13 +40,16 @@ public interface TicketService {
 
   DecryptionResponse useTicket(Member member, DecryptionRequest decryptionRequest) throws Exception;
 
-  QrCreationResponse generateQRCodeData(String email, Long ticketId) throws Exception;
+  QrCreationResponse generateQRCodeData(String email, Long ticketId, String deviceId)
+    throws Exception;
 
   void savePrivateKey(Long ticketId, String privateKey);
 
   SignedTicketResponse signTicket(Long ticketId) throws Exception;
 
-  boolean verifyTicketSignature(TicketResponse ticket, String signature, String deviceId)
+  boolean verifyTicketSignature(SignedTicketResponse encryptedTicketInfo,
+    String signature,
+    String deviceId)
     throws Exception;
 
 }
