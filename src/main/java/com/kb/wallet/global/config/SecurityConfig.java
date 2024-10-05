@@ -29,38 +29,38 @@ import org.springframework.web.filter.CorsFilter;
 @ComponentScan(basePackages = {"com.kb.wallet.member", "com.kb.wallet.jwt"})
 public class SecurityConfig {
 
-    private final TokenProvider tokenProvider;
-    private final UserDetailsService userDetailsService;
+  private final TokenProvider tokenProvider;
+  private final UserDetailsService userDetailsService;
 
-    // 비밀번호 암호화
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+  // 비밀번호 암호화
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-    @Bean
-    public AuthenticationManager authManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder =
-                http.getSharedObject(AuthenticationManagerBuilder.class);
-        // UserDetailsService와 PasswordEncoder를 설정
-        authenticationManagerBuilder.userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder());
-        return authenticationManagerBuilder.build();
-    }
+  @Bean
+  public AuthenticationManager authManager(HttpSecurity http) throws Exception {
+    AuthenticationManagerBuilder authenticationManagerBuilder =
+        http.getSharedObject(AuthenticationManagerBuilder.class);
+    // UserDetailsService와 PasswordEncoder를 설정
+    authenticationManagerBuilder.userDetailsService(userDetailsService)
+        .passwordEncoder(passwordEncoder());
+    return authenticationManagerBuilder.build();
+  }
 
-    // 클라이언트의 CORS 요청을 허용하는 설정
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인 설정
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
-
+  // 클라이언트의 CORS 요청을 허용하는 설정
+  @Bean
+  public CorsFilter corsFilter() {
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowCredentials(true);
+    config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인 설정
+    config.addAllowedHeader("*");
+    config.addAllowedMethod("*");
+    source.registerCorsConfiguration("/**", config);
+    return new CorsFilter(source);
+  }
+  
     // 요청 경로에 대한 인증 및 인가 규칙을 정의
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -85,22 +85,21 @@ public class SecurityConfig {
                                         "/favicon.ico",
                                         "/error",
                                         "/api/home",
-                                        "/api/musicals")
+                                        "/api/musicals/**")
                                 .permitAll()
+                                .antMatchers("/api/musicals/*/seats-availability").authenticated()
                                 .antMatchers("/api/musicals/*/schedule/**").authenticated()
-                                .antMatchers("/api/musicals/*/seat-availability/**").authenticated()
                                 .antMatchers("/api/musicals/*/booking/queue").authenticated()
                                 .antMatchers("/api/musicals/*/seats/reserve").authenticated()
                                 .antMatchers("/api/musicals/*/tickets").authenticated()
                                 .anyRequest().authenticated())
+        .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
+            SessionCreationPolicy.STATELESS))
 
-                .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
-                        SessionCreationPolicy.STATELESS))
+        .headers(headers -> headers.frameOptions(options -> options.sameOrigin()))
+        .addFilterBefore(new JwtFilter(tokenProvider),
+            UsernamePasswordAuthenticationFilter.class);
 
-                .headers(headers -> headers.frameOptions(options -> options.sameOrigin()))
-                .addFilterBefore(new JwtFilter(tokenProvider),
-                        UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
+    return http.build();
+  }
 }

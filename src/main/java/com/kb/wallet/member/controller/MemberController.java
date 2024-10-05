@@ -1,8 +1,11 @@
 package com.kb.wallet.member.controller;
 
+import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
+import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.dto.request.LoginMemberRequest;
+import com.kb.wallet.member.dto.request.PinNumberVerificationRequest;
 import com.kb.wallet.member.dto.request.RegisterMemberRequest;
 import com.kb.wallet.member.dto.response.RegisterMemberResponse;
 import com.kb.wallet.member.service.MemberService;
@@ -19,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,27 +35,24 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class MemberController {
 
-    private final MemberService memberService;
-    private final AuthenticationManager authenticationManager;
+  private final MemberService memberService;
+  private final AuthenticationManager authenticationManager;
 
-    @Lazy
-    private final TokenProvider tokenProvider;
-    private final PasswordEncoder encoder;
+  @Lazy
+  private final TokenProvider tokenProvider;
+  private final PasswordEncoder encoder;
 
-    @PostMapping("/register")
-    public ResponseEntity<RegisterMemberResponse> registerMember(
-            @RequestBody @Valid RegisterMemberRequest request) {
-        log.info("Registering member: {}", request);
-        RegisterMemberResponse response = memberService.registerMember(request);
-        return ResponseEntity.ok(response);
-    }
+  @PostMapping("/register")
+  public ResponseEntity<RegisterMemberResponse> registerMember(
+      @RequestBody @Valid RegisterMemberRequest request) {
+    RegisterMemberResponse response = memberService.registerMember(request);
+    return ResponseEntity.ok(response);
+  }
 
-    @PostMapping("/login")
-    public ResponseEntity<HashMap<String, Object>> loginMember(
-            @RequestBody @Valid LoginMemberRequest request) {
-        log.info("Login member: {}", request);
-
-        HashMap<String, Object> map = new HashMap<>();
+  @PostMapping("/login")
+  public ResponseEntity<HashMap<String, Object>> loginMember(
+      @RequestBody @Valid LoginMemberRequest request) {
+    HashMap<String, Object> map = new HashMap<>();
 
         try {
             // 인증 요청을 만든다
@@ -86,4 +87,12 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(map); // UNAUTHORIZED 반환
         }
     }
+
+  @PostMapping("/pin-number-verification")
+  public ApiResponse<Void> checkPinNumber(
+      @AuthenticationPrincipal Member member,
+      @RequestBody @Valid PinNumberVerificationRequest verificationRequest) {
+    memberService.checkPassword(member.getEmail(), verificationRequest);
+    return ApiResponse.ok();
+  }
 }

@@ -1,13 +1,14 @@
 package com.kb.wallet.account.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.kb.wallet.account.constant.BankName;
+import com.kb.wallet.member.domain.Member;
 import java.time.LocalDateTime;
+import javax.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import javax.persistence.*;
-import lombok.*;
-
-import com.kb.wallet.member.domain.Member;
 
 @Entity
 @Table(name = "account")
@@ -23,7 +24,7 @@ public class Account {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id")
   private Member member;
 
@@ -32,6 +33,15 @@ public class Account {
   @ColumnDefault("0")
   private int balance;
 
+  private String bankLogo;
+
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private BankName bankName;
+
+  private String color;
+
   @CreatedDate
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
 }

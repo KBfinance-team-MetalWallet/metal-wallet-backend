@@ -1,8 +1,10 @@
 package com.kb.wallet.musical.dto.response;
 
-import java.time.LocalDate;
 import java.util.List;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
@@ -11,5 +13,5 @@ import lombok.*;
 public class MusicalScheduleResponse {
 
   private Long musicalId;
-  private List<LocalDate> scheduleDate;
+  private List<String> scheduleDate;
 }

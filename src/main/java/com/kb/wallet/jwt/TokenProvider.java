@@ -4,6 +4,7 @@ import com.kb.wallet.member.constant.RoleType;
 import com.kb.wallet.member.domain.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -53,15 +55,35 @@ public class TokenProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String createToken(String email, String role) {
+    private String generateToken(Object subject, Map<String, Object> claims) {
         long now = (new Date()).getTime();
         Date validity = new Date(now + tokenValidityInMilliseconds);
 
-        String accessToken = Jwts.builder().setSubject(email).claim("role", role)
-                .signWith(key, SignatureAlgorithm.HS512).setExpiration(validity).compact();
+        String subjectStr = subject.toString();
 
-        return accessToken;
+        JwtBuilder builder = Jwts.builder()
+            .setSubject(subjectStr)
+            .setExpiration(validity)
+            .signWith(key, SignatureAlgorithm.HS512);
+
+        if (claims != null) {
+            builder.addClaims(claims);
+        }
+
+        return builder.compact();
     }
+
+    public String createToken(Long ticketId) {
+        return generateToken(ticketId, null);  // 추가 클레임 없이 subject만 전달
+    }
+
+    // 이메일과 역할을 포함하는 토큰 생성
+    public String createToken(String email, String role) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
+        return generateToken(email, claims);  // 클레임을 전달
+    }
+
 
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts.parserBuilder()

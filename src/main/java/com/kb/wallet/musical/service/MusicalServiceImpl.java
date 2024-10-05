@@ -1,79 +1,117 @@
 package com.kb.wallet.musical.service;
 
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.request.MusicalCreationRequest;
 import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
+import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
+import com.kb.wallet.musical.dto.response.MusicalResponse;
+import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
+import com.kb.wallet.musical.repository.CustomMusicalRepository;
 import com.kb.wallet.musical.repository.MusicalRepository;
 import com.kb.wallet.ticket.service.ScheduleService;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
 public class MusicalServiceImpl implements MusicalService {
-    private final MusicalRepository musicalRepository;
 
-    @Autowired
-    public MusicalServiceImpl(MusicalRepository musicalRepository) {
-        this.musicalRepository = musicalRepository;
-    }
+  private final MusicalRepository musicalRepository;
+  private final CustomMusicalRepository customMusicalRepository;
+  private final ScheduleService scheduleService;
 
-    @Override
-    @Transactional("jpaTransactionManager")
-    public Musical saveMusical(MusicalCreationRequest request) {
-        Musical musical = MusicalCreationRequest.toMusical(request);
-        return musicalRepository.save(musical);
-    }
-
-    @Override
-    public Page<Musical> findAllMusicals(int page, int size) {
-        Pageable pageable = PageRequest.of(page,size);
-        return musicalRepository.findAll(pageable);
-    }
-
-    @Override
-    public Musical findById(Long id) {
-        return musicalRepository.findById(id).orElse(null);
-    }
-
-    @Override
-    @Transactional("jpaTransactionManager")
-    public void deleteMusical(Long id) {
-        Musical musical = musicalRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Musical not found"));
-        musicalRepository.delete(musical);
-    }
-
-
-    @Override
-    @Transactional("jpaTransactionManager")
-    public MusicalInfoUpdateResponse updateMusicalInfo(Long id, MusicalInfoUpdateRequest request) {
-        Musical musical = musicalRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Musical not found"));
-        musical.setTitle(request.getTitle());
-        musical.setRanking(request.getRanking());
-        musical.setPlace(request.getPlace());
-        musical.setPlaceDetail(request.getPlaceDetail());
-        musical.setTicketingStartDate(request.getTicketingStartDate());
-        musical.setTicketingEndDate(request.getTicketingEndDate());
-        musical.setRunningTime(request.getRunningTime());
-
-        musicalRepository.save(musical);
-        return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(musical);
-
+  @Autowired
+  public MusicalServiceImpl(MusicalRepository musicalRepository,
+    CustomMusicalRepository customMusicalRepository,
+    ScheduleService scheduleService) {
+    this.musicalRepository = musicalRepository;
+    this.customMusicalRepository = customMusicalRepository;
+    this.scheduleService = scheduleService;
   }
 
   @Override
-  public List<LocalDate> getScheduleDates(Long musicalId) {
+  @Transactional("jpaTransactionManager")
+  public MusicalCreationResponse saveMusical(MusicalCreationRequest request) {
+    Musical musical = MusicalCreationRequest.toMusical(request);
+    Musical saved = musicalRepository.save(musical);
+    return MusicalCreationResponse.toMusical(saved);
+  }
+
+  @Override
+  public Musical findById(Long musicalId) {
+    return musicalRepository.findById(musicalId)
+      .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND));
+  }
+
+  @Override
+  @Transactional("jpaTransactionManager")
+  public void deleteMusical(Long musicalId) {
+    Musical musical = musicalRepository.findById(musicalId)
+      .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
+        "요청한 뮤지컬을 찾을 수 없습니다."));
+    musicalRepository.delete(musical);
+  }
+
+  @Override
+  @Transactional("jpaTransactionManager")
+  public MusicalInfoUpdateResponse updateMusicalInfo(Long musicalId,
+    MusicalInfoUpdateRequest request) {
+    Musical musical = musicalRepository.findById(musicalId)
+      .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
+        "요청한 뮤지컬을 찾을 수 없습니다."));
+
+    try {
+      Musical updatedMusical = Musical.builder()
+        .id(musical.getId())
+        .title(request.getTitle())
+        .ranking(request.getRanking())
+        .place(request.getPlace())
+        .placeDetail(request.getPlaceDetail())
+        .ticketingStartDate(request.getTicketingStartDate())
+        .ticketingEndDate(request.getTicketingEndDate())
+        .runningTime(request.getRunningTime())
+        .build();
+
+      Musical savedMusical = musicalRepository.save(updatedMusical);
+      return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(savedMusical);
+    } catch (Exception e) {
+      throw new CustomException(ErrorCode.ENCRYPTION_ERROR, "Musical 정보 업데이트 중 오류가 발생했습니다.");
+    }
+  }
+
+  @Override
+  public List<MusicalSeatAvailabilityResponse> checkSeatAvailability(Long id, String date) {
+    LocalDate localDate = LocalDate.parse(date);
+    return customMusicalRepository.findMusicalSeatAvailability(id, localDate);
+  }
+
+  @Override
+  public List<MusicalResponse> findAllMusicals(int size) {
+    List<Musical> musicals = musicalRepository.findAllByRankingAsc(PageRequest.of(0, size));
+    return musicals.stream()
+      .map(MusicalResponse::convertToResponse)
+      .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<MusicalResponse> findMusicalsAfterCursor(Long cursor, int size) {
+    List<Musical> musicals = musicalRepository.findAllAfterCursor(cursor,
+      PageRequest.of(0, size));
+    return musicals.stream()
+      .map(MusicalResponse::convertToResponse)
+      .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<String> getScheduleDates(Long musicalId) {
     return scheduleService.getScheduleDatesByMusicalId(musicalId);
   }
 }
-
-

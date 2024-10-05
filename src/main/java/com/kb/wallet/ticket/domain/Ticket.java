@@ -1,15 +1,16 @@
 package com.kb.wallet.ticket.domain;
 
 import com.kb.wallet.member.domain.Member;
+import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.seat.domain.Seat;
 import com.kb.wallet.ticket.constant.TicketStatus;
-import com.kb.wallet.ticket.dto.request.TicketRequest;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -35,37 +36,62 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public class Ticket {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "member_id")
+  private Member member;
 
-    @Column
-    @Enumerated(value = EnumType.STRING)
-    // enum의 값을 index가 아닌 텍스트 값 그대로 저장하고 싶을 때 위의 어노테이션 사용
-    private TicketStatus ticketStatus;
+  @ManyToOne
+  @JoinColumn(name = "musical_id")
+  private Musical musical;
 
-    @OneToOne
-    @JoinColumn(name = "seat_id")  // 외래 키 컬럼 지정
-    private Seat seat;
+  @Column
+  @Enumerated(value = EnumType.STRING)
+  // enum의 값을 index가 아닌 텍스트 값 그대로 저장하고 싶을 때 위의 어노테이션 사용
+  private TicketStatus ticketStatus;
 
-    @Column(updatable = false)
-    @CreatedDate
-    private LocalDateTime createdAt;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "seat_id")  // 외래 키 컬럼 지정
+  private Seat seat;
 
-    @Column
-    private LocalDateTime validUntil;
+  @Column(updatable = false)
+  @CreatedDate
+  private LocalDateTime createdAt;
 
-    @Column
-    private LocalDateTime cancelUntil;
+  @Column
+  private LocalDateTime validUntil;
 
-    // TODO : 변환 내용 완성해야 함
-    public static Ticket createBookedTicket(TicketRequest ticketRequest) {
-        return Ticket.builder()
-            .ticketStatus(TicketStatus.BOOKED)
-            .build();
-    }
+  @Column
+  private LocalDateTime cancelUntil;
+
+  @Column
+  private String deviceId;
+
+  public static Ticket createBookedTicket(Member member, Musical musical, Seat seat) {
+
+    LocalDateTime musicalStartDateTime = LocalDateTime.of(seat.getSchedule().getDate(),
+      seat.getSchedule().getStartTime());
+    LocalDateTime cancelUntilDateTime = musicalStartDateTime.minusDays(7); // 공연 시작 7일 전
+
+    return Ticket.builder()
+      .member(member)
+      .musical(musical)
+      .ticketStatus(TicketStatus.BOOKED)
+      .seat(seat)
+      .validUntil(musicalStartDateTime)
+      .cancelUntil(cancelUntilDateTime)
+      .deviceId(builder().deviceId)
+      .build();
+  }
+
+  public boolean isCancellable() {
+    return this.ticketStatus != TicketStatus.CANCELED && this.ticketStatus != TicketStatus.CHECKED;
+  }
+
+  public boolean isExchangeRequested() {
+    return this.ticketStatus == TicketStatus.EXCHANGE_REQUESTED;
+  }
 }

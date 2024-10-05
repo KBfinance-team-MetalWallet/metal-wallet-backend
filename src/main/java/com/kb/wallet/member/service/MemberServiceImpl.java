@@ -1,8 +1,14 @@
 package com.kb.wallet.member.service;
 
+import static com.kb.wallet.global.common.status.ErrorCode.MEMBER_EMAIL_NOT_FOUND;
+import static com.kb.wallet.global.common.status.ErrorCode.PIN_NUMBER_NOT_MATCH;
+
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
+import com.kb.wallet.member.dto.request.PinNumberVerificationRequest;
 import com.kb.wallet.member.dto.request.RegisterMemberRequest;
-import com.kb.wallet.member.dto.response.RegisterMemberResponse;
+import com.kb.wallet.member.dto.response.*;
 import com.kb.wallet.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +21,12 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder encoder;
+
+    @Override
+    public MemberResponse findById(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND_ERROR));
+        return MemberResponse.toMemberResponse(member);
+    }
 
     @Override
     @Transactional(transactionManager = "jpaTransactionManager")
@@ -39,6 +51,14 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Member getMemberByEmail(String email) {
         return memberRepository.getByEmail(email)
-                .orElseThrow(() -> new RuntimeException("해당 이메일의 사용자가 없습니다!"));
+                .orElseThrow(() -> new CustomException(MEMBER_EMAIL_NOT_FOUND));
+    }
+
+    @Override
+    public void checkPassword(String email, PinNumberVerificationRequest passwordRequest) {
+        Member member = getMemberByEmail(email);
+        if(encoder.matches(member.getPinNumber(), passwordRequest.getPinNumber())){
+            throw new CustomException(PIN_NUMBER_NOT_MATCH);
+        }
     }
 }
