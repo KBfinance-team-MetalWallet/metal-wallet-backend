@@ -17,8 +17,6 @@ import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
-import com.kb.wallet.qrcode.dto.request.DecryptionRequest;
-import com.kb.wallet.qrcode.dto.response.DecryptionResponse;
 import com.kb.wallet.qrcode.service.RSAService;
 import com.kb.wallet.seat.domain.Seat;
 import com.kb.wallet.seat.service.SeatService;
@@ -46,6 +44,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -67,6 +66,7 @@ public class TicketServiceImpl implements TicketService {
   private final SeatService seatService;
   private final TicketMapper ticketMapper;
 
+  private final SignedTicketStorage signedTicketStorage;
   private final TokenProvider tokenProvider;
   private final RSAService rsaService;
   private final Map<Long, String> privateKeyStorage = new ConcurrentHashMap<>();
@@ -175,7 +175,9 @@ public class TicketServiceImpl implements TicketService {
       .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
 
     // 티켓 가용성 확인
-    if (!isTicketAvailable(savedTicket)) {
+    //TODO: isTicketAvailable paran 변경 TicketUseValidationResponse 생성해서
+    if (!isTicketAvailable(
+      savedTicket)) {// TicketUseValidationResponse.toTicketUseValidationResponse(savedTicket);
       log.warn("Ticket is not available for use. Ticket ID: {}", savedTicket.getId());
       return false;
     }
@@ -305,7 +307,8 @@ public class TicketServiceImpl implements TicketService {
     }
     try {
       TicketResponse ticket = findTicket(member.getEmail(), ticketId);
-      if (!isTicketAvailable(member.getId(), ticket)) {
+      //TODO: isTicketAvailable param 변경, TicketUseValidationResponse response
+      if (!isTicketAvailable(ticket)) {
         throw new CustomException(ErrorCode.TICKET_STATUS_INVALID,
           "티켓 상태가 유효하지 않습니다.");
       }
@@ -353,19 +356,14 @@ public class TicketServiceImpl implements TicketService {
       byte[] pngData = pngOutputStream.toByteArray();
 
       // 이미지를 Base64로 인코딩
-      return Base64.getEncoder().encodeToString(pngData);
+      return encryptedData;
     } catch (WriterException | IOException e) {
       log.error("QR 코드 생성 중 오류 발생", e);
       throw new CustomException(ErrorCode.QR_CODE_GENERATION_ERROR, "QR 코드 생성 중 오류가 발생했습니다.");
     }
   }
 
-  public boolean isTicketAvailable(Ticket ticket) {
-    return ticket.getTicketStatus() == TicketStatus.BOOKED &&
-      !LocalDateTime.now().isAfter(ticket.getValidUntil());
-  }
-
-  public boolean isTicketAvailable(Long memberId, TicketResponse ticket) {
+  public boolean isTicketAvailable(TicketResponse ticket) {
     // 티켓이 null이 아니고, 상태가 BOOKED인지 확인
     if (ticket == null || ticket.getTicketStatus() != TicketStatus.BOOKED) {
       return false;
@@ -391,39 +389,19 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   @Transactional("jpaTransactionManager")
-  public DecryptionResponse useTicket(Member member, DecryptionRequest decryptionRequest)
+  public TicketResponse useTicket(Member member, Long ticketId)
     throws Exception {
-    String encryptedText = decryptionRequest.getEncryptedText();
+    Ticket ticket = ticketRepository.findByIdAndMember(ticketId, member)
+      .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
 
-    // RSA 복호화
-    KeyPair keyPair = rsaService.generateKeyPair();
-    PrivateKey privateKey = keyPair.getPrivate();
-    String decryptedText = rsaService.decrypt(encryptedText, privateKey);
-    // 복호화된 텍스트에서 티켓 ID와 만료 시간 추출
-    String[] parts = decryptedText.split("\\|");
-    if (parts.length != 2) {
-      throw new IllegalArgumentException("Invalid decrypted ticket information");
+    if (ticket.getTicketStatus() != TicketStatus.BOOKED) {
+      throw new IllegalStateException("Ticket is not in a valid state for use");
     }
-    Long ticketId = Long.parseLong(parts[0]);
-    long expirationTime = Long.parseLong(parts[1]);
 
-    System.out.println("expirationTime = " + expirationTime + "**************************");
-    System.out.println(
-      "*************************ticketId = " + ticketId + "**************************");
+    // 티켓 상태 업데이트
+    ticket.setTicketStatus(TicketStatus.CHECKED);
+    Ticket updatedTicket = ticketRepository.save(ticket);
 
-    // 만료 시간 체크
-    if (System.currentTimeMillis() > expirationTime) {
-      throw new IllegalStateException("QR code has expired");
-    }
-    // 티켓 사용 로직 실행
-    Ticket ticket = findTicketById(ticketId);
-    TicketResponse ticketResponse = findTicket(member.getEmail(), ticketId);
-    if (!isTicketAvailable(member.getId(), ticketResponse)) {
-      throw new CustomException(TICKET_STATUS_INVALID, "티켓 상태가 유효하지 않습니다.");
-    }
-    updateStatusChecked(ticket);
-    // DecryptionResponse 객체 생성 및 반환
-    return new DecryptionResponse(decryptedText);
+    return TicketResponse.toTicketResponse(updatedTicket);
   }
-
 }

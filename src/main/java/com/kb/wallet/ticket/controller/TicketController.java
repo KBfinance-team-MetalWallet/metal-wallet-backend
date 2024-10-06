@@ -4,8 +4,6 @@ import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
-import com.kb.wallet.qrcode.dto.request.DecryptionRequest;
-import com.kb.wallet.qrcode.dto.response.DecryptionResponse;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.SignedTicketRequest;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
@@ -127,24 +125,25 @@ public class TicketController {
   @PutMapping("use/{ticketId}")
 // TODO : @PreAuthorize("hasRole('ADMIN')")
 // TODO : 시큐리티 필터 없어서 아직 여긴 role에 따른 인가 구분 못함
-  public ResponseEntity<DecryptionResponse> updateTicket(
+  public ResponseEntity<TicketResponse> updateTicket(
     @AuthenticationPrincipal Member member,
-    @PathVariable(name = "ticketId") Long ticketId,
-    @RequestBody DecryptionRequest decryptionRequest) throws Exception {
+    @PathVariable(name = "ticketId") Long ticketId
+  ) throws Exception {
     System.out.println(" ************************");
     //TODO: QrCreationResponse qrCreationResponse 를 request로 받는다
     //  복호화
     //  qr 해서 받는 데이터 token, encryptedData, second
     //  encryptedData 디코딩 -> 예약자의 memberId, 티켓 ID
     //TODO: 동시성 처리
-    DecryptionResponse decryptionResponse = ticketService.useTicket(member, decryptionRequest);
 
+    TicketResponse updatedTicket = ticketService.useTicket(member, ticketId);
     Ticket ticket = ticketService.findTicketById(member.getId());
-    if (ticketService.isTicketAvailable(member.getId(), TicketResponse.toTicketResponse(ticket))) {
+    //TODO: isTicketAvailable paran 변경, TicketUseValidationResponse 변경
+    if (ticketService.isTicketAvailable(TicketResponse.toTicketResponse(ticket))) {
       ticketService.updateStatusChecked(ticket);
     }
 
-    return ResponseEntity.ok(decryptionResponse);
+    return ResponseEntity.ok(updatedTicket);
   }
 
   @DeleteMapping("/{ticketId}")

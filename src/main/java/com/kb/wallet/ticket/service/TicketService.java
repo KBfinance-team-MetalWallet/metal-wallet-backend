@@ -1,8 +1,6 @@
 package com.kb.wallet.ticket.service;
 
 import com.kb.wallet.member.domain.Member;
-import com.kb.wallet.qrcode.dto.request.DecryptionRequest;
-import com.kb.wallet.qrcode.dto.response.DecryptionResponse;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
@@ -25,9 +23,8 @@ public interface TicketService {
 
   void cancelTicket(String email, Long ticketId);
 
-  boolean isTicketAvailable(Long memberId, TicketResponse ticket);
+  boolean isTicketAvailable(TicketResponse ticket);
 
-  boolean isTicketAvailable(Ticket ticket);
 
   void updateStatusChecked(Ticket ticket);
 
@@ -38,7 +35,8 @@ public interface TicketService {
 
   Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page, int size);
 
-  DecryptionResponse useTicket(Member member, DecryptionRequest decryptionRequest) throws Exception;
+  TicketResponse useTicket(Member member, Long ticketId)
+    throws Exception;
 
   QrCreationResponse generateQRCodeData(String email, Long ticketId, String deviceId)
     throws Exception;
