@@ -24,6 +24,9 @@ public class Seat {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(nullable = false)
+  private int seatNo;
+
   @ManyToOne
   @JoinColumn(name = "section_id")
   private Section section;

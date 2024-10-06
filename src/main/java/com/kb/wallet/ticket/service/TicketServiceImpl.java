@@ -23,6 +23,7 @@ import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.response.QrCreationResponse;
 import com.kb.wallet.ticket.dto.response.SignedTicketResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
 import com.kb.wallet.ticket.repository.TicketMapper;
@@ -159,11 +160,10 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public Page<TicketResponse> findAllBookedTickets(String email, int page, int size) {
+  public Page<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus,
+      int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<Ticket> ticketsByMemberIdAndTicketStatus =
-      ticketRepository.findTicketsByMemberAndTicketStatus(email, TicketStatus.BOOKED, pageable);
-    return ticketsByMemberIdAndTicketStatus.map(TicketResponse::toTicketResponse);
+    return ticketRepository.findTicketsByMemberAndTicketStatus(email, ticketStatus, pageable);
   }
 
   public void updateStatusChecked(Ticket ticket) {
