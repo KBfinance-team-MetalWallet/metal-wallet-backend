@@ -10,8 +10,10 @@ import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalDetailResponse;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
 import com.kb.wallet.musical.dto.response.MusicalScheduleResponse;
+import com.kb.wallet.musical.dto.response.MusicalScheduleSeatAvailabilityResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.service.MusicalService;
+import java.util.Collections;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.Builder;
@@ -125,4 +127,19 @@ public class MusicalController {
       .build();
     return ApiResponse.ok(response);
   }
+
+  @GetMapping("/schedules/{scheduleId}/seats")
+  public ApiResponse<List<MusicalScheduleSeatAvailabilityResponse>> getScheduleSeatAvailability(
+      @AuthenticationPrincipal Member member,
+      @PathVariable(name = "scheduleId") Long scheduleId) {
+
+    List<Long> availableSeats = musicalService.getAvailableSeatsByScheduleId(scheduleId);
+
+    MusicalScheduleSeatAvailabilityResponse response = MusicalScheduleSeatAvailabilityResponse.builder()
+        .availableSeats(availableSeats)
+        .build();
+
+    return ApiResponse.ok(Collections.singletonList(response));
+  }
+
 }
