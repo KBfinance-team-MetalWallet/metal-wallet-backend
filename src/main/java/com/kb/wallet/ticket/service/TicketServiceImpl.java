@@ -199,7 +199,6 @@ public class TicketServiceImpl implements TicketService {
 
   public void updateStatusChecked(Ticket ticket) {
     ticket.setTicketStatus(TicketStatus.CHECKED);
-    ticketRepository.save(ticket);
   }
 
   @Override
@@ -315,13 +314,16 @@ public class TicketServiceImpl implements TicketService {
       String extractedDeviceId = jsonObject.getString("deviceId");
       Long extractedId = jsonObject.getLong("id");
 
+
+      //TODO : Ticket 상태 체크가 선행되어야 함. ticket status == BOOKED
+
       // 티켓을 조회하고 유효성을 검증
       Ticket ticket = findTicketById(extractedId);
       if (!request.getMemberId().equals(extractedMemberId)) {
-        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR);
+        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR, "MemberId 가 동일하지 않습니다.");
       }
       if (!request.getDeviceId().equals(extractedDeviceId)) {
-        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR);
+        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR, "DeviceId 가 동일하지 않습니다.");
       }
       // 티켓 상태를 CHECKED로 변경
       updateStatusChecked(ticket);
