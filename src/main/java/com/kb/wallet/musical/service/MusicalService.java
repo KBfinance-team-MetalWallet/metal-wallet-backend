@@ -34,4 +34,7 @@ public interface MusicalService {
   List<MusicalResponse> findMusicalsAfterCursor(Long cursor, int size);
 
   Set<String> getScheduleDates(Long musicalId);
+
+  // 예약 가능한 좌석 조회
+  List<Long> getAvailableSeatsByScheduleId(Long scheduleId);
 }
