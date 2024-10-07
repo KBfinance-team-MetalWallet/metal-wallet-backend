@@ -3,6 +3,7 @@ package com.kb.wallet.ticket.service;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_EXCHANGE_NOT_FOUND_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
+import static com.kb.wallet.ticket.constant.TicketStatus.BOOKED;
 import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -168,6 +169,10 @@ public class TicketServiceImpl implements TicketService {
     response.setPublicKey(publicKeyString);
     response.setTicketInfo(ticketInfo);
 
+    // 만료 시간 설정 (현재 시간 + 30초)
+    long expirationTime = System.currentTimeMillis() + 31000; // 31 초후
+    response.setSeconds(expirationTime / 1000); // 초 단위로 변환하여 설정
+
     return response;
   }
 
@@ -192,7 +197,7 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   public Page<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus,
-      int page, int size) {
+    int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     return ticketRepository.findTicketsByMemberAndTicketStatus(email, ticketStatus, pageable);
   }
@@ -303,33 +308,33 @@ public class TicketServiceImpl implements TicketService {
       // PrivateKey로 암호화된 데이터를 복호화
       String decryptedData = rsaService.decrypt(request.getEncryptedTicketInfo(),
         rsaService.getPrivateKey());
-      // 복호화된 데이터로 티켓 정보를 확인 TODO : FE에서 어떤 DATA를 전달해주는 지 알아야 고침
-      Long ticketId = Long.valueOf(decryptedData);  // 예시로 복호화된 데이터가 ticketId라고 가정
 
       // JSON 파싱
       JSONObject jsonObject = new JSONObject(decryptedData);
 
+      // ticketInfo 객체 추출
+      JSONObject ticketInfo = jsonObject.getJSONObject("ticketInfo");
       // JSON에서 accessToken 값 추출
-      Long extractedMemberId = jsonObject.getLong("memberId");
-      String extractedDeviceId = jsonObject.getString("deviceId");
-      Long extractedId = jsonObject.getLong("id");
 
+      Long extractedMemberId = ticketInfo.getLong("memberId");
+      String extractedDeviceId = ticketInfo.getString("deviceId");
+      Long extractedId = ticketInfo.getLong("ticketId");
 
       //TODO : Ticket 상태 체크가 선행되어야 함. ticket status == BOOKED
 
       // 티켓을 조회하고 유효성을 검증
       Ticket ticket = findTicketById(extractedId);
-      if (!request.getMemberId().equals(extractedMemberId)) {
-        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR, "MemberId 가 동일하지 않습니다.");
+      if (!ticket.getTicketStatus().equals(BOOKED)) {
+        throw new CustomException(ErrorCode.TICKET_STATUS_INVALID,
+          "티켓 상태가 유효하지 않습니다. 상태: " + ticket.getTicketStatus());
       }
-      if (!request.getDeviceId().equals(extractedDeviceId)) {
-        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR, "DeviceId 가 동일하지 않습니다.");
+      if (!ticket.getDeviceId().equals(extractedDeviceId)) {
+        throw new CustomException(ErrorCode.TICKET_STATUS_INVALID,
+          "DeviceID가 맞지 않습니다. :" + extractedDeviceId);
       }
       // 티켓 상태를 CHECKED로 변경
       updateStatusChecked(ticket);
       ticketRepository.save(ticket);
-
-      log.info("Ticket ID {} status updated to CHECKED", ticketId);
 
     } catch (Exception e) {
       log.error("티켓 상태를 CHECKED로 업데이트하지 못했습니다", e);
