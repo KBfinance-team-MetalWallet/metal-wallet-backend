@@ -4,6 +4,7 @@ import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
+import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.dto.request.SignedTicketRequest;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
@@ -21,7 +22,15 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/tickets")
@@ -52,14 +61,14 @@ public class TicketController {
 
   @GetMapping
   public ApiResponse<Page<TicketListResponse>> getUserTickets(
-      @AuthenticationPrincipal Member member,
-      @RequestParam(name = "page", defaultValue = "0") int page,
-      @RequestParam(name = "size", defaultValue = "10") int size,
-      @RequestParam(name = "status", required = false) String status) {
+    @AuthenticationPrincipal Member member,
+    @RequestParam(name = "page", defaultValue = "0") int page,
+    @RequestParam(name = "size", defaultValue = "10") int size,
+    @RequestParam(name = "status", required = false) String status) {
     TicketStatus ticketStatus = "booked".equalsIgnoreCase(status) ? TicketStatus.BOOKED : null;
     Page<TicketListResponse> tickets = ticketService.findAllBookedTickets(member.getEmail(),
-        ticketStatus, page,
-        size);
+      ticketStatus, page,
+      size);
     return ApiResponse.ok(tickets);
   }
 

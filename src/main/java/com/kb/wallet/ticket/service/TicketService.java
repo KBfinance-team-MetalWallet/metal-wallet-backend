@@ -1,6 +1,7 @@
 package com.kb.wallet.ticket.service;
 
 import com.kb.wallet.member.domain.Member;
+import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
@@ -20,7 +21,7 @@ public interface TicketService {
   Ticket findTicketById(Long id);
 
   Page<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus, int page,
-      int size);
+    int size);
 
   List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest);
 
