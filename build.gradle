@@ -93,6 +93,9 @@ dependencies {
     // BouncyCastle
     implementation 'org.bouncycastle:bcprov-jdk15on:1.68'
 
+    // JSON Parsing
+    implementation 'org.json:json:20210307'
+
     // Test dependencies
     testImplementation "org.springframework:spring-test:${springVersion}"
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
