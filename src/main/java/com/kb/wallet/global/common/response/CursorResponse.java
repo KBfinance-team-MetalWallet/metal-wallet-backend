@@ -2,8 +2,10 @@ package com.kb.wallet.global.common.response;
 
 import java.util.List;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class CursorResponse<T> {
 
   private List<T> data;         // 조회된 데이터 리스트
@@ -13,4 +15,5 @@ public class CursorResponse<T> {
     this.data = data;
     this.nextCursor = nextCursor;
   }
+
 }

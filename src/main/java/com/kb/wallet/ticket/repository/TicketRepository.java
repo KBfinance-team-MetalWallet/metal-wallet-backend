@@ -3,6 +3,7 @@ package com.kb.wallet.ticket.repository;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
+import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +24,19 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
       @Param("id") Long id,
       @Param("email") String email);
 
-  @Query("SELECT t FROM Ticket t WHERE t.member.email = :email AND t.ticketStatus = :status")
-  Page<Ticket> findTicketsByMemberAndTicketStatus(
+  @Query("SELECT new com.kb.wallet.ticket.dto.response.TicketListResponse(" +
+      "t.id, m.title, t.ticketStatus, " +
+      "t.createdAt, t.validUntil, t.cancelUntil, " +
+      "m.place, sc.date, sc.startTime, " +
+      "m.posterImageUrl, sec.grade, s.seatNo) " +
+      "FROM Ticket t " +
+      "JOIN t.musical m " +
+      "JOIN t.seat s " +
+      "JOIN s.section sec " +
+      "JOIN s.schedule sc " +
+      "WHERE t.member.email = :email " +
+      "AND (:status IS NULL OR t.ticketStatus = :status)")
+  Page<TicketListResponse> findTicketsByMemberAndTicketStatus(
       @Param("email") String email,
       @Param("status") TicketStatus status,
       Pageable pageable);

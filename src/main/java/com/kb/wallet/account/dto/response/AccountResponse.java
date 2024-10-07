@@ -1,4 +1,4 @@
-package com.kb.wallet.account.dto;
+package com.kb.wallet.account.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kb.wallet.account.domain.Account;
@@ -20,6 +20,7 @@ public class AccountResponse {
 
   private String bankLogo;
   private String bankName;
+  private String bankColor;
   private String color;
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
@@ -32,7 +33,8 @@ public class AccountResponse {
                 .accountNumber(account.getNumber())
                 .balance(account.getBalance())
                 .bankLogo(account.getBankLogo())
-                .bankName(account.getBankName())
+                .bankColor(account.getColor())
+                .bankName(String.valueOf(account.getBankName()))
                 .createdAt(account.getCreatedAt())
                 .build()
         )

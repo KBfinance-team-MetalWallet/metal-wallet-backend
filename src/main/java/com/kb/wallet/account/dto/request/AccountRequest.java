@@ -1,4 +1,4 @@
-package com.kb.wallet.account.dto;
+package com.kb.wallet.account.dto.request;
 
 import javax.validation.constraints.NotBlank;
 import lombok.Getter;

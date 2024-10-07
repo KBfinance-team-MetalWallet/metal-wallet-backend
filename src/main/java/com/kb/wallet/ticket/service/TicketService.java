@@ -8,6 +8,7 @@ import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
 import com.kb.wallet.ticket.dto.response.ProposedEncryptResponse;
 import com.kb.wallet.ticket.dto.response.SignedTicketResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,8 @@ public interface TicketService {
 
   Ticket findTicketById(Long id);
 
-  Page<TicketResponse> findAllBookedTickets(String email, int page, int size);
+  Page<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus, int page,
+      int size);
 
   List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest);
 
