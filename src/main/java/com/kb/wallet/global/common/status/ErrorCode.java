@@ -64,7 +64,8 @@ public enum ErrorCode {
   TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다."),
   TICKET_EXCHANGE_NOT_FOUND_ERROR(404, "TI003", "교환하기 위한 티켓을 찾을 수 없습니다."),
   TICKET_MISMATCH(400, "TI004", "티켓 ID가 일치하지 않습니다."),
-
+  TICKET_UPDATE_ERROR(400, "TI005", "티켓 상태를 CHECKED로 업데이트하지 못했습니다"),
+  UNAUTHORIZED_ACCESS_ERROR(400, "TI006", "해당 티켓의 접근은 허락되지 않습니다."),
   // QR 코드 관련 에러 코드
   ENCRYPTION_ERROR(500, "EN001", "QR 코드 암호화 중 오류가 발생했습니다."),
   DECRYPTION_ERROR(500, "QR002", "QR 코드 복호화 중 오류가 발생했습니다."),
@@ -72,7 +73,6 @@ public enum ErrorCode {
   QR_CODE_NOT_FOUND(404, "QR004", "QR 코드가 존재하지 않습니다."),
   INVALID_SECRET_KEY(500, "QR005", "유효하지 않은 비밀키입니다."),
   INVALID_IV(500, "QR006", "유효하지 않은 IV입니다."),
-  TICKET_EXPIRED(400, "QR007", "QR 코드가 만료되었습니다."),
 
   // RSA 알고리즘 관련 에러 코드
   INVALID_KEY(400, "RSA001", "유효하지 않은 키입니다"),
