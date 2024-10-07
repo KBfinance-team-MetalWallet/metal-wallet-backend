@@ -12,6 +12,4 @@ import lombok.Setter;
 public class VerifyTicketRequest {
 
   private String encryptedTicketInfo;
-  private Long memberId;
-  private String deviceId;
 }
