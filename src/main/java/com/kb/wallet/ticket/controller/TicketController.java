@@ -4,12 +4,11 @@ import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
-import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.SignedTicketRequest;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
-import com.kb.wallet.ticket.dto.response.QrCreationResponse;
+import com.kb.wallet.ticket.dto.response.ProposedEncryptResponse;
 import com.kb.wallet.ticket.dto.response.SignedTicketResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
@@ -68,16 +67,6 @@ public class TicketController {
     return ApiResponse.ok(tickets);
   }
 
-  @PostMapping("/verify")
-  public ApiResponse<Boolean> verifyTicket(
-    @AuthenticationPrincipal Member member,
-    @RequestBody VerifyTicketRequest request)
-    throws Exception {
-    boolean isValid = ticketService.verifyTicketSignature(request.getTicket(),
-      request.getSignature(), request.getDeviceId());
-    return ApiResponse.ok(isValid);
-  }
-
   @GetMapping("/{ticketId}")
   public ApiResponse<TicketResponse> getTicket(
     @AuthenticationPrincipal Member member,
@@ -88,63 +77,25 @@ public class TicketController {
   }
 
   @PostMapping("encrypt/{ticketId}")
-  public ResponseEntity<QrCreationResponse> generateEncryptData(
+  public ResponseEntity<ProposedEncryptResponse> generateEncryptData(
     @AuthenticationPrincipal Member member,
-    @PathVariable(name = "ticketId") Long ticketId,
-    @RequestParam String deviceID) throws Exception {
-    QrCreationResponse response = ticketService.generateQRCodeData(member.getEmail(), ticketId,
-      deviceID);
-    //TODO: byte[] -> String으로 변환할 것
-    //  String encryptedData = util.encrypt()
-    //TODO: qr 생성은 클라이언트에서 처리하도록 변경할 것
-    //TODO: qrCreationResponse로 반환해야함 = qrCreationResponse
-    //  이 DTO에는 token, qrBytes, secord값이 담김
+    @PathVariable(name = "ticketId") Long ticketId) {
+    ProposedEncryptResponse response = ticketService.provideEncryptElement(ticketId,
+      member.getEmail());
     return ResponseEntity.ok(response);
   }
 
-
-  //  @PutMapping("/use")
-////  @PreAuthorize("hasRole('ADMIN')")
-//  // 시큐리티 필터 없어서 아직 여긴 role에 따른 인가 구분 못함
-//  public ResponseEntity<DecryptionResponse> updateTicket(
-//      @AuthenticationPrincipal Member member,
-//      @RequestBody DecryptionRequest decryptionRequest) throws Exception {
-//    //TODO: QrCreationResponse qrCreationResponse 를 request로 받는다
-//    //  복호화
-//    //  qr 해서 받는 데이터 token, qrBytes, second
-//    //  qrBytes 디코딩 -> 예약자의 memberId, 티켓 ID
-//    //TODO: 동시성 처리
-//    Ticket ticket = ticketService.findTicketById(2L);
-//
-//    if (ticketService.isTicketAvailable(2L, TicketResponse.toTicketResponse(ticket))) {
-//      ticketService.updateStatusChecked(ticket);
-//    }
-//    DecryptionResponse decryptionResponse = ticketService.useTicket(member, decryptionRequest);
-//    return ResponseEntity.ok(decryptionResponse);
-//  }
-  @PutMapping("use/{ticketId}")
+  @PutMapping("/use")
 // TODO : @PreAuthorize("hasRole('ADMIN')")
 // TODO : 시큐리티 필터 없어서 아직 여긴 role에 따른 인가 구분 못함
-  public ResponseEntity<TicketResponse> updateTicket(
+  public ResponseEntity<Void> updateTicket(
     @AuthenticationPrincipal Member member,
-    @PathVariable(name = "ticketId") Long ticketId
-  ) throws Exception {
-    System.out.println(" ************************");
-    //TODO: QrCreationResponse qrCreationResponse 를 request로 받는다
-    //  복호화
-    //  qr 해서 받는 데이터 token, encryptedData, second
-    //  encryptedData 디코딩 -> 예약자의 memberId, 티켓 ID
-    //TODO: 동시성 처리
-
-    TicketResponse updatedTicket = ticketService.useTicket(member, ticketId);
-    Ticket ticket = ticketService.findTicketById(member.getId());
-    //TODO: isTicketAvailable paran 변경, TicketUseValidationResponse 변경
-    if (ticketService.isTicketAvailable(TicketResponse.toTicketResponse(ticket))) {
-      ticketService.updateStatusChecked(ticket);
-    }
-
-    return ResponseEntity.ok(updatedTicket);
+    @RequestBody VerifyTicketRequest request
+  ) {
+    ticketService.updateToCheckedStatus(request);
+    return ResponseEntity.ok().build();
   }
+
 
   @DeleteMapping("/{ticketId}")
   public ApiResponse<Void> cancelTicket(

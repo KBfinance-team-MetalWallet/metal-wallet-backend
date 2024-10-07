@@ -7,11 +7,6 @@ import static com.kb.wallet.ticket.constant.TicketStatus.EXCHANGE_REQUESTED;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.jwt.TokenProvider;
@@ -25,16 +20,18 @@ import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.domain.TicketExchange;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
-import com.kb.wallet.ticket.dto.response.QrCreationResponse;
+import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
+import com.kb.wallet.ticket.dto.response.ProposedEncryptResponse;
 import com.kb.wallet.ticket.dto.response.SignedTicketResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.TicketInfo;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
 import com.kb.wallet.ticket.repository.TicketMapper;
 import com.kb.wallet.ticket.repository.TicketRepository;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
@@ -44,9 +41,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -66,7 +63,6 @@ public class TicketServiceImpl implements TicketService {
   private final SeatService seatService;
   private final TicketMapper ticketMapper;
 
-  private final SignedTicketStorage signedTicketStorage;
   private final TokenProvider tokenProvider;
   private final RSAService rsaService;
   private final Map<Long, String> privateKeyStorage = new ConcurrentHashMap<>();
@@ -101,7 +97,6 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-
   public SignedTicketResponse signTicket(Long ticketId) {
     log.debug("Signing ticket with ID: {}", ticketId);
 
@@ -150,41 +145,29 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public boolean verifyTicketSignature(SignedTicketResponse signedTicketResponse,
-    String signature,
-    String deviceId) throws Exception {
-    PublicKey publicKey = rsaService.getPublicKey();
-    String encryptedTicketInfo = signedTicketResponse.getEncryptedTicketInfo();
+  public ProposedEncryptResponse provideEncryptElement(Long ticketId, String email) {
+    // ticketId로 Ticket 객체 조회
+    Ticket ticket = findTicketById(ticketId);
 
-    if (!rsaService.verify(encryptedTicketInfo, signature, publicKey)) {
-      log.warn("Signature verification failed for ticket");
-      return false; // 서명 검증 실패 시 false 반환
+    // 필요한 Ticket 정보 생성
+    TicketInfo ticketInfo = TicketInfo.fromTicket(ticket);
+
+    // 공개키 생성 또는 조회
+    KeyPair keyPair = null;
+    try {
+      keyPair = rsaService.generateKeyPair();
+    } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+      throw new RuntimeException(e);
     }
+    PublicKey publicKey = keyPair.getPublic();
 
-    PrivateKey privateKey = rsaService.getPrivateKey();
-    String decryptedTicketInfo = rsaService.decrypt(encryptedTicketInfo, privateKey);
-    TicketResponse decryptedTicketResponse = convertStringToTicketResponse(decryptedTicketInfo);
+    // ProposedEncryptResponse 생성 및 설정
+    ProposedEncryptResponse response = new ProposedEncryptResponse();
+    String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+    response.setPublicKey(publicKeyString);
+    response.setTicketInfo(ticketInfo);
 
-    // deviceId 검증
-    if (!decryptedTicketResponse.getDeviceId().equals(deviceId)) {
-      log.warn("Device ID mismatch");
-      return false;
-    }
-
-    Ticket savedTicket = ticketRepository.findById(decryptedTicketResponse.getId())
-      .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
-
-    // 티켓 가용성 확인
-    //TODO: isTicketAvailable paran 변경 TicketUseValidationResponse 생성해서
-    if (!isTicketAvailable(
-      savedTicket)) {// TicketUseValidationResponse.toTicketUseValidationResponse(savedTicket);
-      log.warn("Ticket is not available for use. Ticket ID: {}", savedTicket.getId());
-      return false;
-    }
-
-    log.info("Ticket verification successful. Ticket ID: {}", savedTicket.getId());
-    return true;
-
+    return response;
   }
 
 
@@ -292,77 +275,6 @@ public class TicketServiceImpl implements TicketService {
       .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
   }
 
-  @Override
-  public void savePrivateKey(Long ticketId, String privateKey) {
-    privateKeyStorage.put(ticketId, privateKey);
-  }
-
-  @Override
-  public QrCreationResponse generateQRCodeData(String email, Long ticketId, String deviceId)
-    throws Exception {
-//    log.info("Generating QR code for ticket ID: {}, Member ID: {}", ticketId, member.getId());
-    Member member = memberService.getMemberByEmail(email);
-    if (member.getId() == null) {
-      throw new CustomException(ErrorCode.MEMBER_STATUS_INVALID, "유효하지 않은 회원 정보입니다.");
-    }
-    try {
-      TicketResponse ticket = findTicket(member.getEmail(), ticketId);
-      //TODO: isTicketAvailable param 변경, TicketUseValidationResponse response
-      if (!isTicketAvailable(ticket)) {
-        throw new CustomException(ErrorCode.TICKET_STATUS_INVALID,
-          "티켓 상태가 유효하지 않습니다.");
-      }
-      // deviceId 유효성 검사
-      if (deviceId == null || deviceId.isEmpty()) {
-        throw new CustomException(ErrorCode.NOT_VALID_ERROR, "디바이스 ID는 필수입니다.");
-      }
-
-      String token = tokenProvider.createToken(ticketId);
-      KeyPair keyPair = rsaService.generateKeyPair();
-      PublicKey publicKey = keyPair.getPublic();
-      PrivateKey privateKey = keyPair.getPrivate();
-
-      String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
-      String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
-
-      long expirationTime = System.currentTimeMillis() + 30000; // 30초 후
-      String plaintext = String.format("%d|%d|%s", ticketId, expirationTime, deviceId);
-      String encryptedData = rsaService.encrypt(plaintext, publicKey);
-
-      savePrivateKey(ticketId, privateKeyString);
-      // QR 코드 데이터 생성 (encryptedData를 사용)
-      String qrCodeData = generateQRCodeData(encryptedData);
-
-      return QrCreationResponse.toQrCreationResponse(token, encryptedData, 300, privateKeyString);
-    } catch (CustomException e) {
-      throw e;
-    } catch (Exception e) {
-      log.error("QR 코드 생성 중 오류가 발생했습니다.", e);
-      throw new CustomException(ErrorCode.QR_CODE_GENERATION_ERROR,
-        "QR 코드 생성 중 오류가 발생했습니다.");
-    }
-
-  }
-
-  private String generateQRCodeData(String encryptedData) {
-    try {
-      // QR 코드 생성
-      QRCodeWriter qrCodeWriter = new QRCodeWriter();
-      BitMatrix bitMatrix = qrCodeWriter.encode(encryptedData, BarcodeFormat.QR_CODE, 200, 200);
-
-      // QR 코드를 이미지로 변환
-      ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-      MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-      byte[] pngData = pngOutputStream.toByteArray();
-
-      // 이미지를 Base64로 인코딩
-      return encryptedData;
-    } catch (WriterException | IOException e) {
-      log.error("QR 코드 생성 중 오류 발생", e);
-      throw new CustomException(ErrorCode.QR_CODE_GENERATION_ERROR, "QR 코드 생성 중 오류가 발생했습니다.");
-    }
-  }
-
   public boolean isTicketAvailable(TicketResponse ticket) {
     // 티켓이 null이 아니고, 상태가 BOOKED인지 확인
     if (ticket == null || ticket.getTicketStatus() != TicketStatus.BOOKED) {
@@ -386,22 +298,40 @@ public class TicketServiceImpl implements TicketService {
     return true;
   }
 
-
   @Override
-  @Transactional("jpaTransactionManager")
-  public TicketResponse useTicket(Member member, Long ticketId)
-    throws Exception {
-    Ticket ticket = ticketRepository.findByIdAndMember(ticketId, member)
-      .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+  public void updateToCheckedStatus(VerifyTicketRequest request) {
+    try {
+      // PrivateKey로 암호화된 데이터를 복호화
+      String decryptedData = rsaService.decrypt(request.getEncryptedTicketInfo(),
+        rsaService.getPrivateKey());
+      // 복호화된 데이터로 티켓 정보를 확인 TODO : FE에서 어떤 DATA를 전달해주는 지 알아야 고침
+      Long ticketId = Long.valueOf(decryptedData);  // 예시로 복호화된 데이터가 ticketId라고 가정
 
-    if (ticket.getTicketStatus() != TicketStatus.BOOKED) {
-      throw new IllegalStateException("Ticket is not in a valid state for use");
+      // JSON 파싱
+      JSONObject jsonObject = new JSONObject(decryptedData);
+
+      // JSON에서 accessToken 값 추출
+      Long extractedMemberId = jsonObject.getLong("memberId");
+      String extractedDeviceId = jsonObject.getString("deviceId");
+      Long extractedId = jsonObject.getLong("id");
+
+      // 티켓을 조회하고 유효성을 검증
+      Ticket ticket = findTicketById(extractedId);
+      if (!request.getMemberId().equals(extractedMemberId)) {
+        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR);
+      }
+      if (!request.getDeviceId().equals(extractedDeviceId)) {
+        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR);
+      }
+      // 티켓 상태를 CHECKED로 변경
+      updateStatusChecked(ticket);
+      ticketRepository.save(ticket);
+
+      log.info("Ticket ID {} status updated to CHECKED", ticketId);
+
+    } catch (Exception e) {
+      log.error("티켓 상태를 CHECKED로 업데이트하지 못했습니다", e);
+      throw new CustomException(ErrorCode.TICKET_UPDATE_ERROR);
     }
-
-    // 티켓 상태 업데이트
-    ticket.setTicketStatus(TicketStatus.CHECKED);
-    Ticket updatedTicket = ticketRepository.save(ticket);
-
-    return TicketResponse.toTicketResponse(updatedTicket);
   }
 }
