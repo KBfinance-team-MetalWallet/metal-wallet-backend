@@ -13,7 +13,6 @@ import com.kb.wallet.musical.dto.response.MusicalScheduleResponse;
 import com.kb.wallet.musical.dto.response.MusicalScheduleSeatAvailabilityResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.service.MusicalService;
-import java.util.Collections;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.Builder;
@@ -91,8 +90,7 @@ public class MusicalController {
 
   @PutMapping("/{musicalId}")
 //  @PreAuthorize("hasRole('ADMIN')") // 관리자만 뮤지컬 정보 업데이트 가능
-  public ResponseEntity<Void> updateMusicalInfo(
-    @PathVariable(name = "musicalId") Long musicalId,
+  public ResponseEntity<Void> updateMusicalInfo(@PathVariable(name = "musicalId") Long musicalId,
     @RequestBody MusicalInfoUpdateRequest request) {
     /**
      * TODO : Login Authentication 추가 예정
@@ -103,43 +101,34 @@ public class MusicalController {
 
   @GetMapping("/{musicalId}/seats-availability")
   public ApiResponse<List<MusicalSeatAvailabilityResponse>> checkSeatAvailability(
-    @AuthenticationPrincipal Member member,
-    @PathVariable(name = "musicalId") Long musicalId,
+    @AuthenticationPrincipal Member member, @PathVariable(name = "musicalId") Long musicalId,
     @RequestParam("date") String date) {
 
     List<MusicalSeatAvailabilityResponse> responses = musicalService.checkSeatAvailability(
-      musicalId,
-      date);
+      musicalId, date);
 
     return ApiResponse.ok(responses);
   }
 
   @GetMapping("/{musicalId}/dates")
   public ApiResponse<MusicalScheduleResponse> getScheduleDates(
-    @AuthenticationPrincipal Member member,
-    @PathVariable(name = "musicalId") Long musicalId) {
+    @AuthenticationPrincipal Member member, @PathVariable(name = "musicalId") Long musicalId) {
 
     List<String> dates = musicalService.getScheduleDates(musicalId).stream().toList();
 
-    MusicalScheduleResponse response = MusicalScheduleResponse.builder()
-      .musicalId(musicalId)
-      .scheduleDate(dates)
-      .build();
+    MusicalScheduleResponse response = MusicalScheduleResponse.builder().musicalId(musicalId)
+      .scheduleDate(dates).build();
     return ApiResponse.ok(response);
   }
 
   @GetMapping("/schedules/{scheduleId}/seats")
   public ApiResponse<List<MusicalScheduleSeatAvailabilityResponse>> getScheduleSeatAvailability(
-      @AuthenticationPrincipal Member member,
-      @PathVariable(name = "scheduleId") Long scheduleId) {
+    @AuthenticationPrincipal Member member, @PathVariable(name = "scheduleId") Long scheduleId) {
 
-    List<Long> availableSeats = musicalService.getAvailableSeatsByScheduleId(scheduleId);
+    List<MusicalScheduleSeatAvailabilityResponse> responses = musicalService.getAvailableSeatsByScheduleId(
+      scheduleId);
 
-    MusicalScheduleSeatAvailabilityResponse response = MusicalScheduleSeatAvailabilityResponse.builder()
-        .availableSeats(availableSeats)
-        .build();
-
-    return ApiResponse.ok(Collections.singletonList(response));
+    return ApiResponse.ok(responses);
   }
 
 }

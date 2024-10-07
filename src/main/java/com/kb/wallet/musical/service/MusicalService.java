@@ -6,6 +6,7 @@ import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
+import com.kb.wallet.musical.dto.response.MusicalScheduleSeatAvailabilityResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import java.util.List;
 import java.util.Set;
@@ -36,5 +37,5 @@ public interface MusicalService {
   Set<String> getScheduleDates(Long musicalId);
 
   // 예약 가능한 좌석 조회
-  List<Long> getAvailableSeatsByScheduleId(Long scheduleId);
+  List<MusicalScheduleSeatAvailabilityResponse> getAvailableSeatsByScheduleId(Long scheduleId);
 }

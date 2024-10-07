@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SeatRepository extends JpaRepository<Seat, Long> {
 
-  @Query("SELECT s.id FROM Seat s WHERE s.schedule.id = :scheduleId AND s.isAvailable = true")
-  List<Long> findAvailableSeatsByScheduleId(@Param("scheduleId") Long scheduleId);
+  @Query("SELECT s FROM Seat s WHERE s.schedule.id = :scheduleId AND s.isAvailable = true")
+  List<Seat> findAvailableSeatsByScheduleId(@Param("scheduleId") Long scheduleId);
 }

@@ -8,9 +8,11 @@ import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
+import com.kb.wallet.musical.dto.response.MusicalScheduleSeatAvailabilityResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.repository.CustomMusicalRepository;
 import com.kb.wallet.musical.repository.MusicalRepository;
+import com.kb.wallet.seat.domain.Seat;
 import com.kb.wallet.seat.repository.SeatRepository;
 import com.kb.wallet.ticket.service.ScheduleService;
 import java.time.LocalDate;
@@ -120,7 +122,9 @@ public class MusicalServiceImpl implements MusicalService {
   }
 
   @Override
-  public List<Long> getAvailableSeatsByScheduleId(Long scheduleId) {
-     return seatRepository.findAvailableSeatsByScheduleId(scheduleId);
+  public List<MusicalScheduleSeatAvailabilityResponse> getAvailableSeatsByScheduleId(
+    Long scheduleId) {
+    List<Seat> seatList = seatRepository.findAvailableSeatsByScheduleId(scheduleId);
+    return seatList.stream().map(MusicalScheduleSeatAvailabilityResponse::new).toList();
   }
 }
