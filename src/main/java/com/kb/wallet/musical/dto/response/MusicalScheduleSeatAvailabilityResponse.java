@@ -1,7 +1,11 @@
 package com.kb.wallet.musical.dto.response;
 
-import java.util.List;
-import lombok.*;
+import com.kb.wallet.seat.constant.Grade;
+import com.kb.wallet.seat.domain.Seat;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
@@ -9,7 +13,15 @@ import lombok.*;
 @NoArgsConstructor
 public class MusicalScheduleSeatAvailabilityResponse {
 
-  private List<Long> availableSeats;
+  private Long seatId;
+  private int seatNo;
+  private Grade grade;
+
+  public MusicalScheduleSeatAvailabilityResponse(Seat seat) {
+    this.seatId = seat.getId();
+    this.seatNo = seat.getSeatNo();
+    this.grade = seat.getSection().getGrade();
+  }
 }
 
 
