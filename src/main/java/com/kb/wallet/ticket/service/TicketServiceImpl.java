@@ -106,10 +106,10 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public Page<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus,
-      int page, int size) {
+  public List<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus,
+      int page, int size, Long cursor) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    return ticketRepository.findTicketsByMemberAndTicketStatus(email, ticketStatus, pageable);
+    return ticketRepository.findTicketsByMemberAndTicketStatus(email, ticketStatus, cursor, pageable);
   }
 
   public void updateStatusChecked(Ticket ticket) {
