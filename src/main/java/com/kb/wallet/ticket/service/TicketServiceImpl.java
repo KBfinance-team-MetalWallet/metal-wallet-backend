@@ -314,13 +314,9 @@ public class TicketServiceImpl implements TicketService {
 
       // ticketInfo 객체 추출
       JSONObject ticketInfo = jsonObject.getJSONObject("ticketInfo");
-      // JSON에서 accessToken 값 추출
 
-      Long extractedMemberId = ticketInfo.getLong("memberId");
       String extractedDeviceId = ticketInfo.getString("deviceId");
       Long extractedId = ticketInfo.getLong("ticketId");
-
-      //TODO : Ticket 상태 체크가 선행되어야 함. ticket status == BOOKED
 
       // 티켓을 조회하고 유효성을 검증
       Ticket ticket = findTicketById(extractedId);
