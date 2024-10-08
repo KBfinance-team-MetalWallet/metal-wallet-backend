@@ -1,6 +1,6 @@
 package com.kb.wallet.ticket.dto.request;
 
-import java.util.List;
+import com.kb.wallet.ticket.dto.response.TicketResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,8 +10,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class TicketRequest {
+public class VerifyTicketRequest {
 
-  private List<Long> seatId;
+  private TicketResponse ticket;
+  private String signature;
   private String deviceId;
+
 }
