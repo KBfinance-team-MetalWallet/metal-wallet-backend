@@ -57,7 +57,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void checkPassword(String email, PinNumberVerificationRequest passwordRequest) {
         Member member = getMemberByEmail(email);
-        if(encoder.matches(member.getPinNumber(), passwordRequest.getPinNumber())){
+        if(!encoder.matches(passwordRequest.getPinNumber(), member.getPinNumber())){
             throw new CustomException(PIN_NUMBER_NOT_MATCH);
         }
     }

@@ -8,16 +8,19 @@ import com.kb.wallet.musical.dto.request.MusicalInfoUpdateRequest;
 import com.kb.wallet.musical.dto.response.MusicalCreationResponse;
 import com.kb.wallet.musical.dto.response.MusicalInfoUpdateResponse;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
+import com.kb.wallet.musical.dto.response.MusicalScheduleSeatAvailabilityResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.repository.CustomMusicalRepository;
 import com.kb.wallet.musical.repository.MusicalRepository;
+import com.kb.wallet.seat.domain.Seat;
+import com.kb.wallet.seat.repository.SeatRepository;
+import com.kb.wallet.ticket.service.ScheduleService;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +30,17 @@ public class MusicalServiceImpl implements MusicalService {
 
   private final MusicalRepository musicalRepository;
   private final CustomMusicalRepository customMusicalRepository;
+  private final ScheduleService scheduleService;
+  private final SeatRepository seatRepository;
 
   @Autowired
   public MusicalServiceImpl(MusicalRepository musicalRepository,
-    CustomMusicalRepository customMusicalRepository) {
+    CustomMusicalRepository customMusicalRepository,
+    ScheduleService scheduleService, SeatRepository seatRepository) {
     this.musicalRepository = musicalRepository;
     this.customMusicalRepository = customMusicalRepository;
+    this.scheduleService = scheduleService;
+    this.seatRepository = seatRepository;
   }
 
   @Override
@@ -41,13 +49,6 @@ public class MusicalServiceImpl implements MusicalService {
     Musical musical = MusicalCreationRequest.toMusical(request);
     Musical saved = musicalRepository.save(musical);
     return MusicalCreationResponse.toMusical(saved);
-  }
-
-  @Override
-  public Page<MusicalResponse> findAllMusicals(int page, int size) {
-    Pageable pageable = PageRequest.of(page, size);
-    Page<Musical> musicals = musicalRepository.findAll(pageable);
-    return musicals.map(MusicalResponse::convertToResponse);
   }
 
   @Override
@@ -114,6 +115,16 @@ public class MusicalServiceImpl implements MusicalService {
       .map(MusicalResponse::convertToResponse)
       .collect(Collectors.toList());
   }
+
+  @Override
+  public Set<String> getScheduleDates(Long musicalId) {
+    return scheduleService.getScheduleDatesByMusicalId(musicalId);
+  }
+
+  @Override
+  public List<MusicalScheduleSeatAvailabilityResponse> getAvailableSeatsByScheduleId(
+    Long scheduleId) {
+    List<Seat> seatList = seatRepository.findAvailableSeatsByScheduleId(scheduleId);
+    return seatList.stream().map(MusicalScheduleSeatAvailabilityResponse::new).toList();
+  }
 }
-
-

@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
 
+@Component
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -13,7 +15,7 @@ import lombok.Setter;
 @Builder
 public class SignedTicketResponse {
 
-  private TicketResponse ticketInfo;
+  private String encryptedTicketInfo;
   private String signature;
 }
 
