@@ -33,7 +33,7 @@ public class AccountResponse {
                 .accountNumber(account.getNumber())
                 .balance(account.getBalance())
                 .bankLogo(account.getBankLogo())
-                .bankColor(account.getColor())
+                .bankColor(account.getBankColor())
                 .bankName(String.valueOf(account.getBankName()))
                 .createdAt(account.getCreatedAt())
                 .build()

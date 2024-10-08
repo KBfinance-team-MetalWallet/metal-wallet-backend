@@ -39,7 +39,7 @@ public class Account {
   @Enumerated(EnumType.STRING)
   private BankName bankName;
 
-  private String color;
+  private String bankColor;
 
   @CreatedDate
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
