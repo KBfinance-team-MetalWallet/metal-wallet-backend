@@ -1,18 +1,16 @@
 package com.kb.wallet.ticket.controller;
 
 import com.kb.wallet.global.common.response.ApiResponse;
+import com.kb.wallet.global.common.response.CursorResponse;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
-import com.kb.wallet.qrcode.dto.request.DecryptionRequest;
-import com.kb.wallet.qrcode.dto.response.DecryptionResponse;
 import com.kb.wallet.ticket.constant.TicketStatus;
-import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.SignedTicketRequest;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
-import com.kb.wallet.ticket.dto.response.QrCreationResponse;
+import com.kb.wallet.ticket.dto.response.ProposedEncryptResponse;
 import com.kb.wallet.ticket.dto.response.SignedTicketResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketListResponse;
@@ -25,7 +23,15 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/tickets")
@@ -41,9 +47,9 @@ public class TicketController {
   @PostMapping
   public ApiResponse<List<TicketResponse>> createTicket(
     @AuthenticationPrincipal Member member,
-    @RequestBody TicketRequest ticketRequest, String deviceId) {
-    List<TicketResponse> tickets = ticketService.saveTicket(member.getEmail(), ticketRequest,
-      deviceId);
+    @RequestBody TicketRequest ticketRequest) {
+    List<TicketResponse> tickets = ticketService.saveTicket(member.getEmail(), ticketRequest
+    );
     return ApiResponse.created(tickets);
   }
 
@@ -55,26 +61,23 @@ public class TicketController {
   }
 
   @GetMapping
-  public ApiResponse<Page<TicketListResponse>> getUserTickets(
+  public ApiResponse<CursorResponse<TicketListResponse>> getUserTickets(
       @AuthenticationPrincipal Member member,
-      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "cursor", required = false) Long cursor,
       @RequestParam(name = "size", defaultValue = "10") int size,
       @RequestParam(name = "status", required = false) String status) {
     TicketStatus ticketStatus = "booked".equalsIgnoreCase(status) ? TicketStatus.BOOKED : null;
-    Page<TicketListResponse> tickets = ticketService.findAllBookedTickets(member.getEmail(),
-        ticketStatus, page,
-        size);
-    return ApiResponse.ok(tickets);
-  }
+    List<TicketListResponse> tickets;
+    Long nextCursor = null;
 
-  @PostMapping("/verify")
-  public ApiResponse<Boolean> verifyTicket(
-    @AuthenticationPrincipal Member member,
-    @RequestBody VerifyTicketRequest request)
-    throws Exception {
-    boolean isValid = ticketService.verifyTicketSignature(request.getTicket(),
-      request.getSignature(), request.getDeviceId());
-    return ApiResponse.ok(isValid);
+    tickets = ticketService.findAllBookedTickets(member.getEmail(),
+        ticketStatus, 0,
+        size, cursor);
+    if(!tickets.isEmpty()) {
+      nextCursor = tickets.get(tickets.size() - 1).getId();
+    }
+    CursorResponse<TicketListResponse> cursorResponse = new CursorResponse<>(tickets, nextCursor);
+    return ApiResponse.ok(cursorResponse);
   }
 
   @GetMapping("/{ticketId}")
@@ -87,65 +90,25 @@ public class TicketController {
   }
 
   @PostMapping("encrypt/{ticketId}")
-  public ResponseEntity<QrCreationResponse> generateEncryptData(
+  public ResponseEntity<ProposedEncryptResponse> generateEncryptData(
     @AuthenticationPrincipal Member member,
-//      @RequestBody EncryptionRequest encryptionRequest,
-    @PathVariable(name = "ticketId") Long ticketId) throws Exception {
-//    Member loginedMemeber = memberService.getMemberByEmail(member.getEmail());
-    log.info("Generating QR code. Member ID: {}, Ticket ID: {}", member.getId(), ticketId);
-    QrCreationResponse response = ticketService.generateQRCodeData(member.getEmail(), ticketId);
-
-    //TODO: byte[] -> String으로 변환할 것
-    //  String encryptedData = util.encrypt()
-    //TODO: qr 생성은 클라이언트에서 처리하도록 변경할 것
-    //TODO: qrCreationResponse로 반환해야함 = qrCreationResponse
-    //  이 DTO에는 token, qrBytes, secord값이 담김
+    @PathVariable(name = "ticketId") Long ticketId) {
+    ProposedEncryptResponse response = ticketService.provideEncryptElement(ticketId,
+      member.getEmail());
     return ResponseEntity.ok(response);
-
   }
 
-
-  //  @PutMapping("/use")
-////  @PreAuthorize("hasRole('ADMIN')")
-//  // 시큐리티 필터 없어서 아직 여긴 role에 따른 인가 구분 못함
-//  public ResponseEntity<DecryptionResponse> updateTicket(
-//      @AuthenticationPrincipal Member member,
-//      @RequestBody DecryptionRequest decryptionRequest) throws Exception {
-//    //TODO: QrCreationResponse qrCreationResponse 를 request로 받는다
-//    //  복호화
-//    //  qr 해서 받는 데이터 token, qrBytes, second
-//    //  qrBytes 디코딩 -> 예약자의 memberId, 티켓 ID
-//    //TODO: 동시성 처리
-//    Ticket ticket = ticketService.findTicketById(2L);
-//
-//    if (ticketService.isTicketAvailable(2L, TicketResponse.toTicketResponse(ticket))) {
-//      ticketService.updateStatusChecked(ticket);
-//    }
-//    DecryptionResponse decryptionResponse = ticketService.useTicket(member, decryptionRequest);
-//    return ResponseEntity.ok(decryptionResponse);
-//  }
-  @PutMapping("use/{ticketId}")
+  @PutMapping("/use")
 // TODO : @PreAuthorize("hasRole('ADMIN')")
 // TODO : 시큐리티 필터 없어서 아직 여긴 role에 따른 인가 구분 못함
-  public ResponseEntity<DecryptionResponse> updateTicket(
+  public ResponseEntity<Void> updateTicket(
     @AuthenticationPrincipal Member member,
-    @PathVariable(name = "ticketId") Long ticketId,
-    @RequestBody DecryptionRequest decryptionRequest) throws Exception {
-    System.out.println(" ************************");
-    //TODO: QrCreationResponse qrCreationResponse 를 request로 받는다
-    //  복호화
-    //  qr 해서 받는 데이터 token, encryptedData, second
-    //  encryptedData 디코딩 -> 예약자의 memberId, 티켓 ID
-    //TODO: 동시성 처리
-    DecryptionResponse decryptionResponse = ticketService.useTicket(member, decryptionRequest);
-
-    Ticket ticket = ticketService.findTicketById(2L);
-    if (ticketService.isTicketAvailable(2L, TicketResponse.toTicketResponse(ticket))) {
-      ticketService.updateStatusChecked(ticket);
-    }
-
-    return ResponseEntity.ok(decryptionResponse);
+    @RequestBody VerifyTicketRequest request
+  ) {
+    ticketService.updateToCheckedStatus(request);
+    return ResponseEntity.ok().build();
   }
+
 
   @DeleteMapping("/{ticketId}")
   public ApiResponse<Void> cancelTicket(
