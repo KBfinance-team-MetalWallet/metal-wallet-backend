@@ -21,10 +21,8 @@ import com.kb.wallet.ticket.domain.TicketExchange;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
-import com.kb.wallet.ticket.dto.response.ProposedEncryptResponse;
 import com.kb.wallet.ticket.dto.response.SignedTicketResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
-import com.kb.wallet.ticket.dto.response.TicketInfo;
 import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
@@ -44,7 +42,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -97,44 +94,6 @@ public class TicketServiceImpl implements TicketService {
     return responses;
   }
 
-  @Override
-  public SignedTicketResponse signTicket(Long ticketId) {
-    log.debug("Signing ticket with ID: {}", ticketId);
-
-    try {
-      Ticket ticket = ticketRepository.findById(ticketId)
-          .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ERROR, "티켓을 찾을 수 없습니다."));
-
-      TicketResponse response = TicketResponse.toTicketResponse(ticket);
-      String ticketInfo = generateTicketData(response);
-
-      log.debug("Generated ticket data for signing: {}", ticketInfo);
-
-      // 티켓 정보 암호화
-      PublicKey publicKey = rsaService.getPublicKey();
-      String encryptedTicketInfo = rsaService.encrypt(ticketInfo, publicKey);
-
-      log.debug("Encrypted ticket info successfully");
-
-      // 암호화된 티켓 정보 서명
-      PrivateKey privateKey = rsaService.getPrivateKey();
-      String signature = rsaService.sign(encryptedTicketInfo, privateKey);
-
-      log.debug("Generated signature for ticket");
-
-      return SignedTicketResponse.builder()
-          .encryptedTicketInfo(encryptedTicketInfo)
-          .signature(signature)
-          .build();
-    } catch (CustomException e) {
-      log.error("Custom error occurred while signing ticket: {}", e.getMessage());
-      throw e;
-    } catch (Exception e) {
-      log.error("Unexpected error occurred while signing ticket", e);
-      throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "티켓 서명 중 오류가 발생했습니다.");
-    }
-  }
-
   private String generateTicketData(TicketResponse response) {
     ObjectMapper objectMapper = new ObjectMapper();
     try {
@@ -144,33 +103,6 @@ public class TicketServiceImpl implements TicketService {
       throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "티켓 데이터 생성 중 오류가 발생했습니다.");
     }
   }
-
-  @Override
-  public ProposedEncryptResponse provideEncryptElement(Long ticketId, String email) {
-    // ticketId로 Ticket 객체 조회
-    Ticket ticket = findTicketById(ticketId);
-
-    // 필요한 Ticket 정보 생성
-    TicketInfo ticketInfo = TicketInfo.fromTicket(ticket);
-
-    // 공개키 생성 또는 조회
-    KeyPair keyPair = null;
-    try {
-      keyPair = rsaService.generateKeyPair();
-    } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-      throw new RuntimeException(e);
-    }
-    PublicKey publicKey = keyPair.getPublic();
-
-    // ProposedEncryptResponse 생성 및 설정
-    ProposedEncryptResponse response = new ProposedEncryptResponse();
-    String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
-    response.setPublicKey(publicKeyString);
-    response.setTicketInfo(ticketInfo);
-
-    return response;
-  }
-
 
   private TicketResponse convertStringToTicketResponse(String ticketInfo) {
     ObjectMapper objectMapper = new ObjectMapper();
@@ -212,11 +144,6 @@ public class TicketServiceImpl implements TicketService {
 
     ticket.setTicketStatus(TicketStatus.CANCELED);
     ticketRepository.save(ticket);
-  }
-
-  @Override
-  public boolean isTicketAvailable(Long memberId, TicketResponse ticket) {
-    return false;
   }
 
   @Override
@@ -301,44 +228,5 @@ public class TicketServiceImpl implements TicketService {
     // 추가적인 검증 로직이 필요하다면 여기에 구현
 
     return true;
-  }
-
-  @Override
-  public void updateToCheckedStatus(VerifyTicketRequest request) {
-    try {
-      // PrivateKey로 암호화된 데이터를 복호화
-      String decryptedData = rsaService.decrypt(request.getEncryptedTicketInfo(),
-          rsaService.getPrivateKey());
-      // 복호화된 데이터로 티켓 정보를 확인 TODO : FE에서 어떤 DATA를 전달해주는 지 알아야 고침
-      Long ticketId = Long.valueOf(decryptedData);  // 예시로 복호화된 데이터가 ticketId라고 가정
-
-      // JSON 파싱
-      JSONObject jsonObject = new JSONObject(decryptedData);
-
-      // JSON에서 accessToken 값 추출
-      Long extractedMemberId = jsonObject.getLong("memberId");
-      String extractedDeviceId = jsonObject.getString("deviceId");
-      Long extractedId = jsonObject.getLong("id");
-
-      //TODO : Ticket 상태 체크가 선행되어야 함. ticket status == BOOKED
-
-      // 티켓을 조회하고 유효성을 검증
-      Ticket ticket = findTicketById(extractedId);
-      if (!request.getMemberId().equals(extractedMemberId)) {
-        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR, "MemberId 가 동일하지 않습니다.");
-      }
-      if (!request.getDeviceId().equals(extractedDeviceId)) {
-        throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS_ERROR, "DeviceId 가 동일하지 않습니다.");
-      }
-      // 티켓 상태를 CHECKED로 변경
-      updateStatusChecked(ticket);
-      ticketRepository.save(ticket);
-
-      log.info("Ticket ID {} status updated to CHECKED", ticketId);
-
-    } catch (Exception e) {
-      log.error("티켓 상태를 CHECKED로 업데이트하지 못했습니다", e);
-      throw new CustomException(ErrorCode.TICKET_UPDATE_ERROR);
-    }
   }
 }

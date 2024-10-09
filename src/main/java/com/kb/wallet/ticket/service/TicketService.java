@@ -6,7 +6,6 @@ import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
-import com.kb.wallet.ticket.dto.response.ProposedEncryptResponse;
 import com.kb.wallet.ticket.dto.response.SignedTicketResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketListResponse;
@@ -28,21 +27,11 @@ public interface TicketService {
 
   void cancelTicket(String email, Long ticketId);
 
-  boolean isTicketAvailable(Long memberId, TicketResponse ticket);
-
-  void updateStatusChecked(Ticket ticket);
-
   TicketExchangeResponse createTicketExchange(Member member,
     TicketExchangeRequest exchangeRequest);
 
   void cancelTicketExchange(String email, Long ticketId);
 
   Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page, int size);
-
-  void updateToCheckedStatus(VerifyTicketRequest request);
-
-  SignedTicketResponse signTicket(Long ticketId) throws Exception;
-
-  ProposedEncryptResponse provideEncryptElement(Long ticketId, String email);
 
 }
