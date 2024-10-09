@@ -6,7 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum BankName {
-  KOOKKMIN("국민"),
+  KOOKMIN("국민"),
   SHINHAN("신한"),
   WOORI("우리"),
   HANA("하나");
