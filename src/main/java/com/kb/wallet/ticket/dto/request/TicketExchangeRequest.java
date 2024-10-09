@@ -12,6 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TicketExchangeRequest {
+
   private Long ticketId;
   private String preferredDate;
   private String preferredSchedule;

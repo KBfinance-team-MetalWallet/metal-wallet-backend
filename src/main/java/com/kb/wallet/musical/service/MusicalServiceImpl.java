@@ -35,8 +35,8 @@ public class MusicalServiceImpl implements MusicalService {
 
   @Autowired
   public MusicalServiceImpl(MusicalRepository musicalRepository,
-    CustomMusicalRepository customMusicalRepository,
-    ScheduleService scheduleService, SeatRepository seatRepository) {
+      CustomMusicalRepository customMusicalRepository,
+      ScheduleService scheduleService, SeatRepository seatRepository) {
     this.musicalRepository = musicalRepository;
     this.customMusicalRepository = customMusicalRepository;
     this.scheduleService = scheduleService;
@@ -54,37 +54,37 @@ public class MusicalServiceImpl implements MusicalService {
   @Override
   public Musical findById(Long musicalId) {
     return musicalRepository.findById(musicalId)
-      .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND));
   }
 
   @Override
   @Transactional("jpaTransactionManager")
   public void deleteMusical(Long musicalId) {
     Musical musical = musicalRepository.findById(musicalId)
-      .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
-        "요청한 뮤지컬을 찾을 수 없습니다."));
+        .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
+            "요청한 뮤지컬을 찾을 수 없습니다."));
     musicalRepository.delete(musical);
   }
 
   @Override
   @Transactional("jpaTransactionManager")
   public MusicalInfoUpdateResponse updateMusicalInfo(Long musicalId,
-    MusicalInfoUpdateRequest request) {
+      MusicalInfoUpdateRequest request) {
     Musical musical = musicalRepository.findById(musicalId)
-      .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
-        "요청한 뮤지컬을 찾을 수 없습니다."));
+        .orElseThrow(() -> new CustomException(ErrorCode.MUSICAL_NOT_FOUND,
+            "요청한 뮤지컬을 찾을 수 없습니다."));
 
     try {
       Musical updatedMusical = Musical.builder()
-        .id(musical.getId())
-        .title(request.getTitle())
-        .ranking(request.getRanking())
-        .place(request.getPlace())
-        .placeDetail(request.getPlaceDetail())
-        .ticketingStartDate(request.getTicketingStartDate())
-        .ticketingEndDate(request.getTicketingEndDate())
-        .runningTime(request.getRunningTime())
-        .build();
+          .id(musical.getId())
+          .title(request.getTitle())
+          .ranking(request.getRanking())
+          .place(request.getPlace())
+          .placeDetail(request.getPlaceDetail())
+          .ticketingStartDate(request.getTicketingStartDate())
+          .ticketingEndDate(request.getTicketingEndDate())
+          .runningTime(request.getRunningTime())
+          .build();
 
       Musical savedMusical = musicalRepository.save(updatedMusical);
       return MusicalInfoUpdateResponse.toMusicalInfoUpdateResponse(savedMusical);
@@ -103,17 +103,17 @@ public class MusicalServiceImpl implements MusicalService {
   public List<MusicalResponse> findAllMusicals(int size) {
     List<Musical> musicals = musicalRepository.findAllByRankingAsc(PageRequest.of(0, size));
     return musicals.stream()
-      .map(MusicalResponse::convertToResponse)
-      .collect(Collectors.toList());
+        .map(MusicalResponse::convertToResponse)
+        .collect(Collectors.toList());
   }
 
   @Override
   public List<MusicalResponse> findMusicalsAfterCursor(Long cursor, int size) {
     List<Musical> musicals = musicalRepository.findAllAfterCursor(cursor,
-      PageRequest.of(0, size));
+        PageRequest.of(0, size));
     return musicals.stream()
-      .map(MusicalResponse::convertToResponse)
-      .collect(Collectors.toList());
+        .map(MusicalResponse::convertToResponse)
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -123,7 +123,7 @@ public class MusicalServiceImpl implements MusicalService {
 
   @Override
   public List<MusicalScheduleSeatAvailabilityResponse> getAvailableSeatsByScheduleId(
-    Long scheduleId) {
+      Long scheduleId) {
     List<Seat> seatList = seatRepository.findAvailableSeatsByScheduleId(scheduleId);
     return seatList.stream().map(MusicalScheduleSeatAvailabilityResponse::new).toList();
   }

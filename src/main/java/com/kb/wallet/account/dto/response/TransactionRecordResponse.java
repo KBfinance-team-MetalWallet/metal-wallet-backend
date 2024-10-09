@@ -11,6 +11,7 @@ import lombok.Getter;
 @Builder
 @Getter
 public class TransactionRecordResponse {
+
   private Long transactionId;
   private Long amount;
   private TransactionType transactionType;

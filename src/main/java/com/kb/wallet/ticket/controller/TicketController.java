@@ -2,7 +2,6 @@ package com.kb.wallet.ticket.controller;
 
 import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.global.common.response.CursorResponse;
-import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
@@ -53,11 +52,10 @@ public class TicketController {
     List<TicketListResponse> tickets;
     Long nextCursor = null;
 
-
     tickets = ticketService.findAllBookedTickets(member.getEmail(),
         ticketStatus, 0,
         size, cursor);
-    if(!tickets.isEmpty()) {
+    if (!tickets.isEmpty()) {
       nextCursor = tickets.get(tickets.size() - 1).getId();
     }
     CursorResponse<TicketListResponse> cursorResponse = new CursorResponse<>(tickets, nextCursor);
@@ -66,17 +64,18 @@ public class TicketController {
 
   @GetMapping("/{ticketId}")
   public ApiResponse<TicketResponse> getTicket(
-    @AuthenticationPrincipal Member member,
-    @PathVariable(name = "ticketId") Long ticketId) {
+      @AuthenticationPrincipal Member member,
+      @PathVariable(name = "ticketId") Long ticketId) {
     TicketResponse response = ticketService.findTicket(member.getEmail(), ticketId);
     return ApiResponse.ok(response);
   }
 
   @PostMapping("encrypt/{ticketId}")
   public ResponseEntity<ProposedEncryptResponse> generateEncryptData(
-    @AuthenticationPrincipal Member member,
-    @PathVariable(name = "ticketId") Long ticketId) {
-    ProposedEncryptResponse response = ticketService.provideEncryptElement(ticketId, member.getEmail());
+      @AuthenticationPrincipal Member member,
+      @PathVariable(name = "ticketId") Long ticketId) {
+    ProposedEncryptResponse response = ticketService.provideEncryptElement(ticketId,
+        member.getEmail());
     return ResponseEntity.ok(response);
   }
 
@@ -90,7 +89,7 @@ public class TicketController {
 
   @DeleteMapping("/{ticketId}")
   public ApiResponse<Void> cancelTicket(
-    @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
+      @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
     ticketService.cancelTicket(member.getEmail(), ticketId);
     return ApiResponse.ok();
   }
@@ -100,7 +99,8 @@ public class TicketController {
       @AuthenticationPrincipal Member member,
       @RequestParam(name = "page", defaultValue = "0") int page,
       @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<TicketExchangeResponse> userExchangedTickets = ticketService.getUserExchangedTickets(member, page, size);
+    Page<TicketExchangeResponse> userExchangedTickets = ticketService.getUserExchangedTickets(
+        member, page, size);
     return ResponseEntity.ok(userExchangedTickets);
   }
 
@@ -108,13 +108,14 @@ public class TicketController {
   public ResponseEntity<TicketExchangeResponse> createTicketExchange(
       @AuthenticationPrincipal Member member,
       @RequestBody TicketExchangeRequest exchangeRequest) {
-    TicketExchangeResponse ticketExchange = ticketService.createTicketExchange(member, exchangeRequest);
+    TicketExchangeResponse ticketExchange = ticketService.createTicketExchange(member,
+        exchangeRequest);
     return ResponseEntity.ok(ticketExchange);
   }
 
   @DeleteMapping("/exchange/{ticketId}")
   public ApiResponse<Void> cancelTicketExchange(
-    @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
+      @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
     ticketService.cancelTicketExchange(member.getEmail(), ticketId);
     return ApiResponse.ok();
   }

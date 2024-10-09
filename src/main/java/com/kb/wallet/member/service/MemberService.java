@@ -7,9 +7,12 @@ import com.kb.wallet.member.dto.response.MemberResponse;
 import com.kb.wallet.member.dto.response.RegisterMemberResponse;
 
 public interface MemberService {
-    MemberResponse findById(Long memberId);
-    RegisterMemberResponse registerMember(RegisterMemberRequest request);
-    Member getMemberByEmail(String email);
+
+  MemberResponse findById(Long memberId);
+
+  RegisterMemberResponse registerMember(RegisterMemberRequest request);
+
+  Member getMemberByEmail(String email);
 
   void checkPassword(String email, PinNumberVerificationRequest passwordRequest);
 }

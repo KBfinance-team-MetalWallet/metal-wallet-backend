@@ -45,8 +45,8 @@ public class MusicalController {
 
   @GetMapping
   public ApiResponse<CursorResponse<MusicalResponse>> findAll(
-    @RequestParam(name = "cursor", required = false) Long cursor,
-    @RequestParam(name = "size", defaultValue = "10") int size) {
+      @RequestParam(name = "cursor", required = false) Long cursor,
+      @RequestParam(name = "size", defaultValue = "10") int size) {
 
     List<MusicalResponse> musicals;
     Long nextCursor = null;
@@ -69,14 +69,14 @@ public class MusicalController {
 
   @GetMapping("/{musicalId}")
   public ApiResponse<MusicalDetailResponse> findById(
-    @PathVariable(name = "musicalId") Long musicalId) {
+      @PathVariable(name = "musicalId") Long musicalId) {
     Musical musical = musicalService.findById(musicalId);
     return ApiResponse.ok(MusicalDetailResponse.convertToResponse(musical));
   }
 
   @PostMapping
   public ResponseEntity<MusicalCreationResponse> createMusical(
-    @RequestBody @Valid MusicalCreationRequest request) {
+      @RequestBody @Valid MusicalCreationRequest request) {
     MusicalCreationResponse savedMusical = musicalService.saveMusical(request);
     return ResponseEntity.ok(savedMusical);
   }
@@ -91,7 +91,7 @@ public class MusicalController {
   @PutMapping("/{musicalId}")
 //  @PreAuthorize("hasRole('ADMIN')") // 관리자만 뮤지컬 정보 업데이트 가능
   public ResponseEntity<Void> updateMusicalInfo(@PathVariable(name = "musicalId") Long musicalId,
-    @RequestBody MusicalInfoUpdateRequest request) {
+      @RequestBody MusicalInfoUpdateRequest request) {
     /**
      * TODO : Login Authentication 추가 예정
      */
@@ -101,32 +101,32 @@ public class MusicalController {
 
   @GetMapping("/{musicalId}/seats-availability")
   public ApiResponse<List<MusicalSeatAvailabilityResponse>> checkSeatAvailability(
-    @AuthenticationPrincipal Member member, @PathVariable(name = "musicalId") Long musicalId,
-    @RequestParam("date") String date) {
+      @AuthenticationPrincipal Member member, @PathVariable(name = "musicalId") Long musicalId,
+      @RequestParam("date") String date) {
 
     List<MusicalSeatAvailabilityResponse> responses = musicalService.checkSeatAvailability(
-      musicalId, date);
+        musicalId, date);
 
     return ApiResponse.ok(responses);
   }
 
   @GetMapping("/{musicalId}/dates")
   public ApiResponse<MusicalScheduleResponse> getScheduleDates(
-    @AuthenticationPrincipal Member member, @PathVariable(name = "musicalId") Long musicalId) {
+      @AuthenticationPrincipal Member member, @PathVariable(name = "musicalId") Long musicalId) {
 
     List<String> dates = musicalService.getScheduleDates(musicalId).stream().toList();
 
     MusicalScheduleResponse response = MusicalScheduleResponse.builder().musicalId(musicalId)
-      .scheduleDate(dates).build();
+        .scheduleDate(dates).build();
     return ApiResponse.ok(response);
   }
 
   @GetMapping("/schedules/{scheduleId}/seats")
   public ApiResponse<List<MusicalScheduleSeatAvailabilityResponse>> getScheduleSeatAvailability(
-    @AuthenticationPrincipal Member member, @PathVariable(name = "scheduleId") Long scheduleId) {
+      @AuthenticationPrincipal Member member, @PathVariable(name = "scheduleId") Long scheduleId) {
 
     List<MusicalScheduleSeatAvailabilityResponse> responses = musicalService.getAvailableSeatsByScheduleId(
-      scheduleId);
+        scheduleId);
 
     return ApiResponse.ok(responses);
   }

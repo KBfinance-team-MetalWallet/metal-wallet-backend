@@ -19,14 +19,14 @@ public class MusicalResponse {
 
   public static MusicalResponse convertToResponse(Musical musical) {
     return MusicalResponse.builder()
-      .id(musical.getId())
-      .title(musical.getTitle())
-      .ranking(musical.getRanking())
-      .place(musical.getPlace())
-      .placeDetail(musical.getPlaceDetail())
-      .ticketingStartDate(musical.getTicketingStartDate().toString())
-      .ticketingEndDate(musical.getTicketingEndDate().toString())
-      .posterImageUrl(musical.getPosterImageUrl())
-      .build();
+        .id(musical.getId())
+        .title(musical.getTitle())
+        .ranking(musical.getRanking())
+        .place(musical.getPlace())
+        .placeDetail(musical.getPlaceDetail())
+        .ticketingStartDate(musical.getTicketingStartDate().toString())
+        .ticketingEndDate(musical.getTicketingEndDate().toString())
+        .posterImageUrl(musical.getPosterImageUrl())
+        .build();
   }
 }

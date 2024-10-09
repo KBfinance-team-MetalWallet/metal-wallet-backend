@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TicketExchangeRepository extends JpaRepository<TicketExchange, Long> {
+
   @Query("SELECT te FROM TicketExchange te WHERE te.ticket.member = :member")
   Page<TicketExchange> findByTicketMember(@Param("member") Member member, Pageable pageable);
 

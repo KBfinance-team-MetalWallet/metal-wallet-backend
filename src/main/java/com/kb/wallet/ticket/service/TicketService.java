@@ -46,7 +46,7 @@ public interface TicketService {
   void updateStatusChecked(Ticket ticket);
 
   TicketExchangeResponse createTicketExchange(Member member,
-    TicketExchangeRequest exchangeRequest);
+      TicketExchangeRequest exchangeRequest);
 
   void cancelTicketExchange(String email, Long ticketId);
 
@@ -57,6 +57,7 @@ public interface TicketService {
   ProposedEncryptResponse provideEncryptElement(Long ticketId, String email);
 
   interface RSAService {
+
     PublicKey getPublicKey() throws NoSuchAlgorithmException, NoSuchProviderException;
 
     PrivateKey getPrivateKey();
@@ -72,8 +73,6 @@ public interface TicketService {
     private static final String PROVIDER = "BC";
     private static final String OAEP_PADDING = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
 
-    private KeyPair keyPair;
-
     static {
       try {
         if (Security.getProvider(PROVIDER) == null) {
@@ -83,6 +82,8 @@ public interface TicketService {
         log.error("Failed to add Bouncy Castle provider", e);
       }
     }
+
+    private KeyPair keyPair;
 
     @PostConstruct
     public void init() {

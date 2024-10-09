@@ -11,22 +11,22 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TestServiceImpl implements TestService {
 
-    private final MemberRepository memberRepository;
-    private final MemberMapper memberMapper;
+  private final MemberRepository memberRepository;
+  private final MemberMapper memberMapper;
 
-    @Override
-    public Optional<Member> getMemberById(Long id) {
-        return memberRepository.findById(id);
-    }
+  @Override
+  public Optional<Member> getMemberById(Long id) {
+    return memberRepository.findById(id);
+  }
 
-    @Override
-    public Optional<Member> getMemberById2(Long id) {
-        Member member = memberMapper.findById(id);
-        return Optional.ofNullable(member);
-    }
+  @Override
+  public Optional<Member> getMemberById2(Long id) {
+    Member member = memberMapper.findById(id);
+    return Optional.ofNullable(member);
+  }
 
-    @Override
-    public Member createMember(Member member) {
-        return memberRepository.save(member);
-    }
+  @Override
+  public Member createMember(Member member) {
+    return memberRepository.save(member);
+  }
 }

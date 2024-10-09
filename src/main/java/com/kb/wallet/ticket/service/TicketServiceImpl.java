@@ -20,9 +20,9 @@ import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
 import com.kb.wallet.ticket.dto.response.ProposedEncryptResponse;
 import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
+import com.kb.wallet.ticket.dto.response.TicketInfo;
 import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
-import com.kb.wallet.ticket.dto.response.TicketInfo;
 import com.kb.wallet.ticket.repository.TicketExchangeRepository;
 import com.kb.wallet.ticket.repository.TicketRepository;
 import java.security.PublicKey;
@@ -66,7 +66,8 @@ public class TicketServiceImpl implements TicketService {
       Seat seat = seatService.getSeatById(seatId);
       seatService.checkSeatAvailability(seat);
 
-      Ticket bookedTicket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(), seat);
+      Ticket bookedTicket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(),
+          seat);
       bookedTicket.setDeviceId(ticketRequest.getDeviceId());
 
       Ticket savedTicket = ticketRepository.save(bookedTicket);
@@ -155,12 +156,14 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<TicketExchange> ticketExchanges = ticketExchangeRepository.findByTicketMember(member, pageable);
+    Page<TicketExchange> ticketExchanges = ticketExchangeRepository.findByTicketMember(member,
+        pageable);
     return ticketExchanges.map(TicketExchangeResponse::createTicketExchangeResponse);
   }
 
   @Override
-  public TicketExchangeResponse createTicketExchange(Member member, TicketExchangeRequest exchangeRequest) {
+  public TicketExchangeResponse createTicketExchange(Member member,
+      TicketExchangeRequest exchangeRequest) {
     Ticket ticket = findTicketById(exchangeRequest.getTicketId());
 
     ticketCheckService.checkTicketOwner(ticket, member);
@@ -186,14 +189,16 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public void updateToCheckedStatus(VerifyTicketRequest request) {
     try {
-      String decryptedData = rsaService.decrypt(request.getEncryptedTicketInfo(), rsaService.getPrivateKey());
+      String decryptedData = rsaService.decrypt(request.getEncryptedTicketInfo(),
+          rsaService.getPrivateKey());
       JSONObject ticketInfo = new JSONObject(decryptedData).getJSONObject("ticketInfo");
 
       String extractedDeviceId = ticketInfo.getString("deviceId");
       Long extractedId = ticketInfo.getLong("ticketId");
 
       Ticket ticket = findTicketById(extractedId);
-      if (!ticket.getTicketStatus().equals(BOOKED) || !ticket.getDeviceId().equals(extractedDeviceId)) {
+      if (!ticket.getTicketStatus().equals(BOOKED) || !ticket.getDeviceId()
+          .equals(extractedDeviceId)) {
         throw new CustomException(ErrorCode.TICKET_STATUS_INVALID);
       }
 
