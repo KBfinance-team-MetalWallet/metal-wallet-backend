@@ -20,8 +20,8 @@ public interface TicketService {
 
   Ticket findTicketById(Long id);
 
-  Page<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus, int page,
-    int size);
+  List<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus, int page,
+      int size, Long cursor);
 
   List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest);
 
