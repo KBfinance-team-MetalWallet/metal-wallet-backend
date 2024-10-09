@@ -23,13 +23,13 @@ public class TicketInfo {
 
   public static TicketInfo fromTicket(Ticket ticket) {
     return TicketInfo.builder()
-      .cancelUntil(ticket.getCancelUntil().toString())
-      .createdAt(ticket.getCreatedAt().toString())
-      .TicketStatus(ticket.getTicketStatus().toString())
-      .validUntil(ticket.getValidUntil().toString())
-      .seatId(ticket.getSeat().getId())
-      .memberId(ticket.getMember().getId())
-      .build();
+        .cancelUntil(ticket.getCancelUntil().toString())
+        .createdAt(ticket.getCreatedAt().toString())
+        .TicketStatus(ticket.getTicketStatus().toString())
+        .validUntil(ticket.getValidUntil().toString())
+        .seatId(ticket.getSeat().getId())
+        .memberId(ticket.getMember().getId())
+        .build();
 
   }
 

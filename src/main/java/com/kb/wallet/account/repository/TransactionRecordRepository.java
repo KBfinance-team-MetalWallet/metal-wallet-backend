@@ -7,8 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TransactionRecordRepository extends JpaRepository<TransactionRecord, Long> {
+
   List<TransactionRecord> findAllByAccountAndIdLessThanOrderByCreatedAtDesc(
       Account account, Long cursor, Pageable pageable);
+
   List<TransactionRecord> findAllByAccountOrderByCreatedAtDesc(Account account, Pageable pageable);
 
 }

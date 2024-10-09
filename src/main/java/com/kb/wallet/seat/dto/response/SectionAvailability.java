@@ -8,11 +8,11 @@ import lombok.Setter;
 @Getter
 public class SectionAvailability {
 
-    private Grade section;
-    private int availableSeats;
+  private Grade section;
+  private int availableSeats;
 
-    public SectionAvailability(Grade grade, int availableSeats) {
-        this.section = grade;
-        this.availableSeats = availableSeats;
-    }
+  public SectionAvailability(Grade grade, int availableSeats) {
+    this.section = grade;
+    this.availableSeats = availableSeats;
+  }
 }

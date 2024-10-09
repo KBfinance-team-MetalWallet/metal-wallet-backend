@@ -54,39 +54,39 @@ public class MemberController {
       @RequestBody @Valid LoginMemberRequest request) {
     HashMap<String, Object> map = new HashMap<>();
 
-        try {
-            // 인증 요청을 만든다
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(request.getEmail(),
-                            request.getPassword());
+    try {
+      // 인증 요청을 만든다
+      UsernamePasswordAuthenticationToken authenticationToken =
+          new UsernamePasswordAuthenticationToken(request.getEmail(),
+              request.getPassword());
 
-            // AuthenticationManager를 통해 인증을 시도한다
-            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+      // AuthenticationManager를 통해 인증을 시도한다
+      Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
-            // 인증이 성공하면 JWT 토큰을 생성한다
-            String role = authentication.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .findFirst() // 첫 번째 권한을 가져오기 (예: "ROLE_USER")
-                    .orElse("ROLE_USER");
+      // 인증이 성공하면 JWT 토큰을 생성한다
+      String role = authentication.getAuthorities().stream()
+          .map(GrantedAuthority::getAuthority)
+          .findFirst() // 첫 번째 권한을 가져오기 (예: "ROLE_USER")
+          .orElse("ROLE_USER");
 
-            String accessToken = tokenProvider.createToken(authentication.getName(),
-                    role);
+      String accessToken = tokenProvider.createToken(authentication.getName(),
+          role);
 
-            map.put("result", "success");
-            map.put("accessToken", accessToken);
+      map.put("result", "success");
+      map.put("accessToken", accessToken);
 
-            // 헤더에 토큰 추가
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+      // 헤더에 토큰 추가
+      HttpHeaders httpHeaders = new HttpHeaders();
+      httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + accessToken);
 
-            return new ResponseEntity<>(map, httpHeaders, HttpStatus.OK);
+      return new ResponseEntity<>(map, httpHeaders, HttpStatus.OK);
 
-        } catch (AuthenticationException e) {
-            map.put("result", "fail");
-            map.put("message", "Login failed: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(map); // UNAUTHORIZED 반환
-        }
+    } catch (AuthenticationException e) {
+      map.put("result", "fail");
+      map.put("message", "Login failed: " + e.getMessage());
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(map); // UNAUTHORIZED 반환
     }
+  }
 
   @PostMapping("/pin-number-verification")
   public ApiResponse<Void> checkPinNumber(

@@ -14,4 +14,5 @@ public class ProposedEncryptResponse {
 
   private String publicKey;
   private TicketInfo ticketInfo;
+  private Long seconds;
 }

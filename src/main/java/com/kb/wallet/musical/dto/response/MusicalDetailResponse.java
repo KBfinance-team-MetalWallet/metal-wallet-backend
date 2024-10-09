@@ -34,18 +34,18 @@ public class MusicalDetailResponse {
 
   public static MusicalDetailResponse convertToResponse(Musical musical) {
     return MusicalDetailResponse.builder()
-      .id(musical.getId())
-      .title(musical.getTitle())
-      .ranking(musical.getRanking())
-      .place(musical.getPlace())
-      .placeDetail(musical.getPlaceDetail())
-      .ticketingStartDate(musical.getTicketingStartDate().toString())
-      .ticketingEndDate(musical.getTicketingEndDate().toString())
-      .runningTime(musical.getRunningTime())
-      .posterImageUrl(musical.getPosterImageUrl())
-      .noticeImageUrl(musical.getNoticeImageUrl())
-      .detailImageUrl(musical.getDetailImageUrl())
-      .placeImageUrl(musical.getPlaceImageUrl())
-      .build();
+        .id(musical.getId())
+        .title(musical.getTitle())
+        .ranking(musical.getRanking())
+        .place(musical.getPlace())
+        .placeDetail(musical.getPlaceDetail())
+        .ticketingStartDate(musical.getTicketingStartDate().toString())
+        .ticketingEndDate(musical.getTicketingEndDate().toString())
+        .runningTime(musical.getRunningTime())
+        .posterImageUrl(musical.getPosterImageUrl())
+        .noticeImageUrl(musical.getNoticeImageUrl())
+        .detailImageUrl(musical.getDetailImageUrl())
+        .placeImageUrl(musical.getPlaceImageUrl())
+        .build();
   }
 }

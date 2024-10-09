@@ -13,6 +13,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ErrorResponse {
+
   private int status;                 // 에러 상태 코드
   private String divisionCode;        // 에러 구분 코드
   private String resultMsg;           // 에러 메시지
@@ -99,9 +100,17 @@ public class ErrorResponse {
    */
   @Getter
   public static class FieldError {
+
     private final String field;
     private final String value;
     private final String reason;
+
+    @Builder
+    FieldError(String field, String value, String reason) {
+      this.field = field;
+      this.value = value;
+      this.reason = reason;
+    }
 
     public static List<FieldError> of(final String field, final String value, final String reason) {
       List<FieldError> fieldErrors = new ArrayList<>();
@@ -117,13 +126,6 @@ public class ErrorResponse {
               error.getRejectedValue() == null ? "" : error.getRejectedValue().toString(),
               error.getDefaultMessage()))
           .toList();
-    }
-
-    @Builder
-    FieldError(String field, String value, String reason) {
-      this.field = field;
-      this.value = value;
-      this.reason = reason;
     }
   }
 }

@@ -17,7 +17,7 @@ public class ScheduleServiceImpl implements ScheduleService {
   @Override
   public Set<String> getScheduleDatesByMusicalId(Long musicalId) {
     return scheduleRepository.findByMusicalId(musicalId).stream()
-      .map(schedule -> schedule.getDate().toString())
-      .collect(Collectors.toSet());
+        .map(schedule -> schedule.getDate().toString())
+        .collect(Collectors.toSet());
   }
 }
