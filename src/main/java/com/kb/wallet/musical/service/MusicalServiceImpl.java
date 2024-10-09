@@ -18,7 +18,6 @@ import com.kb.wallet.ticket.service.ScheduleService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -104,7 +103,7 @@ public class MusicalServiceImpl implements MusicalService {
     List<Musical> musicals = musicalRepository.findAllByRankingAsc(PageRequest.of(0, size));
     return musicals.stream()
         .map(MusicalResponse::convertToResponse)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Override
@@ -113,7 +112,7 @@ public class MusicalServiceImpl implements MusicalService {
         PageRequest.of(0, size));
     return musicals.stream()
         .map(MusicalResponse::convertToResponse)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Override
