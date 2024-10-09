@@ -1,6 +1,8 @@
 package com.kb.wallet.ticket.controller;
 
 import com.kb.wallet.global.common.response.ApiResponse;
+import com.kb.wallet.global.common.response.CursorResponse;
+import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
@@ -42,14 +44,24 @@ public class TicketController {
   }
 
   @GetMapping
-  public ApiResponse<Page<TicketListResponse>> getUserTickets(
+  public ApiResponse<CursorResponse<TicketListResponse>> getUserTickets(
       @AuthenticationPrincipal Member member,
-      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "cursor", required = false) Long cursor,
       @RequestParam(name = "size", defaultValue = "10") int size,
       @RequestParam(name = "status", required = false) String status) {
     TicketStatus ticketStatus = "booked".equalsIgnoreCase(status) ? TicketStatus.BOOKED : null;
-    Page<TicketListResponse> tickets = ticketService.findAllBookedTickets(member.getEmail(), ticketStatus, page, size);
-    return ApiResponse.ok(tickets);
+    List<TicketListResponse> tickets;
+    Long nextCursor = null;
+
+
+    tickets = ticketService.findAllBookedTickets(member.getEmail(),
+        ticketStatus, 0,
+        size, cursor);
+    if(!tickets.isEmpty()) {
+      nextCursor = tickets.get(tickets.size() - 1).getId();
+    }
+    CursorResponse<TicketListResponse> cursorResponse = new CursorResponse<>(tickets, nextCursor);
+    return ApiResponse.ok(cursorResponse);
   }
 
   @GetMapping("/{ticketId}")
