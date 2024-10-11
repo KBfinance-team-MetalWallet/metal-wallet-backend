@@ -3,6 +3,7 @@ package com.kb.wallet.ticket.service;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
+import com.kb.wallet.ticket.dto.request.EncryptRequest;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
@@ -54,7 +55,8 @@ public interface TicketService {
 
   void updateToCheckedStatus(VerifyTicketRequest request);
 
-  ProposedEncryptResponse provideEncryptElement(Long ticketId, String email);
+  ProposedEncryptResponse provideEncryptElement(Long ticketId, String email,
+      EncryptRequest encryptRequest);
 
   interface RSAService {
 

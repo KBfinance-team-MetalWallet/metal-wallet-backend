@@ -4,6 +4,7 @@ import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.global.common.response.CursorResponse;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
+import com.kb.wallet.ticket.dto.request.EncryptRequest;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
@@ -73,9 +74,10 @@ public class TicketController {
   @PostMapping("encrypt/{ticketId}")
   public ResponseEntity<ProposedEncryptResponse> generateEncryptData(
       @AuthenticationPrincipal Member member,
-      @PathVariable(name = "ticketId") Long ticketId) {
+      @PathVariable(name = "ticketId") Long ticketId,
+      @RequestBody EncryptRequest encryptRequest) {
     ProposedEncryptResponse response = ticketService.provideEncryptElement(ticketId,
-        member.getEmail());
+        member.getEmail(), encryptRequest);
     return ResponseEntity.ok(response);
   }
 

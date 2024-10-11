@@ -1,5 +1,6 @@
 package com.kb.wallet.ticket.service;
 
+import static com.kb.wallet.global.common.status.ErrorCode.ENCRYPTION_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_EXCHANGE_NOT_FOUND_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
@@ -15,6 +16,7 @@ import com.kb.wallet.seat.service.SeatService;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.domain.TicketExchange;
+import com.kb.wallet.ticket.dto.request.EncryptRequest;
 import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
@@ -29,6 +31,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -80,9 +83,22 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  public ProposedEncryptResponse provideEncryptElement(Long ticketId, String email) {
+  public ProposedEncryptResponse provideEncryptElement(Long ticketId, String email,
+      EncryptRequest encryptRequest) {
     Ticket ticket = findTicketById(ticketId);
     TicketInfo ticketInfo = TicketInfo.fromTicket(ticket);
+
+    // QR을 띄우는 기기와 이미 등록된 티켓(예매할 당시)의 기기 정보를 비교함으로써
+    // 동일한 사용자인지를 검증함
+    // TODO 현재는 temp로 가설정.. 이후 finger print 등으로 변경 예정
+    if(!encryptRequest.getDeviceId().equals("temp")) {
+      throw new CustomException(ENCRYPTION_ERROR, "해당 기기로 저장된 티켓 내역이 없습니다.");
+    }
+
+    // 오직 "예약" 상태인 티켓에 대해서만 QR 생성을 진행
+    if(ticket.getTicketStatus() != BOOKED) {
+      throw new CustomException(ENCRYPTION_ERROR, "예약 상태가 아닌 티켓입니다.");
+    }
 
     PublicKey publicKey;
     try {
@@ -95,7 +111,6 @@ public class TicketServiceImpl implements TicketService {
     ProposedEncryptResponse response = new ProposedEncryptResponse();
     String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
     response.setPublicKey(publicKeyString);
-    response.setTicketInfo(ticketInfo);
 
     long expirationTime = System.currentTimeMillis() + 31000;
     response.setSeconds(expirationTime / 1000);

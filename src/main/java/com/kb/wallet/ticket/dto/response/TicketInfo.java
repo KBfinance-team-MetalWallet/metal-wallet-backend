@@ -16,7 +16,7 @@ public class TicketInfo {
 
   private String cancelUntil;
   private String createdAt;
-  private String TicketStatus;
+  private String ticketStatus;
   private String validUntil;
   private Long seatId;
   private Long memberId;
@@ -25,7 +25,7 @@ public class TicketInfo {
     return TicketInfo.builder()
         .cancelUntil(ticket.getCancelUntil().toString())
         .createdAt(ticket.getCreatedAt().toString())
-        .TicketStatus(ticket.getTicketStatus().toString())
+        .ticketStatus(ticket.getTicketStatus().toString())
         .validUntil(ticket.getValidUntil().toString())
         .seatId(ticket.getSeat().getId())
         .memberId(ticket.getMember().getId())
