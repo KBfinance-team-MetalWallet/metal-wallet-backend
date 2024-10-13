@@ -55,6 +55,7 @@ public class SecurityConfig {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
     config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인 설정
+    config.addAllowedOrigin("https://kbfinance-team-metalwallet.github.io"); // 허용할 도메인 설정
     config.addAllowedHeader("*");
     config.addAllowedMethod("*");
     source.registerCorsConfiguration("/**", config);
@@ -70,6 +71,7 @@ public class SecurityConfig {
             authorizeHttpRequests -> authorizeHttpRequests.antMatchers("/",
                     "/api/members/register",
                     "/api/members/login",
+                    "/members/login",
                     "/api/test/**",
                     "/static/**",
                     "/resources/**",
