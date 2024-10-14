@@ -13,4 +13,5 @@ import lombok.Setter;
 public class TicketRequest {
 
   private List<Long> seatId;
+  private String deviceId;
 }

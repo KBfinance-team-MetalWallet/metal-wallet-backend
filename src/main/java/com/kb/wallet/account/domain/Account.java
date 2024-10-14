@@ -1,6 +1,8 @@
 package com.kb.wallet.account.domain;
 
+
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.kb.wallet.account.constant.BankName;
 import com.kb.wallet.member.domain.Member;
 import java.time.LocalDateTime;
 import javax.persistence.*;
@@ -8,6 +10,7 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 
 @Entity
 @Table(name = "account")
@@ -19,20 +22,36 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public class Account {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    private String number;
 
-    @ColumnDefault("0")
-    private int balance;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "member_id")
+  private Member member;
 
-    @CreatedDate
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createdAt;
+
+  private String number;
+
+
+  @ColumnDefault("0")
+  private int balance;
+
+
+  private String bankLogo;
+
+
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private BankName bankName;
+
+
+  private String bankColor;
+
+
+  @CreatedDate
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  private LocalDateTime createdAt;
 }

@@ -55,44 +55,46 @@ public class SecurityConfig {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
     config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인 설정
+    config.addAllowedOrigin("https://kbfinance-team-metalwallet.github.io"); // 허용할 도메인 설정
     config.addAllowedHeader("*");
     config.addAllowedMethod("*");
     source.registerCorsConfiguration("/**", config);
     return new CorsFilter(source);
   }
-  
-    // 요청 경로에 대한 인증 및 인가 규칙을 정의
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-                .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(
-                        authorizeHttpRequests -> authorizeHttpRequests.antMatchers("/",
-                                        "/api/members/register",
-                                        "/api/members/login",
-                                        "/api/test/**",
-                                        "/static/**",
-                                        "/resources/**",
-                                        "/public/**",
-                                        "/webjars/**",
-                                        "/swagger-ui/**",
-                                        "/swagger-ui.html",
-                                        "/swagger-resources/**",
-                                        "/swagger-config/**",
-                                        "/api-docs/**",
-                                        "/v3/api-docs",
-                                        "/images/**",
-                                        "/favicon.ico",
-                                        "/error",
-                                        "/api/home",
-                                        "/api/musicals/**")
-                                .permitAll()
-                                .antMatchers("/api/musicals/*/seats-availability").authenticated()
-                                .antMatchers("/api/musicals/*/schedule/**").authenticated()
-                                .antMatchers("/api/musicals/*/booking/queue").authenticated()
-                                .antMatchers("/api/musicals/*/seats/reserve").authenticated()
-                                .antMatchers("/api/musicals/*/tickets").authenticated()
-                                .anyRequest().authenticated())
+
+  // 요청 경로에 대한 인증 및 인가 규칙을 정의
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http.csrf(csrf -> csrf.disable())
+        .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
+        .authorizeHttpRequests(
+            authorizeHttpRequests -> authorizeHttpRequests.antMatchers("/",
+                    "/api/members/register",
+                    "/api/members/login",
+                    "/members/login",
+                    "/api/test/**",
+                    "/static/**",
+                    "/resources/**",
+                    "/public/**",
+                    "/webjars/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/swagger-config/**",
+                    "/api-docs/**",
+                    "/v3/api-docs",
+                    "/images/**",
+                    "/favicon.ico",
+                    "/error",
+                    "/api/home",
+                    "/api/musicals/**")
+                .permitAll()
+                .antMatchers("/api/musicals/*/seats-availability").authenticated()
+                .antMatchers("/api/musicals/*/schedule/**").authenticated()
+                .antMatchers("/api/musicals/*/booking/queue").authenticated()
+                .antMatchers("/api/musicals/*/seats/reserve").authenticated()
+                .antMatchers("/api/musicals/*/tickets").authenticated()
+                .anyRequest().authenticated())
         .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
             SessionCreationPolicy.STATELESS))
 

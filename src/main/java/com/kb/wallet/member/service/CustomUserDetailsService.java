@@ -11,19 +11,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final MemberRepository memberRepository;
+  private final MemberRepository memberRepository;
 
-    public CustomUserDetailsService(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
-    }
+  public CustomUserDetailsService(MemberRepository memberRepository) {
+    this.memberRepository = memberRepository;
+  }
 
-    @Override
-    public Member loadUserByUsername(String username) throws UsernameNotFoundException {
-        Member member = memberRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found with email: " + username));
+  @Override
+  public Member loadUserByUsername(String username) throws UsernameNotFoundException {
+    Member member = memberRepository.findByEmail(username)
+        .orElseThrow(() -> new UsernameNotFoundException(
+            "User not found with email: " + username));
 
-        log.debug("LoadedUserByEmail: {}", member);
-        return member;
-    }
+    log.debug("LoadedUserByEmail: {}", member);
+    return member;
+  }
 }

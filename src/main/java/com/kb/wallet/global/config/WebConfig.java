@@ -30,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
   public void addCorsMappings(CorsRegistry registry) {
     registry.addMapping("/**")
         .allowedMethods("*")
-        .allowedOrigins("http://localhost:5173")
+        .allowedOrigins("https://kbfinance-team-metalwallet.github.io", "http://localhost:5173")
         .allowedOriginPatterns("*")
         .allowedHeaders("*")
         .allowCredentials(true);

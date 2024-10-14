@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
-    @Query("SELECT a FROM Account a JOIN FETCH a.member m WHERE m.email = :email")
-    List<Account> findAllByMember(@Param("email") String email);
+  @Query("SELECT a FROM Account a JOIN FETCH a.member m WHERE m.email = :email")
+  List<Account> findAllByMember(@Param("email") String email);
 
-    Optional<Account> findById(Long id);
+  Optional<Account> findById(Long id);
 }

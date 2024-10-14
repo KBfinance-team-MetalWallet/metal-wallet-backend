@@ -5,10 +5,10 @@ import java.util.Optional;
 
 public interface TestService {
 
-    Optional<Member> getMemberById(Long id);
+  Optional<Member> getMemberById(Long id);
 
-    Optional<Member> getMemberById2(Long id);
+  Optional<Member> getMemberById2(Long id);
 
-    Member createMember(Member member);
+  Member createMember(Member member);
 
 }
