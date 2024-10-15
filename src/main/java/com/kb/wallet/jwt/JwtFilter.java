@@ -52,7 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     // /api/musicals/**로 들어오는 요청
-    if (requestURI.startsWith("/api/musicals")) {
+    if (requestURI.startsWith("/metal-wallet-server/api/musicals")) {
       if (requestURI.contains("/seat-availability/") ||
           requestURI.contains("/booking/queue") ||
           requestURI.contains("/seats/reserve") ||
