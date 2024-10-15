@@ -54,9 +54,7 @@ public class SecurityConfig {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
-    config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인 설정
-    config.addAllowedOrigin("https://kbfinance-team-metalwallet.github.io"); // 허용할 도메인 설정
-    config.addAllowedOriginPattern("https://metal-wallet-frontend-*-lee-junrs-projects.vercel.app");
+    config.addAllowedOriginPattern("*"); // 일시적으로 모든 도메인 허용
     config.addAllowedHeader("*");
     config.addAllowedMethod("*");
     source.registerCorsConfiguration("/**", config);
