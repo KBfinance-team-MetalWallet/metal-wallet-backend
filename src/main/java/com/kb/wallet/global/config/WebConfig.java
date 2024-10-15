@@ -30,8 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
   public void addCorsMappings(CorsRegistry registry) {
     registry.addMapping("/**")
         .allowedMethods("*")
-        .allowedOrigins("https://kbfinance-team-metalwallet.github.io", "http://localhost:5173", "https://metal-wallet-frontend-k0zcbwya1-lee-junrs-projects.vercel.app")
-        .allowedOriginPatterns("*")
+        .allowedOriginPatterns("https://metal-wallet-frontend-*-lee-junrs-projects.vercel.app", "https://kbfinance-team-metalwallet.github.io", "http://localhost:5173")
         .allowedHeaders("*")
         .allowCredentials(true);
   }

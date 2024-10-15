@@ -56,7 +56,7 @@ public class SecurityConfig {
     config.setAllowCredentials(true);
     config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인 설정
     config.addAllowedOrigin("https://kbfinance-team-metalwallet.github.io"); // 허용할 도메인 설정
-    config.addAllowedOrigin("https://metal-wallet-frontend-k0zcbwya1-lee-junrs-projects.vercel.app"); // 허용할 도메인 설정
+    config.addAllowedOriginPattern("https://metal-wallet-frontend-*-lee-junrs-projects.vercel.app");
     config.addAllowedHeader("*");
     config.addAllowedMethod("*");
     source.registerCorsConfiguration("/**", config);
