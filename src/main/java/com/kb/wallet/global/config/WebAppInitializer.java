@@ -2,6 +2,8 @@ package com.kb.wallet.global.config;
 
 
 import javax.servlet.Filter;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -9,7 +11,6 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
   public WebAppInitializer() {
-    System.out.println("WebAppInitializer created");
   }
 
   //인코딩 필터 설정
@@ -33,6 +34,13 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
   @Override
   protected String[] getServletMappings() {
     return new String[]{"/"};
+  }
+
+  @Override
+  public void onStartup(ServletContext servletContext) throws ServletException {
+    super.onStartup(servletContext);
+
+    servletContext.addListener(new ProfileInitializer());
   }
 }
 
