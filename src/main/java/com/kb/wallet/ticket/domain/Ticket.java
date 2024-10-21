@@ -70,7 +70,7 @@ public class Ticket {
   @Column
   private String deviceId;
 
-  public static Ticket createBookedTicket(Member member, Musical musical, Seat seat) {
+  public static Ticket createBookedTicket(Member member, Musical musical, Seat seat, String deviceId) {
 
     LocalDateTime musicalStartDateTime = LocalDateTime.of(seat.getSchedule().getDate(),
         seat.getSchedule().getStartTime());
@@ -83,7 +83,7 @@ public class Ticket {
         .seat(seat)
         .validUntil(musicalStartDateTime)
         .cancelUntil(cancelUntilDateTime)
-        .deviceId(builder().deviceId)
+        .deviceId(deviceId)
         .build();
   }
 

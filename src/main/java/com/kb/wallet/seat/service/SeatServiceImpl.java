@@ -20,11 +20,4 @@ public class SeatServiceImpl implements SeatService {
     return seatRepository.findById(seatId)
         .orElseThrow(() -> new CustomException(ErrorCode.SEAT_NOT_FOUND_ERROR));
   }
-
-  @Override
-  public void checkSeatAvailability(Seat seat) {
-    if (!seat.isAvailable()) {
-      throw new CustomException(ErrorCode.SEAT_ALREADY_BOOKED_ERROR);
-    }
-  }
 }
