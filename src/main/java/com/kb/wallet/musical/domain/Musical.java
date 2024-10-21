@@ -25,7 +25,7 @@ public class Musical {
   @Column(nullable = false, length = 50)
   private String title;
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   private int ranking;
 
   @Column(nullable = false, length = 30)
