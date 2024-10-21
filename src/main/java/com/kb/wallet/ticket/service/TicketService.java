@@ -39,7 +39,7 @@ public interface TicketService {
   List<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus, int page,
       int size, Long cursor);
 
-  List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest);
+  List<TicketResponse> ticketing(String email, TicketRequest ticketRequest);
 
   void cancelTicket(String email, Long ticketId);
 

@@ -1,5 +1,7 @@
 package com.kb.wallet.seat.domain;
 
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.ticket.domain.Schedule;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,6 +39,17 @@ public class Seat {
 
   @Column
   private boolean isAvailable;
+
+  public void checkSeatAvailability() {
+    if (!this.isAvailable()) {
+      throw new CustomException(ErrorCode.SEAT_ALREADY_BOOKED_ERROR);
+    }
+  }
+
+  public void updateSeatAvailability() {
+    markAsUnavailable();
+    this.section.decrementAvailableSeats();
+  }
 
   public void markAsUnavailable() {
     this.isAvailable = false;
