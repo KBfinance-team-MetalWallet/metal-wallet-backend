@@ -103,6 +103,9 @@ dependencies {
 
     // Provides annotations such as @PostConstruct
     implementation 'javax.annotation:javax.annotation-api:1.3.2'
+
+    // Apache Commons DBCP2 (for BasicDataSource)
+    implementation 'org.apache.commons:commons-dbcp2:2.9.0'
 }
 
 test {
