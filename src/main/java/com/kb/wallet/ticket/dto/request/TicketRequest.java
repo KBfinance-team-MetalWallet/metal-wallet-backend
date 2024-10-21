@@ -1,7 +1,7 @@
 package com.kb.wallet.ticket.dto.request;
 
 import java.util.List;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TicketRequest {
-  @NotBlank(message = "좌석 ID는 필수입니다.")
+  @NotEmpty(message = "좌석 ID는 필수입니다.")
+  @Size(min = 1, message = "최소 1개의 좌석 ID가 필요합니다.")
   private List<Long> seatId;
 
   @NotBlank(message = "디바이스 ID는 필수입니다.")
