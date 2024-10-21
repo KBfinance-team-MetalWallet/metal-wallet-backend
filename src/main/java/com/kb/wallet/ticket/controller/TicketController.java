@@ -14,6 +14,7 @@ import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.service.TicketService;
 import java.util.List;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +39,8 @@ public class TicketController {
   @PostMapping
   public ApiResponse<List<TicketResponse>> createTicket(
       @AuthenticationPrincipal Member member,
-      @RequestBody TicketRequest ticketRequest) {
-    List<TicketResponse> tickets = ticketService.saveTicket(member.getEmail(), ticketRequest);
+      @RequestBody @Valid TicketRequest ticketRequest) {
+    List<TicketResponse> tickets = ticketService.ticketing(member.getEmail(), ticketRequest);
     return ApiResponse.created(tickets);
   }
 
