@@ -18,13 +18,8 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Build with Gradle (dev 환경)
-        run: ./gradlew clean build -Dspring.profiles.active=dev
-        if: github.ref == 'refs/heads/dev-branch' # dev 브랜치에 대한 설정
-
-      - name: Build with Gradle (prod 환경)
-        run: ./gradlew clean build -Dspring.profiles.active=prod
-        if: github.ref == 'refs/heads/prod-branch' # prod 브랜치에 대한 설정
+      - name: Build with Gradle
+        run: ./gradlew clean build
 
       - name: WAR 파일 이름을 metal-wallet-server.war로 변경
         run: mv build/libs/*.war build/libs/metal-wallet-server.war
@@ -52,9 +47,6 @@ jobs:
             mkdir /home/ubuntu/metal-wallet-server/current
             mv /home/ubuntu/metal-wallet-server/tobe/metal-wallet-server.war /home/ubuntu/metal-wallet-server/current/metal-wallet-server.war
             echo "${{ secrets.APPLICATION_PROPERTIES }}" > /home/ubuntu/metal-wallet-server/current/application.properties
-            echo "jwt.secret=${{ secrets.JWT_SECRET }}" >> /home/ubuntu/metal-wallet-server/current/application.properties
-            echo "jwt.token.validity=86400000" >> /home/ubuntu/metal-wallet-server/current/application.properties
-
-            cd /home/ubuntu/metal-wallet-server/current  
+            cd /home/ubuntu/metal-wallet-server/current
             sudo fuser -k -n tcp 8080 || true
             sudo systemctl restart tomcat
