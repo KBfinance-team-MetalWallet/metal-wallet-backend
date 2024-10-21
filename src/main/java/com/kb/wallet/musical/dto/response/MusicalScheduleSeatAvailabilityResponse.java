@@ -3,12 +3,10 @@ package com.kb.wallet.musical.dto.response;
 import com.kb.wallet.seat.constant.Grade;
 import com.kb.wallet.seat.domain.Seat;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class MusicalScheduleSeatAvailabilityResponse {
