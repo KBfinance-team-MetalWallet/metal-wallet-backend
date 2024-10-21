@@ -56,30 +56,30 @@ public class TicketServiceImpl implements TicketService {
 
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
-  public List<TicketResponse> saveTicket(String email, TicketRequest ticketRequest) {
-    if (ticketRequest.getSeatId() == null || ticketRequest.getSeatId().isEmpty()) {
-      throw new CustomException(ErrorCode.NOT_VALID_ERROR, "좌석 ID는 필수입니다.");
-    }
-    if (ticketRequest.getDeviceId() == null || ticketRequest.getDeviceId().isEmpty()) {
-      throw new CustomException(ErrorCode.NOT_VALID_ERROR, "디바이스 ID는 필수입니다.");
-    }
+  public List<TicketResponse> ticketing(String email, TicketRequest ticketRequest) {
     Member member = memberService.getMemberByEmail(email);
     List<TicketResponse> responses = new ArrayList<>();
+
     for (Long seatId : ticketRequest.getSeatId()) {
-      Seat seat = seatService.getSeatById(seatId);
-      seatService.checkSeatAvailability(seat);
-
-      Ticket bookedTicket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(),
-          seat);
-      bookedTicket.setDeviceId(ticketRequest.getDeviceId());
-
-      Ticket savedTicket = ticketRepository.save(bookedTicket);
-      responses.add(TicketResponse.toTicketResponse(savedTicket));
-
-      seat.markAsUnavailable();
-      seat.getSection().decrementAvailableSeats();
+      Ticket bookedTicket = bookTicketForSeat(seatId, ticketRequest.getDeviceId(), member);
+      responses.add(TicketResponse.toTicketResponse(bookedTicket));
     }
     return responses;
+  }
+
+  private Ticket bookTicketForSeat(Long seatId, String deviceId, Member member) {
+    Seat seat = seatService.getSeatById(seatId);
+    seat.checkSeatAvailability();
+
+    Ticket ticket = saveTicket(member, seat, deviceId);
+    seat.updateSeatAvailability();
+
+    return ticket;
+  }
+
+  private Ticket saveTicket(Member member, Seat seat, String deviceId) {
+    Ticket ticket = Ticket.createBookedTicket(member,seat.getSchedule().getMusical(), seat, deviceId);
+    return ticketRepository.save(ticket);
   }
 
   @Override
