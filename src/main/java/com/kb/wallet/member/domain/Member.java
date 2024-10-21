@@ -11,14 +11,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,7 +22,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity
 @Table(name = "member")
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -36,37 +31,30 @@ public class Member implements UserDetails {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(unique = true)
-  @NotNull(message = "이메일은 필수 입력 항목입니다.")
-  @Email(message = "유효한 이메일 주소를 입력해 주세요.")
+  @Column(unique = true, nullable = false)
   private String email;
 
-  @NotNull(message = "비밀번호는 필수 입력 항목입니다.")
+  @Column(nullable = false)
   private String password;
 
-  @NotNull(message = "이름은 필수 입력 항목입니다.")
-  @Size(max = 10, message = "이름의 길이는 10자 이내여야 합니다.")
+  @Column(nullable = false, length = 10)
   private String name;
 
-
-  @Column(unique = true)
-  @NotNull(message = "전화번호는 필수 입력 항목입니다.")
-  @Size(min = 11, max = 11, message = "전화번호는 숫자(11자리)만 입력해주세요.")
+  @Column(unique = true, length = 11)
   private String phone;
 
-
-  @NotNull(message = "핀번호는 필수 입력 항목입니다.")
+  @Column(nullable = false, length = 6)
   private String pinNumber;
 
-  @NotNull
+  @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private RoleType role;
 
-  @NotNull
+  @Column(nullable = false)
   private Boolean isActivated;
 
   public Member(String email, String name, String phone, String encodedPassword,
-      String encodedPin) {
+    String encodedPin) {
     this.email = email;
     this.name = name;
     this.phone = phone;

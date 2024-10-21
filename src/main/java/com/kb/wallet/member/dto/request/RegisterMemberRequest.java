@@ -12,7 +12,6 @@ public class RegisterMemberRequest {
   @Email(message = "유효한 이메일 주소를 입력해 주세요.")
   private String email;
 
-  // @NotNull은 ""일 경우 예외로 고려하지 않는다. @NotBlank로 해야 ""도 예외로 잡힌다.
   @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
   private String password;
 
