@@ -59,6 +59,7 @@ public enum ErrorCode {
   MEMBER_STATUS_INVALID(400, "ME002", "사용자의 ID가 유효하지 않습니다"),
   MEMBER_EMAIL_NOT_FOUND(404, "ME003", "해당 사용자의 이메일을 찾을 수 없습니다."),
   PIN_NUMBER_NOT_MATCH(404, "ME004", "일치하지 않는 핀 번호입니다."),
+
   // Ticket Errors
   TICKET_NOT_FOUND_ERROR(404, "TI001", "티켓을 찾을 수 없습니다."),
   TICKET_STATUS_INVALID(400, "TI002", "티켓 상태가 유효하지 않습니다."),
@@ -66,13 +67,6 @@ public enum ErrorCode {
   TICKET_MISMATCH(400, "TI004", "티켓 ID가 일치하지 않습니다."),
   TICKET_UPDATE_ERROR(400, "TI005", "티켓 상태를 CHECKED로 업데이트하지 못했습니다"),
   UNAUTHORIZED_ACCESS_ERROR(400, "TI006", "해당 티켓의 접근은 허락되지 않습니다."),
-  // QR 코드 관련 에러 코드
-  ENCRYPTION_ERROR(500, "EN001", "QR 코드 암호화 중 오류가 발생했습니다."),
-  DECRYPTION_ERROR(500, "QR002", "QR 코드 복호화 중 오류가 발생했습니다."),
-  QR_CODE_INVALID(400, "QR003", "유효하지 않은 QR 코드입니다."),
-  QR_CODE_NOT_FOUND(404, "QR004", "QR 코드가 존재하지 않습니다."),
-  INVALID_SECRET_KEY(500, "QR005", "유효하지 않은 비밀키입니다."),
-  INVALID_IV(500, "QR006", "유효하지 않은 IV입니다."),
 
   // RSA 알고리즘 관련 에러 코드
   INVALID_KEY(400, "RSA001", "유효하지 않은 키입니다"),
@@ -81,11 +75,12 @@ public enum ErrorCode {
   KEY_GENERATION_ERROR(500, "RSA004", "키 생성 중 오류가 발생했습니다"),
   KEY_VALIDATION_ERROR(500, "RSA005", "키 검증 중 오류가 발생했습니다"),
   KEY_CONVERSION_ERROR(500, "RSA006", "키 변환 중 오류가 발생했습니다"),
-  QR_CODE_GENERATION_ERROR(500, "RSA007", "QR Code 생성 중 오류가 발생했습니다."),
   DEVICE_ID_MISMATCH(400, "RSA008", "Device ID가 일치하지 않습니다."),
+  RSA_DECRYPTION_ERROR(500, "RSA007", "RSA 복호화 중 오류가 발생했습니다"),
+  RSA_ENCRYPTION_ERROR(500, "RSA008", "RSA 암호화 중 오류가 발생했습니다"),
+
   // Account Errors
   ACCOUNT_NOT_FOUND_ERROR(404, "AC001", "계좌를 찾을 수 없습니다"),
-
   ACCOUNT_NOT_MATCH(404, "AC002", "계좌 명의가 불일치합니다."),
 
   // Transaction Insert Error

@@ -1,6 +1,5 @@
 package com.kb.wallet.ticket.domain;
 
-import static com.kb.wallet.global.common.status.ErrorCode.ENCRYPTION_ERROR;
 import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
 import static com.kb.wallet.ticket.constant.TicketStatus.BOOKED;
 
@@ -110,7 +109,7 @@ public class Ticket {
 
   public void isBooked() {
     if(this.ticketStatus != BOOKED) {
-      throw new CustomException(ENCRYPTION_ERROR, "예약 상태가 아닌 티켓입니다.");
+      throw new CustomException(TICKET_STATUS_INVALID, "예약 상태가 아닌 티켓입니다.");
     }
   }
 }
