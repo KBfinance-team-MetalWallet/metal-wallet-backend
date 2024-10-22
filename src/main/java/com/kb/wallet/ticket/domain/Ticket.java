@@ -1,5 +1,11 @@
 package com.kb.wallet.ticket.domain;
 
+import static com.kb.wallet.global.common.status.ErrorCode.ENCRYPTION_ERROR;
+import static com.kb.wallet.global.common.status.ErrorCode.TICKET_STATUS_INVALID;
+import static com.kb.wallet.ticket.constant.TicketStatus.BOOKED;
+
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.seat.domain.Seat;
@@ -29,7 +35,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Table(name = "ticket")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -50,11 +55,10 @@ public class Ticket {
 
   @Column
   @Enumerated(value = EnumType.STRING)
-  // enum의 값을 index가 아닌 텍스트 값 그대로 저장하고 싶을 때 위의 어노테이션 사용
   private TicketStatus ticketStatus;
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "seat_id")  // 외래 키 컬럼 지정
+  @JoinColumn(name = "seat_id")
   private Seat seat;
 
   @Column(updatable = false)
@@ -87,11 +91,26 @@ public class Ticket {
         .build();
   }
 
-  public boolean isCancellable() {
-    return this.ticketStatus != TicketStatus.CANCELED && this.ticketStatus != TicketStatus.CHECKED;
+  public void validateCheckedChange(String extractedDeviceId) {
+    if (this.ticketStatus.equals(TicketStatus.BOOKED) || !this.deviceId
+        .equals(extractedDeviceId)) {
+      throw new CustomException(ErrorCode.TICKET_STATUS_INVALID);
+    }
   }
 
-  public boolean isExchangeRequested() {
-    return this.ticketStatus == TicketStatus.EXCHANGE_REQUESTED;
+  public void updateTicketStatus(TicketStatus status) {
+    this.ticketStatus = status;
+  }
+
+  public void isCancellable() {
+    if (this.ticketStatus == TicketStatus.CANCELED || this.ticketStatus == TicketStatus.CHECKED) {
+      throw new CustomException(TICKET_STATUS_INVALID);
+    }
+  }
+
+  public void isBooked() {
+    if(this.ticketStatus != BOOKED) {
+      throw new CustomException(ENCRYPTION_ERROR, "예약 상태가 아닌 티켓입니다.");
+    }
   }
 }

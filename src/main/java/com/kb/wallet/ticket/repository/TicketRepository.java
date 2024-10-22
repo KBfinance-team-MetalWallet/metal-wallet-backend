@@ -15,8 +15,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
-  Optional<Ticket> findByIdAndMember(Long ticketId, Member member);
-
   @Query("SELECT t FROM Ticket t "
       + "WHERE t.id = :id "
       + "AND t.member.email = :email ")
@@ -38,7 +36,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
       "AND (:status IS NULL OR t.ticketStatus = :status) " +
       "AND (:cursor IS NULL OR t.id < :cursor) " +
       "ORDER BY t.id desc")
-  List<TicketListResponse> findTicketsByMemberAndTicketStatus(
+  List<TicketListResponse> findAllByMemberAndTicketStatus(
       @Param("email") String email,
       @Param("status") TicketStatus status,
       @Param("cursor") Long cursor,

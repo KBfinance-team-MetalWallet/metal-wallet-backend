@@ -12,16 +12,9 @@ import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Security;
+import java.security.*;
 import java.security.spec.MGF1ParameterSpec;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
 import javax.crypto.spec.OAEPParameterSpec;
@@ -32,26 +25,14 @@ import org.springframework.stereotype.Service;
 
 public interface TicketService {
 
-  TicketResponse findTicket(String email, Long ticketId);
+  Ticket getTicket(Long ticketId);
 
-  Ticket findTicketById(Long id);
-
-  List<TicketListResponse> findAllBookedTickets(String email, TicketStatus ticketStatus, int page,
+  List<TicketListResponse> getTickets(String email, TicketStatus ticketStatus, int page,
       int size, Long cursor);
 
-  List<TicketResponse> ticketing(String email, TicketRequest ticketRequest);
+  List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest);
 
   void cancelTicket(String email, Long ticketId);
-
-
-  void updateStatusChecked(Ticket ticket);
-
-  TicketExchangeResponse createTicketExchange(Member member,
-      TicketExchangeRequest exchangeRequest);
-
-  void cancelTicketExchange(String email, Long ticketId);
-
-  Page<TicketExchangeResponse> getUserExchangedTickets(Member member, int page, int size);
 
   void updateToCheckedStatus(VerifyTicketRequest request);
 
