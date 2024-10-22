@@ -47,6 +47,7 @@ public class TransactionRecord {
   @Column(nullable = false)
   private long currentBalance;
 
+  @Column(nullable = false, length = 50)
   private String vendor;
 
   @CreatedDate

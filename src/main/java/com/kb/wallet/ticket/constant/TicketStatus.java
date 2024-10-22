@@ -14,4 +14,15 @@ public enum TicketStatus {
   TicketStatus(String status) {
     this.status = status;
   }
+
+  public static TicketStatus convertToTicketStatus(String status) {
+    if(status == null) {
+      return null;
+    }
+    try {
+      return TicketStatus.valueOf(status.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
 }
