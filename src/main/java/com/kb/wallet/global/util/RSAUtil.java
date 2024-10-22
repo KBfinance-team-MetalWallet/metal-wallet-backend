@@ -1,83 +1,87 @@
 package com.kb.wallet.global.util;
 
-import java.security.KeyFactory;
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
-import java.security.Signature;
+import java.security.spec.MGF1ParameterSpec;
 import java.util.Base64;
 import javax.crypto.Cipher;
+import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PSource;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-public class RSAUtil {
+@Slf4j
+public final class RSAUtil {
 
   private static final String ALGORITHM = "RSA";
   private static final String PROVIDER = "BC";
-  private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
+  private static final String OAEP_PADDING = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
 
   static {
-    Security.addProvider(new BouncyCastleProvider());
+    try {
+      if (Security.getProvider(PROVIDER) == null) {
+        Security.addProvider(new BouncyCastleProvider());
+      }
+    } catch (Exception e) {
+      log.error("Failed to add Bouncy Castle provider", e);
+      throw new CustomException(ErrorCode.KEY_VALIDATION_ERROR);
+    }
   }
 
-  public static KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
-    KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ALGORITHM, PROVIDER);
-    keyGen.initialize(2048); // 2048 비트 키 크기 사용
-    return keyGen.generateKeyPair();
+  private RSAUtil() {
+    throw new UnsupportedOperationException("유틸리티 클래스는 인스턴스화할 수 없습니다.");
   }
 
-  public static String encrypt(String message, PublicKey publicKey) throws Exception {
-    Cipher cipher = Cipher.getInstance(ALGORITHM, PROVIDER);
-    cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-    byte[] encryptedBytes = cipher.doFinal(message.getBytes());
-    return Base64.getEncoder().encodeToString(encryptedBytes);
+  public static KeyPair generateKeyPair() {
+    try {
+      KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(ALGORITHM, PROVIDER);
+      keyPairGen.initialize(2048);
+      return keyPairGen.generateKeyPair();
+    } catch (Exception e) {
+      log.error("RSA 키 쌍 생성 실패", e);
+      throw new CustomException(ErrorCode.KEY_GENERATION_ERROR);
+    }
   }
 
-  public static String decrypt(String encryptedMessage, PrivateKey privateKey) throws Exception {
-    Cipher cipher = Cipher.getInstance(ALGORITHM, PROVIDER);
-    cipher.init(Cipher.DECRYPT_MODE, privateKey);
-    byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedMessage));
-    return new String(decryptedBytes);
+  public static String decrypt(String base64EncryptedData, PrivateKey privateKey) {
+    try {
+      Cipher cipher = Cipher.getInstance(OAEP_PADDING, PROVIDER);
+      OAEPParameterSpec oaepParams = new OAEPParameterSpec(
+          "SHA-256",
+          "MGF1",
+          new MGF1ParameterSpec("SHA-256"),
+          PSource.PSpecified.DEFAULT
+      );
+      cipher.init(Cipher.DECRYPT_MODE, privateKey, oaepParams);
+      byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(base64EncryptedData));
+      return new String(decryptedBytes, StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      log.error("RSA 복호화 실패", e);
+      throw new CustomException(ErrorCode.RSA_DECRYPTION_ERROR);
+    }
   }
 
-  // 공개키를 문자열로 변환
-  public static String publicKeyToString(PublicKey publicKey) {
-    return Base64.getEncoder().encodeToString(publicKey.getEncoded());
-  }
-
-  public static String privateKeyToString(PrivateKey privateKey) {
-    return Base64.getEncoder().encodeToString(privateKey.getEncoded());
-  }
-
-  // 문자열에서 공개키로 변환
-  public static PublicKey stringToPublicKey(String publicKeyStr) throws Exception {
-    byte[] publicBytes = Base64.getDecoder().decode(publicKeyStr);
-    KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
-    return keyFactory.generatePublic(new java.security.spec.X509EncodedKeySpec(publicBytes));
-  }
-
-  public static PrivateKey stringToPrivateKey(String privateKeyStr) throws Exception {
-    byte[] privateBytes = Base64.getDecoder().decode(privateKeyStr); // Base64 디코딩
-    KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM); // RSA 알고리즘을 사용하는 KeyFactory 생성
-    return keyFactory.generatePrivate(
-      new java.security.spec.PKCS8EncodedKeySpec(privateBytes)); // 개인키로 변환
-  }
-
-  public static String sign(String data, PrivateKey privateKey) throws Exception {
-    Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM, PROVIDER);
-    signature.initSign(privateKey);
-    signature.update(data.getBytes());
-    return Base64.getEncoder().encodeToString(signature.sign());
-  }
-
-  public static boolean verify(String data, String signature, PublicKey publicKey)
-    throws Exception {
-    Signature verifier = Signature.getInstance(SIGNATURE_ALGORITHM, PROVIDER);
-    verifier.initVerify(publicKey);
-    verifier.update(data.getBytes());
-    return verifier.verify(Base64.getDecoder().decode(signature));
+  public static String encrypt(String data, PublicKey publicKey) {
+    try {
+      Cipher cipher = Cipher.getInstance(OAEP_PADDING, PROVIDER);
+      OAEPParameterSpec oaepParams = new OAEPParameterSpec(
+          "SHA-256",
+          "MGF1",
+          new MGF1ParameterSpec("SHA-256"),
+          PSource.PSpecified.DEFAULT
+      );
+      cipher.init(Cipher.ENCRYPT_MODE, publicKey, oaepParams);
+      byte[] encryptedBytes = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
+      return Base64.getEncoder().encodeToString(encryptedBytes);
+    } catch (Exception e) {
+      log.error("RSA 암호화 실패", e);
+      throw new CustomException(ErrorCode.RSA_ENCRYPTION_ERROR);
+    }
   }
 }

@@ -14,7 +14,6 @@ import com.kb.wallet.ticket.dto.request.EncryptRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
 import com.kb.wallet.ticket.dto.response.ProposedEncryptResponse;
-import com.kb.wallet.ticket.dto.response.TicketInfo;
 import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.TicketRepository;
@@ -119,8 +118,7 @@ public class TicketServiceImpl implements TicketService {
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
   public void updateToCheckedStatus(VerifyTicketRequest request) {
-    String decryptedData = rsaService.decrypt(request.getEncryptedTicketInfo(),
-        rsaService.getPrivateKey());
+    String decryptedData = rsaService.decrypt(request.getEncryptedTicketInfo());
     JSONObject ticketInfo = new JSONObject(decryptedData).getJSONObject("ticketInfo");
 
     String extractedDeviceId = ticketInfo.getString("deviceId");
