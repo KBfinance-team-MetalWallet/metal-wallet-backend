@@ -126,6 +126,7 @@ public class AppConfig {
     Properties jpaProperties = new Properties();
     jpaProperties.put("hibernate.hbm2ddl.auto", "update"); // 테이블 자동 생성
     jpaProperties.put("hibernate.show_sql", "true"); // SQL 쿼리 로그 출력
+    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 포매팅 출력
     jpaProperties.put("hibernate.physical_naming_strategy",
         "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
 

@@ -4,6 +4,7 @@ import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
+import com.kb.wallet.musical.dto.response.MusicalScheduleResponse;
 import com.kb.wallet.musical.dto.response.MusicalScheduleSeatAvailabilityResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.repository.CustomMusicalRepository;
@@ -13,7 +14,6 @@ import com.kb.wallet.seat.repository.SeatRepository;
 import com.kb.wallet.ticket.service.ScheduleService;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -53,13 +53,14 @@ public class MusicalServiceImpl implements MusicalService {
   }
 
   @Override
-  public Set<String> getScheduleDates(Long musicalId) {
-    return scheduleService.getScheduleDatesByMusicalId(musicalId);
+  public MusicalScheduleResponse getScheduleDates(Long musicalId) {
+    List<String> dates = scheduleService.getScheduleDatesByMusicalId(musicalId).stream().toList();
+    return MusicalScheduleResponse.builder().musicalId(musicalId)
+        .scheduleDate(dates).build();
   }
 
   @Override
-  public List<MusicalScheduleSeatAvailabilityResponse> getAvailableSeats(
-    Long scheduleId) {
+  public List<MusicalScheduleSeatAvailabilityResponse> getAvailableSeats(Long scheduleId) {
     List<Seat> seatList = seatRepository.findAvailableSeatsByScheduleId(scheduleId);
     return seatList.stream().map(MusicalScheduleSeatAvailabilityResponse::new).toList();
   }

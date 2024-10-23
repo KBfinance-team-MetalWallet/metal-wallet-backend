@@ -26,27 +26,35 @@ public class AccountController {
 
   @GetMapping("/{accountId}")
   public ApiResponse<AccountResponse> getAccount(
-    @AuthenticationPrincipal Member member,
-    @PathVariable(name = "accountId") Long accountId) {
+      @AuthenticationPrincipal Member member,
+      @PathVariable(name = "accountId") Long accountId) {
     AccountResponse accountResponse = accountService.getAccount(member.getEmail(), accountId);
     return ApiResponse.ok(accountResponse);
   }
 
   @GetMapping
   public ApiResponse<List<AccountResponse>> getAccounts(
-    @AuthenticationPrincipal Member member) {
+      @AuthenticationPrincipal Member member) {
     return ApiResponse.ok(accountService.getAccounts(member.getEmail()));
   }
 
   @GetMapping("/{accountId}/transaction-records")
   public ApiResponse<CursorResponse<TransactionRecordResponse>> getAccountTransactionRecords(
-    @AuthenticationPrincipal Member member,
-    @PathVariable(name = "accountId") Long accountId,
-    @RequestParam(name = "cursor", required = false) Long cursor,
-    @RequestParam(name = "size", defaultValue = "10") int size) {
-    CursorResponse<TransactionRecordResponse> transactionRecords = accountService.getAccountTransactionRecords(
-      member.getEmail(), accountId, cursor, size);
-    return ApiResponse.ok(transactionRecords);
+      @AuthenticationPrincipal Member member,
+      @PathVariable(name = "accountId") Long accountId,
+      @RequestParam(name = "cursor", required = false) Long cursor,
+      @RequestParam(name = "size", defaultValue = "10") int size) {
+
+    List<TransactionRecordResponse> transactionRecordResponses =
+        accountService.getTransactionRecords(member.getEmail(), accountId, cursor, size);
+
+    // 다음 페이지를 위한 커서 설정 (마지막 데이터의 transactionId)
+    Long nextCursor = (transactionRecordResponses.size() < size) ? null
+        : transactionRecordResponses.get(transactionRecordResponses.size() - 1).getTransactionId();
+
+    CursorResponse<TransactionRecordResponse> cursorResponse = new CursorResponse<>(
+        transactionRecordResponses, nextCursor);
+    return ApiResponse.ok(cursorResponse);
   }
 }
 
