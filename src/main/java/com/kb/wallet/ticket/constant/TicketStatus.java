@@ -3,6 +3,7 @@ package com.kb.wallet.ticket.constant;
 import lombok.Getter;
 
 @Getter
+
 public enum TicketStatus {
   BOOKED("BOOKED"),
   CANCELED("CANCELED"),
@@ -10,6 +11,7 @@ public enum TicketStatus {
   CHECKED("CHECKED");
 
   private final String status;
+
 
   TicketStatus(String status) {
     this.status = status;

@@ -92,7 +92,7 @@ public class Ticket {
   }
 
   public void validateCheckedChange(String extractedDeviceId) {
-    if (this.ticketStatus.equals(TicketStatus.BOOKED) || !this.deviceId
+    if (!this.ticketStatus.equals(TicketStatus.BOOKED) || !this.deviceId
         .equals(extractedDeviceId)) {
       throw new CustomException(ErrorCode.TICKET_STATUS_INVALID);
     }
@@ -103,8 +103,11 @@ public class Ticket {
   }
 
   public void isCancellable() {
-    if (this.ticketStatus == TicketStatus.CANCELED || this.ticketStatus == TicketStatus.CHECKED) {
-      throw new CustomException(TICKET_STATUS_INVALID);
+    if (this.ticketStatus == TicketStatus.CANCELED) {
+      throw new CustomException(TICKET_STATUS_INVALID, "티켓은 이미 취소된 상태입니다.");
+    }
+    if (this.ticketStatus == TicketStatus.CHECKED) {
+      throw new CustomException(TICKET_STATUS_INVALID, "티켓은 체크된 상태이므로 취소할 수 없습니다.");
     }
   }
 
