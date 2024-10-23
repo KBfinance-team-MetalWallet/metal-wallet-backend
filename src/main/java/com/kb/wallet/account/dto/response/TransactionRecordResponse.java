@@ -17,19 +17,18 @@ public class TransactionRecordResponse {
   private TransactionType transactionType;
   private Long currentBalance;
   private String vendor;
-
   @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
 
-
-  public static TransactionRecordResponse toTransactionRecordResponse(TransactionRecord transactionRecord) {
+  public static TransactionRecordResponse toTransactionRecordResponse(
+    TransactionRecord transactionRecord) {
     return TransactionRecordResponse.builder()
-        .transactionId(transactionRecord.getId())
-        .amount(transactionRecord.getAmount())
-        .transactionType(transactionRecord.getTransactionType())
-        .currentBalance(transactionRecord.getCurrentBalance())
-        .vendor(transactionRecord.getVendor())
-        .createdAt(transactionRecord.getCreatedAt())
-        .build();
+      .transactionId(transactionRecord.getId())
+      .amount(transactionRecord.getAmount())
+      .transactionType(transactionRecord.getTransactionType())
+      .currentBalance(transactionRecord.getCurrentBalance())
+      .vendor(transactionRecord.getVendor())
+      .createdAt(transactionRecord.getCreatedAt())
+      .build();
   }
 }

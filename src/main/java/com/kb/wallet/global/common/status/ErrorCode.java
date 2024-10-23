@@ -85,8 +85,9 @@ public enum ErrorCode {
   KEY_GENERATION_ERROR(500, "RSA004", "키 생성 중 오류가 발생했습니다"),
   KEY_VALIDATION_ERROR(500, "RSA005", "키 검증 중 오류가 발생했습니다"),
   KEY_CONVERSION_ERROR(500, "RSA006", "키 변환 중 오류가 발생했습니다"),
-  QR_CODE_GENERATION_ERROR(500, "RSA007", "QR Code 생성 중 오류가 발생했습니다."),
   DEVICE_ID_MISMATCH(400, "RSA008", "Device ID가 일치하지 않습니다."),
+  RSA_DECRYPTION_ERROR(500, "RSA007", "RSA 복호화 중 오류가 발생했습니다"),
+  RSA_ENCRYPTION_ERROR(500, "RSA008", "RSA 암호화 중 오류가 발생했습니다"),
 
   // Account Errors
   ACCOUNT_NOT_FOUND_ERROR(404, "AC001", "계좌를 찾을 수 없습니다"),

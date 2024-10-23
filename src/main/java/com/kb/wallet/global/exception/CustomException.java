@@ -4,7 +4,7 @@ import com.kb.wallet.global.common.status.ErrorCode;
 import lombok.Getter;
 
 @Getter
-public class CustomException extends RuntimeException implements CustomError {
+public class CustomException extends RuntimeException {
 
   private final ErrorCode errorCode;
 
@@ -16,10 +16,5 @@ public class CustomException extends RuntimeException implements CustomError {
   public CustomException(ErrorCode errorCode, String customMessage) {
     super(customMessage);
     this.errorCode = errorCode;
-  }
-
-  @Override
-  public ErrorCode getErrorCode() {
-    return errorCode;
   }
 }
