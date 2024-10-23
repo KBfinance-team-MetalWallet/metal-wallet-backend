@@ -30,7 +30,7 @@ public class TicketExchange {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne
   @JoinColumn(name = "ticket_id")
   private Ticket ticket;
 
