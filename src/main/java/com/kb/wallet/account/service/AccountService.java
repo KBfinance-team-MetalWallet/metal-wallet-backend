@@ -3,7 +3,6 @@ package com.kb.wallet.account.service;
 import com.kb.wallet.account.domain.Account;
 import com.kb.wallet.account.dto.response.AccountResponse;
 import com.kb.wallet.account.dto.response.TransactionRecordResponse;
-import com.kb.wallet.global.common.response.CursorResponse;
 import java.util.List;
 
 public interface AccountService {
@@ -14,7 +13,7 @@ public interface AccountService {
 
   List<AccountResponse> getAccounts(String email);
 
-  CursorResponse<TransactionRecordResponse> getAccountTransactionRecords(String email,
-    Long accountId,
-    Long cursor, int size);
+  List<TransactionRecordResponse> getTransactionRecords(String email, Long accountId,
+      Long cursor, int size);
+
 }

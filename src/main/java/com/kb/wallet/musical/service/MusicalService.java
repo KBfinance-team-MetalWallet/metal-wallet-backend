@@ -2,10 +2,10 @@ package com.kb.wallet.musical.service;
 
 import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
+import com.kb.wallet.musical.dto.response.MusicalScheduleResponse;
 import com.kb.wallet.musical.dto.response.MusicalScheduleSeatAvailabilityResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import java.util.List;
-import java.util.Set;
 
 public interface MusicalService {
 
@@ -17,7 +17,7 @@ public interface MusicalService {
 
   List<MusicalSeatAvailabilityResponse> getScheduleInfos(Long id, String date);
 
-  Set<String> getScheduleDates(Long musicalId);
+  MusicalScheduleResponse getScheduleDates(Long musicalId);
 
   List<MusicalScheduleSeatAvailabilityResponse> getAvailableSeats(Long scheduleId);
 }

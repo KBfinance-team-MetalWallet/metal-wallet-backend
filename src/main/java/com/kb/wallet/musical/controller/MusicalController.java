@@ -75,12 +75,7 @@ public class MusicalController {
   @GetMapping("/{musicalId}/dates")
   public ApiResponse<MusicalScheduleResponse> getScheduleDates(
     @AuthenticationPrincipal Member member, @PathVariable(name = "musicalId") Long musicalId) {
-
-    List<String> dates = musicalService.getScheduleDates(musicalId).stream().toList();
-
-    MusicalScheduleResponse response = MusicalScheduleResponse.builder().musicalId(musicalId)
-      .scheduleDate(dates).build();
-    return ApiResponse.ok(response);
+    return ApiResponse.ok(musicalService.getScheduleDates(musicalId));
   }
 
   @GetMapping("/schedules/{scheduleId}/seats")
