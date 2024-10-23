@@ -92,9 +92,11 @@ public class Ticket {
   }
 
   public void validateCheckedChange(String extractedDeviceId) {
-    if (!this.ticketStatus.equals(TicketStatus.BOOKED) || !this.deviceId
-        .equals(extractedDeviceId)) {
-      throw new CustomException(ErrorCode.TICKET_STATUS_INVALID);
+    if (!this.ticketStatus.equals(TicketStatus.BOOKED)) {
+      throw new CustomException(ErrorCode.TICKET_STATUS_INVALID, "티켓 상태가 BOOKED가 아닙니다.");
+    }
+    if (!this.deviceId.equals(extractedDeviceId)) {
+      throw new CustomException(ErrorCode.TICKET_STATUS_INVALID, "디바이스 ID가 일치하지 않습니다.");
     }
   }
 
