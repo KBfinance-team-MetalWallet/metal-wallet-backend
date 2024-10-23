@@ -51,12 +51,12 @@ class MusicalServiceTest {
   private ScheduleService scheduleService;
   @Mock
   private SeatRepository seatRepository;
-  private MusicalServiceImpl musicalService;
+  private MusicalServiceImpl musicalServiceImpl;
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    musicalService = new MusicalServiceImpl(musicalRepository, customMusicalRepository,
+    musicalServiceImpl = new MusicalServiceImpl(musicalRepository, customMusicalRepository,
       scheduleService, seatRepository);
   }
 
@@ -86,7 +86,7 @@ class MusicalServiceTest {
       when(musicalRepository.findById(1L)).thenReturn(Optional.of(musical));
 
       // when
-      Musical result = musicalService.getMusicalById(1L);
+      Musical result = musicalServiceImpl.getMusicalById(1L);
 
       // then
       assertThat(result).isEqualTo(musical);
@@ -100,7 +100,7 @@ class MusicalServiceTest {
       when(musicalRepository.findById(1L)).thenReturn(Optional.empty());
 
       // when & then
-      assertThatThrownBy(() -> musicalService.getMusicalById(1L))
+      assertThatThrownBy(() -> musicalServiceImpl.getMusicalById(1L))
         .isInstanceOf(CustomException.class)
         .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MUSICAL_NOT_FOUND);
 
@@ -150,7 +150,7 @@ class MusicalServiceTest {
       when(musicalRepository.findAllByRankingAsc(any(PageRequest.class))).thenReturn(musicals);
 
       // when
-      List<MusicalResponse> result = musicalService.getMusicalsWithLimit(2);
+      List<MusicalResponse> result = musicalServiceImpl.getMusicalsWithLimit(2);
 
       // then
       assertThat(result).hasSize(2);
@@ -198,7 +198,7 @@ class MusicalServiceTest {
         .thenReturn(musicals);
 
       // when
-      List<MusicalResponse> result = musicalService.getMusicalsAfterCursor(1L, 2);
+      List<MusicalResponse> result = musicalServiceImpl.getMusicalsAfterCursor(1L, 2);
 
       // then
       assertThat(result).hasSize(2);
@@ -227,7 +227,7 @@ class MusicalServiceTest {
         .thenReturn(expectedResponses);
 
       // when
-      List<MusicalSeatAvailabilityResponse> result = musicalService
+      List<MusicalSeatAvailabilityResponse> result = musicalServiceImpl
         .getScheduleInfos(1L, "2024-01-01");
 
       // then
@@ -256,7 +256,7 @@ class MusicalServiceTest {
       when(scheduleService.getScheduleDatesByMusicalId(1L)).thenReturn(expectedDates);
 
       // when
-      Set<String> result = musicalService.getScheduleDates(1L);
+      Set<String> result = musicalServiceImpl.getScheduleDates(1L);
 
       // then
       assertThat(result).isEqualTo(expectedDates);
@@ -300,7 +300,7 @@ class MusicalServiceTest {
       when(seatRepository.findAvailableSeatsByScheduleId(anyLong())).thenReturn(seats);
 
       // when
-      List<MusicalScheduleSeatAvailabilityResponse> result = musicalService
+      List<MusicalScheduleSeatAvailabilityResponse> result = musicalServiceImpl
         .getAvailableSeats(1L);
 
       // then
