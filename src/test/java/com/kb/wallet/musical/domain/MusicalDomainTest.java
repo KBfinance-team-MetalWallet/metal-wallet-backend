@@ -20,20 +20,19 @@ class MusicalDomainTest {
     startDate = LocalDate.of(2024, 1, 1);
     endDate = LocalDate.of(2024, 12, 31);
 
-    musical = new Musical(
-      1L,
-      "오페라의 유령",
-      1,
-      "샤롯데씨어터",
-      "서울특별시 송파구",
-      startDate,
-      endDate,
-      180,
-      "http://example.com/poster.jpg",
-      "http://example.com/notice.jpg",
-      "http://example.com/detail.jpg",
-      "http://example.com/place.jpg"
-    );
+    musical = Musical.builder()
+      .title("오페라의 유령")
+      .ranking(1)
+      .place("샤롯데씨어터")
+      .placeDetail("서울특별시 송파구")
+      .ticketingStartDate(startDate)
+      .ticketingEndDate(endDate)
+      .runningTime(180)
+      .posterImageUrl("http://example.com/poster.jpg")
+      .noticeImageUrl("http://example.com/notice.jpg")
+      .detailImageUrl("http://example.com/detail.jpg")
+      .placeImageUrl("http://example.com/place.jpg")
+      .build();
   }
 
   @Nested
@@ -45,13 +44,13 @@ class MusicalDomainTest {
     void createMusicalWithAllFields() {
       assertThat(musical)
         .satisfies(m -> {
-          assertThat(m.getId()).isEqualTo(1L);  // 의도적으로 실패하도록 2L로 설정
+          assertThat(m.getId()).isNull();
           assertThat(m.getTitle()).isEqualTo("오페라의 유령");
           assertThat(m.getRanking()).isEqualTo(1);
           assertThat(m.getPlace()).isEqualTo("샤롯데씨어터");
           assertThat(m.getPlaceDetail()).isEqualTo("서울특별시 송파구");
-          assertThat(m.getTicketingStartDate()).isEqualTo(startDate);
-          assertThat(m.getTicketingEndDate()).isEqualTo(endDate);
+          assertThat(m.getTicketingStartDate()).isEqualTo(startDate);   // 초기화된 변수와 비교
+          assertThat(m.getTicketingEndDate()).isEqualTo(endDate);       // 초기화된 변수와 비교
           assertThat(m.getRunningTime()).isEqualTo(180);
         });
 
@@ -76,7 +75,7 @@ class MusicalDomainTest {
     void createMusicalWithRequiredFieldsOnly() {
       // given
       Musical musicalWithRequiredFields = new Musical(
-        1L,
+        null,
         "오페라의 유령",
         1,
         "샤롯데씨어터",
@@ -93,6 +92,7 @@ class MusicalDomainTest {
       // then
       assertThat(musicalWithRequiredFields)
         .satisfies(m -> {
+          assertThat(m.getId()).isNull();
           assertThat(m.getTitle()).isEqualTo("오페라의 유령");
           assertThat(m.getRanking()).isEqualTo(1);
           assertThat(m.getPlace()).isEqualTo("샤롯데씨어터");
