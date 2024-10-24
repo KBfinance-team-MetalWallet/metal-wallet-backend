@@ -18,7 +18,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
       + "JOIN FETCH t.member m "
       + "WHERE t.id = :id "
       + "AND m.email = :email ")
-  Optional<Ticket> findByMember(
+  Optional<Ticket> findByTicketIdAndEmail(
       @Param("id") Long id,
       @Param("email") String email);
 

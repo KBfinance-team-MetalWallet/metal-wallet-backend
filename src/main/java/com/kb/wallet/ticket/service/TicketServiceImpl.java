@@ -109,7 +109,7 @@ public class TicketServiceImpl implements TicketService {
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
   public void cancelTicket(String email, Long ticketId) {
-    Ticket ticket = ticketRepository.findByMember(ticketId, email)
+ㄷ    Ticket ticket = ticketRepository.findByTicketIdAndEmail(ticketId, email)
         .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
     ticket.isCancellable();
     updateTicketStatus(ticket, TicketStatus.CANCELED);
