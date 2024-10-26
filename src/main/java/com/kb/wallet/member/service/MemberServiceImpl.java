@@ -30,8 +30,9 @@ public class MemberServiceImpl implements MemberService {
     Member member = new Member(request.getEmail(), request.getName(), request.getPhone(),
       encodedPassword, encodedPin);
 
-    memberRepository.save(member);
-    return new RegisterMemberResponse(member.getId(), member.getEmail(), member.getName());
+    Member savedMember = memberRepository.save(member);
+    return new RegisterMemberResponse(savedMember.getId(), savedMember.getEmail(),
+      savedMember.getName());
   }
 
   @Override
@@ -41,7 +42,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
-  public void checkPassword(String email, PinNumberVerificationRequest passwordRequest) {
+  public void checkPinNumber(String email, PinNumberVerificationRequest passwordRequest) {
     Member member = getMemberByEmail(email);
     if (!encoder.matches(passwordRequest.getPinNumber(), member.getPinNumber())) {
       throw new CustomException(ErrorCode.PIN_NUMBER_NOT_MATCH);
