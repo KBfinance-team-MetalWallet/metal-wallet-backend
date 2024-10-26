@@ -11,4 +11,7 @@ public class PinNumberVerificationRequest {
   @Size(min = 6, max = 6, message = "핀번호는 6자리여야 합니다.")
   private String pinNumber;
 
+  public PinNumberVerificationRequest(String pinNumber) {
+    this.pinNumber = pinNumber;
+  }
 }
