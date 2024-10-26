@@ -45,7 +45,7 @@ public class Member implements UserDetails {
   @Column(unique = true, length = 11)
   private String phone;
 
-  @Column(nullable = false, length = 6)
+  @Column(nullable = false)
   private String pinNumber;
 
   @Column(nullable = false)
