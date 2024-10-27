@@ -10,6 +10,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class RSAUtilTest {
@@ -22,6 +23,7 @@ public class RSAUtilTest {
   }
 
   @Test
+  @DisplayName("RSA 키 쌍 생성 테스트")
   public void testGenerateKeyPair() {
     assertNotNull(keyPair, "키 쌍은 null이 아니어야 합니다");
     assertNotNull(keyPair.getPrivate(), "개인 키는 null이 아니어야 합니다");
@@ -29,6 +31,7 @@ public class RSAUtilTest {
   }
 
   @Test
+  @DisplayName("RSA 암호화 및 복호화 테스트")
   public void testEncryptDecrypt() {
     String originalData = "안녕하세요, RSA!";
     PublicKey publicKey = keyPair.getPublic();
@@ -42,6 +45,7 @@ public class RSAUtilTest {
   }
 
   @Test
+  @DisplayName("잘못된 개인 키로 복호화 시도 테스트")
   public void testDecryptWithWrongKey() {
     String originalData = "안녕하세요, RSA!";
     PublicKey publicKey = keyPair.getPublic();
