@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -135,6 +136,7 @@ public class AppConfig {
   }
 
   @Bean
+  @Primary
   public PlatformTransactionManager jpaTransactionManager(
       LocalContainerEntityManagerFactoryBean entityManagerFactory) {
     JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
