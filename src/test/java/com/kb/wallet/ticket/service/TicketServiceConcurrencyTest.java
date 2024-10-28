@@ -1,62 +1,66 @@
 package com.kb.wallet.ticket.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.kb.wallet.global.config.AppConfig;
 import com.kb.wallet.member.constant.RoleType;
 import com.kb.wallet.member.domain.Member;
-import com.kb.wallet.member.service.MemberService;
+import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
+import com.kb.wallet.musical.repository.MusicalRepository;
 import com.kb.wallet.seat.constant.Grade;
 import com.kb.wallet.seat.domain.Seat;
 import com.kb.wallet.seat.domain.Section;
-import com.kb.wallet.seat.service.SeatService;
+import com.kb.wallet.seat.repository.SeatRepository;
 import com.kb.wallet.ticket.domain.Schedule;
-import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
+import com.kb.wallet.ticket.repository.ScheduleRepository;
 import com.kb.wallet.ticket.repository.TicketRepository;
 import java.time.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
     AppConfig.class
 })
 @WebAppConfiguration
 @Transactional
-//@ActiveProfiles("test")
 public class TicketServiceConcurrencyTest {
 
-  @Mock
-  private MemberService memberService;
+  @Autowired
+  private MemberRepository memberRepository;
 
-  @Mock
-  private SeatService seatService;
+  @Autowired
+  private SeatRepository seatRepository;
 
-  @Mock
-  private TicketRepository ticketRepository;
+  @Autowired
+  private TicketService ticketService;
 
-  @InjectMocks
-  private TicketServiceImpl ticketService;
+  @Autowired
+  private ScheduleRepository scheduleRepository;
+  @Autowired
+  private MusicalRepository musicalRepository;
+
+  @Autowired
+  private EntityManager em;
 
   private static final Long seatId = 1L;
   private final String deviceId = "device123";
@@ -73,125 +77,51 @@ public class TicketServiceConcurrencyTest {
       "user9@example.com",
       "user10@example.com"
   };
-  @Mock
-  Seat seat;
-
-  @Mock
-  Section section;
-  Musical musical;
-  Schedule schedule;
 
   List<Member> members;
-
-  @Mock
-  Ticket testTicket;
+  private Musical testMusical;
+  private Section testSection;
+  private Schedule testSchedule;
 
   @BeforeEach
   public void setup() {
-
-    MockitoAnnotations.openMocks(this);
-
     members = createMembers();
-    for (int i = 0; i < members.size(); i++) {
-      when(memberService.getMemberByEmail(members.get(i).getEmail())).thenReturn(members.get(i));
-    }
+    memberRepository.saveAll(members);
 
-    when(section.getId()).thenReturn(1L);
-    when(section.getGrade()).thenReturn(Grade.R);
-    when(section.getAvailableSeats()).thenReturn(1);
-
-    Musical musical = mock(Musical.class);
-    when(musical.getId()).thenReturn(1L);
-    when(musical.getTitle()).thenReturn("test Musical");
-    when(musical.getRanking()).thenReturn(1);
-    when(musical.getPlace()).thenReturn("Main Hall");
-    when(musical.getPlaceDetail()).thenReturn("1층");
-    when(musical.getTicketingStartDate()).thenReturn(LocalDate.now());
-    when(musical.getTicketingEndDate()).thenReturn(LocalDate.now().plusDays(30));
-    when(musical.getRunningTime()).thenReturn(120);
-
-    LocalDate mockDate = LocalDate.of(2024, 10, 22);
-    LocalTime mockStartTime = LocalTime.of(20, 0);
-
-    Schedule schedule = mock(Schedule.class);
-    when(schedule.getId()).thenReturn(1L);
-    when(schedule.getMusical()).thenReturn(musical);
-    when(schedule.getDate()).thenReturn(mockDate);
-    when(schedule.getStartTime()).thenReturn(mockStartTime);
-
-    when(seat.getId()).thenReturn(seatId);
-    when(seat.isAvailable()).thenReturn(true);
-    when(seat.getSection()).thenReturn(section);
-    /**
-     * 헷갈리는 부분1,
-     * mock을 써야할지, 생성자 호출을 해야할지
-     * mock을 사용하니까 ticketService.bookTicketForSeat()의
-     * Seat seat = seatService.getSeatById(seatId); 가 동작안함
-     */
-//    seat = createSeat();
-    when(seatService.getSeatById(seatId)).thenReturn(seat);
+    Seat seat = createSeat();
+    seatRepository.save(seat);
   }
 
   @Test
-  public void test1() {
+  public void testBookTicket_singleTicketSuccress() {
     TicketRequest ticketRequest = new TicketRequest();
     ticketRequest.setSeatId(List.of(seatId));
     ticketRequest.setDeviceId(deviceId);
 
-    /**
-     * 헷갈리는 부분2,
-     * test()를 실행했을 때 setup()이 동작을 안해서 확인차 만들었음
-     * seat.getId() NullPointerException 발생
-     */
-    ticketService.bookTicket(EMAILS[0], ticketRequest);
+    List<TicketResponse> ticketResponses = ticketService.bookTicket(EMAILS[0], ticketRequest);
 
+    assertNotNull(ticketResponses);
+    assertFalse(ticketResponses.isEmpty(), "티켓 응답이 비어 있지 않아야 합니다.");
+    assertEquals(1, ticketResponses.size(), "예약된 티켓 수가 1이어야 합니다.");
 
-    verify(seatService).getSeatById(seatId);
+    TicketResponse ticketResponse = ticketResponses.get(0);
+    assertNotNull(ticketResponse.getId(), "티켓 ID는 null이 아니어야 합니다.");
+    //TODO: TicketResponse.seatId 추가
+//    assertEquals(seatId, ticketResponse.getSeatId(), "좌석 ID가 일치해야 합니다.");
   }
 
   @Test
   @DisplayName("10명의 사용자가 동시에 티켓을 예매할 경우, 단 1건의 예몌만 성공한다.")
-  public void test() throws InterruptedException {
+  public void testBookTicket_multipleUsersSungleSeatSuccress() throws InterruptedException {
     //given
     TicketRequest ticketRequest = new TicketRequest();
     ticketRequest.setSeatId(List.of(seatId));
     ticketRequest.setDeviceId(deviceId);
 
-    /**
-     * 헷갈리는 부분3,
-     * save이외에 mock 처리 후 save를 확인하려고 했는데
-     * 어디까지 mock처리를 해야할지 모르겠음
-     * mock 처리 범위
-     * ticketService에서 호출하는
-     * 도메인의 비즈니스 로직, 생성자 호출, 다른 Service 또는 Repository까지라고 생각했는데
-     * seat.checkSeatAvailability(); 와 같은 void 처리는 어떻게 mock 처리하는지?
-     * Ticket.createBookedTicket() 생성자도 다른 도메인과 엮여있는지 어떻게 처리할지?
-     */
-    //mocking
-    //musical, schedule, section, seat
-    //ticketRepository.save
-    //ticketResponse
-    when(ticketRepository.save(any(Ticket.class)))
-        .thenAnswer(invocation -> {
-          Ticket ticket = invocation.getArgument(0);
-          /**
-           * syncronized 처리가 필요할 것으로 보임
-           * test할 때 스레드가 순차적으로 처리되지 않음
-           */
-          return ticket;
-        });
-
-//    seat.checkSeatAvailability();
-
-//    Ticket.createBookedTicket mockTicket 생성 후
-//    ticketRepository.save mock 반환
-//    seat.updateSeatAvailability 통과 or section 생성
-
+    AtomicInteger successfulBookingsCount = new AtomicInteger(0);
     int createCnt = 10;
     ExecutorService executorService = Executors.newFixedThreadPool(10);
     CountDownLatch countDownLatch = new CountDownLatch(createCnt);
-
-    List<TicketResponse> successfulBookings = Collections.synchronizedList(new ArrayList<>());
 
     for (String email : EMAILS) {
       executorService.submit(() -> {
@@ -199,8 +129,8 @@ public class TicketServiceConcurrencyTest {
           //when
           List<TicketResponse> responses = ticketService.bookTicket(email, ticketRequest);
           System.out.println("Booking responses for " + email + ": " + responses);
-          if (!responses.isEmpty()) {
-            successfulBookings.addAll(responses);
+          if (responses.size() > 0) {
+            successfulBookingsCount.incrementAndGet(); // 성공한 예매 카운트 증가
           }
         } finally {
           countDownLatch.countDown();
@@ -209,26 +139,24 @@ public class TicketServiceConcurrencyTest {
       });
     }
     countDownLatch.await();
+    executorService.shutdown();
 
+    /**
+     * 1. 이거 id가 뭔지를 모르겠는데 어떤 쿼리에서 조회되는 결과인지 아는 사람?
+     * 뭐는 unread, 뭐는 null이고(이건 내가 값을 설정 안해줘서 그런 듯) 뭐는 id가 있어서 왜이런지 궁금
+     * |---------|-------------|------------|--------|-----------|---|-----------|---------|-----------|-----------|---|-----------------|-----------------|----------|-------------|----------------|-----------------|--------|-------------|-------------------|---------------------|-------------|---|----------------|------|-----------|------|------------|-------|-----------------|-----------------|---------|-------------|----------------|-----------------|---------|-------------|-------------------|---------------------|---------|-------|---------|---------|-----------|-----------|
+     * |id       |is_available |schedule_id |seat_no |section_id |id |date       |end_time |musical_id |start_time |id |detail_image_url |notice_image_url |place     |place_detail |place_image_url |poster_image_url |ranking |running_time |ticketing_end_date |ticketing_start_date |title        |id |available_seats |grade |musical_id |price |schedule_id |id     |detail_image_url |notice_image_url |place    |place_detail |place_image_url |poster_image_url |ranking  |running_time |ticketing_end_date |ticketing_start_date |title    |id     |date     |end_time |musical_id |start_time |
+     * |---------|-------------|------------|--------|-----------|---|-----------|---------|-----------|-----------|---|-----------------|-----------------|----------|-------------|----------------|-----------------|--------|-------------|-------------------|---------------------|-------------|---|----------------|------|-----------|------|------------|-------|-----------------|-----------------|---------|-------------|----------------|-----------------|---------|-------------|-------------------|---------------------|---------|-------|---------|---------|-----------|-----------|
+     * |[unread] |false        |1           |0       |1          |1  |2024-10-22 |null     |1          |20:00:00   |1  |null             |null             |Main Hall |1층           |null            |null             |1       |120          |2024-11-27         |2024-10-28           |test Musical |1  |0               |R     |[null]     |0     |[null]      |[null] |[unread]         |[unread]         |[unread] |[unread]     |[unread]        |[unread]         |[unread] |[unread]     |[unread]           |[unread]             |[unread] |[null] |[unread] |[unread] |[unread]   |[unread]   |
+     * |---------|-------------|------------|--------|-----------|---|-----------|---------|-----------|-----------|---|-----------------|-----------------|----------|-------------|----------------|-----------------|--------|-------------|-------------------|---------------------|-------------|---|----------------|------|-----------|------|------------|-------|-----------------|-----------------|---------|-------------|----------------|-----------------|---------|-------------|-------------------|---------------------|---------|-------|---------|---------|-----------|-----------|
+     *
+     * 2. seatService.getSeatById 조회하면 seat0, schedule1, musical2, section3, musical4, schedule5
+     * 이렇게 조회되는 거 같음 최적화가 된건지 궁금함
+     */
     //then
-    verify(ticketRepository, atMostOnce()).save(any(Ticket.class));
-    assertEquals(1, successfulBookings.size(), "동시성 문제: 오직 한 명만 좌석 예약에 성공해야 함");
-
-    /**
-     * 헷갈리는 부분4,
-     * 위랑 아래 중에 어떻게 처리해야할지 모르겠음
-     */
-//    verify(ticketRepository, times(1)).save(any(Ticket.class));
-    /**
-     * Autowired 처리할 때 사용
-     */
-//    List<Ticket> bookedTickets = ticketRepository.findAll();
-//    assertEquals(1, bookedTickets.size(), "동시성 문제: 생성된 티켓이 1개인지 확인");
+    assertEquals(1, successfulBookingsCount.get(), "동시성 문제: 오직 한 명만 좌석 예약에 성공해야 함");
   }
 
-  /**
-   * Autowired 처리할 때 사용
-   */
   public static List<Member> createMembers() {
     List<Member> members = new ArrayList<>();
 
@@ -248,10 +176,41 @@ public class TicketServiceConcurrencyTest {
     return members;
   }
 
-  public static Seat createSeat() {
+  public Seat createSeat() {
+    testMusical = Musical.builder()
+        .title("test Musical")
+        .ranking(1)
+        .place("Main Hall")
+        .placeDetail("1층")
+        .ticketingStartDate(LocalDate.now())
+        .ticketingEndDate(LocalDate.now().plusDays(30))
+        .runningTime(120)
+        .build();
+    musicalRepository.save(testMusical); // Musical 저장
+
+    testSchedule = Schedule.builder()
+        .musical(testMusical)
+        .date(LocalDate.of(2024, 10, 22))
+        .startTime(LocalTime.of(20, 0))
+        .build();
+    scheduleRepository.save(testSchedule);
+
+    /**
+     * repo가 없음
+     */
+    testSection = Section.builder()
+        .grade(Grade.R)
+        .availableSeats(1)
+        .build();
+
+    em.persist(testSection);
+    em.flush();
+
     return Seat.builder()
         .id(seatId)
         .isAvailable(true)
+        .schedule(testSchedule)
+        .section(testSection)
         .build();
   }
 }

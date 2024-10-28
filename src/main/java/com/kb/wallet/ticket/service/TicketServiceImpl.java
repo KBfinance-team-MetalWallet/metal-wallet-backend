@@ -21,7 +21,6 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -34,8 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@NoArgsConstructor(force = true)
 public class TicketServiceImpl implements TicketService {
+
   private final TicketRepository ticketRepository;
   private final MemberService memberService;
   private final SeatService seatService;
@@ -46,6 +45,7 @@ public class TicketServiceImpl implements TicketService {
     return ticketRepository.findById(id)
         .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
   }
+
   @Override
   public List<TicketListResponse> getTickets(String email, TicketStatus ticketStatus,
       int page, int size, Long cursor) {
@@ -57,7 +57,6 @@ public class TicketServiceImpl implements TicketService {
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
   public List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest) {
-
     Member member = memberService.getMemberByEmail(email);
 
     List<TicketResponse> responses = new ArrayList<>();
@@ -65,32 +64,24 @@ public class TicketServiceImpl implements TicketService {
     for (Long seatId : ticketRequest.getSeatId()) {
       Ticket bookedTicket = bookTicketForSeat(seatId, ticketRequest.getDeviceId(), member);
       responses.add(TicketResponse.toTicketResponse(bookedTicket));
-      log.info("bookTicket: {}",bookedTicket.getId().toString());
     }
     return responses;
   }
 
   private Ticket bookTicketForSeat(Long seatId, String deviceId, Member member) {
     Seat seat = seatService.getSeatById(seatId);
-    log.info("seatId2: {}", seatId);
-    /**
-     * 원래 mock 은 값이 안찍히는가?..
-     */
-    log.info("seatId: {}", seat.getId());
     seat.checkSeatAvailability();
-    log.info("seat: {}",seat.getId().toString());
+
     Ticket ticket = saveTicket(member, seat, deviceId);
-    log.info("bookTicketForSeat: {}",ticket.getId().toString());
+
     seat.updateSeatAvailability();
 
     return ticket;
   }
 
   private Ticket saveTicket(Member member, Seat seat, String deviceId) {
-    log.info("ssaveTicket seat: {}",seat.getId().toString());
-    Ticket ticket = Ticket.createBookedTicket(member,seat.getSchedule().getMusical(), seat, deviceId);
-
-    log.info("ssaveTicket seat: {}",ticket.getId().toString());
+    Ticket ticket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(), seat,
+        deviceId);
     return ticketRepository.save(ticket);
   }
 
