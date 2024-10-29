@@ -2,10 +2,14 @@ package member.controller;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
@@ -14,7 +18,9 @@ import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.controller.MemberController;
+import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.dto.request.LoginMemberRequest;
+import com.kb.wallet.member.dto.request.PinNumberVerificationRequest;
 import com.kb.wallet.member.dto.request.RegisterMemberRequest;
 import com.kb.wallet.member.dto.response.RegisterMemberResponse;
 import com.kb.wallet.member.service.MemberServiceImpl;
@@ -277,4 +283,63 @@ public class MemberControllerTest {
       violations.iterator().next().getMessage());
   }
 
+  @Test
+  @DisplayName("핀 번호 검증 성공 테스트")
+  void testCheckPinNumber_Success() {
+    // given
+    PinNumberVerificationRequest request = new PinNumberVerificationRequest("123456");
+    Member member = mock(Member.class);
+    when(member.getEmail()).thenReturn(
+      "test@gmail.com");
+
+    // when
+    ApiResponse<Void> response = memberController.checkPinNumber(member,
+      request);
+
+    // then
+    assertEquals("응답 상태는 200 이어야 합니다.", 200, response.getResultCode());
+    assertEquals("응답 본문은 OK 이어야 합니다.", "OK",
+      response.getResultMsg()); // Check the response message
+
+    // Verify that the service method was called once with the correct parameters
+    verify(memberService, times(1)).checkPinNumber(eq("test@gmail.com"), eq(request));
+  }
+
+  @Test
+  @DisplayName("핀 번호 검증 실패 테스트")
+  void testCheckPinNumber_NotMatch() {
+    // given
+    PinNumberVerificationRequest request = new PinNumberVerificationRequest(
+      "wrongPin");
+
+    Member member = mock(Member.class);
+    when(member.getEmail()).thenReturn("test@gmail.com");
+
+    doThrow(new IllegalArgumentException("Invalid pin number"))
+      .when(memberService)
+      .checkPinNumber(eq("test@gmail.com"), any(PinNumberVerificationRequest.class));
+
+    // when
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+      memberController.checkPinNumber(member, request);
+    });
+
+    // then
+    assertEquals("Invalid pin number", "Invalid pin number",
+      exception.getMessage()); // Verify the exception message
+    verify(memberService, times(1)).checkPinNumber(eq("test@gmail.com"), eq(request));
+  }
+
+  @Test
+  @DisplayName("핀 번호 검증 시 NULL 필드 테스트")
+  void testCheckPinNumber_NullFields() {
+    //given
+    PinNumberVerificationRequest request = new PinNumberVerificationRequest(null);
+
+    // when
+    Set<ConstraintViolation<PinNumberVerificationRequest>> violations = validator.validate(request);
+
+    // then
+    assertEquals("총 1개의 유효성 검사와 예외 처리가 발생", 1, violations.size());
+  }
 }
