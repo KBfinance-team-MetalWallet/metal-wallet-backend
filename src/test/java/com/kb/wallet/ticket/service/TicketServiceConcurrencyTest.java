@@ -1,5 +1,6 @@
 package com.kb.wallet.ticket.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,7 +19,6 @@ import com.kb.wallet.ticket.domain.Schedule;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.ScheduleRepository;
-import com.kb.wallet.ticket.repository.TicketRepository;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +31,14 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
     AppConfig.class
@@ -55,14 +57,15 @@ public class TicketServiceConcurrencyTest {
   private TicketService ticketService;
 
   @Autowired
-  private ScheduleRepository scheduleRepository;
-  @Autowired
   private MusicalRepository musicalRepository;
 
   @Autowired
-  private EntityManager em;
+  private ScheduleRepository scheduleRepository;
 
-  private static final Long seatId = 1L;
+  @Autowired
+  private EntityManager em;
+  private static final int availableSeats = 2;
+
   private final String deviceId = "device123";
 
   private static final String[] EMAILS = {
@@ -78,31 +81,41 @@ public class TicketServiceConcurrencyTest {
       "user10@example.com"
   };
 
-  List<Member> members;
+  static List<Member> members;
+  static List<Seat> seats;
   private Musical testMusical;
   private Section testSection;
   private Schedule testSchedule;
+  private boolean isInitialized = false;
 
   @BeforeEach
   public void setup() {
-    members = createMembers();
-    memberRepository.saveAll(members);
-
-    Seat seat = createSeat();
-    seatRepository.save(seat);
+    if (!isInitialized) {
+      createMembers();
+      memberRepository.saveAll(members);
+      testMusical = createTestMusical(musicalRepository);
+      testSchedule = createTestSchedule(scheduleRepository, testMusical);
+      createSeats(em);
+      seatRepository.saveAll(seats);
+      isInitialized = true;
+    }
   }
 
   @Test
   public void testBookTicket_singleTicketSuccress() {
+    Long seatId = 2L;
     TicketRequest ticketRequest = new TicketRequest();
     ticketRequest.setSeatId(List.of(seatId));
     ticketRequest.setDeviceId(deviceId);
 
     List<TicketResponse> ticketResponses = ticketService.bookTicket(EMAILS[0], ticketRequest);
 
-    assertNotNull(ticketResponses);
-    assertFalse(ticketResponses.isEmpty(), "티켓 응답이 비어 있지 않아야 합니다.");
-    assertEquals(1, ticketResponses.size(), "예약된 티켓 수가 1이어야 합니다.");
+    assertThat(ticketResponses)
+        .isNotNull()
+        .isNotEmpty()
+        .withFailMessage("티켓 응답이 비어 있지 않아야 합니다.")
+        .hasSize(1)
+        .describedAs("예약된 티켓 수가 1이어야 합니다.");
 
     TicketResponse ticketResponse = ticketResponses.get(0);
     assertNotNull(ticketResponse.getId(), "티켓 ID는 null이 아니어야 합니다.");
@@ -114,6 +127,7 @@ public class TicketServiceConcurrencyTest {
   @DisplayName("10명의 사용자가 동시에 티켓을 예매할 경우, 단 1건의 예몌만 성공한다.")
   public void testBookTicket_multipleUsersSungleSeatSuccress() throws InterruptedException {
     //given
+    Long seatId = 1L;
     TicketRequest ticketRequest = new TicketRequest();
     ticketRequest.setSeatId(List.of(seatId));
     ticketRequest.setDeviceId(deviceId);
@@ -155,10 +169,11 @@ public class TicketServiceConcurrencyTest {
      */
     //then
     assertEquals(1, successfulBookingsCount.get(), "동시성 문제: 오직 한 명만 좌석 예약에 성공해야 함");
+    //TODO: 첫번째 사용자 검증 필요
   }
 
-  public static List<Member> createMembers() {
-    List<Member> members = new ArrayList<>();
+  public static void createMembers() {
+    members = new ArrayList<>();
 
     for (int i = 0; i < EMAILS.length; i++) {
       Member member = Member.builder()
@@ -172,12 +187,11 @@ public class TicketServiceConcurrencyTest {
           .build();
       members.add(member);
     }
-
-    return members;
   }
 
-  public Seat createSeat() {
-    testMusical = Musical.builder()
+
+  private static Musical createTestMusical(MusicalRepository musicalRepository) {
+    return musicalRepository.save(Musical.builder()
         .title("test Musical")
         .ranking(1)
         .place("Main Hall")
@@ -185,32 +199,35 @@ public class TicketServiceConcurrencyTest {
         .ticketingStartDate(LocalDate.now())
         .ticketingEndDate(LocalDate.now().plusDays(30))
         .runningTime(120)
-        .build();
-    musicalRepository.save(testMusical); // Musical 저장
+        .build());
+  }
 
-    testSchedule = Schedule.builder()
-        .musical(testMusical)
+  private static Schedule createTestSchedule(ScheduleRepository scheduleRepository,
+      Musical musical) {
+    return scheduleRepository.save(Schedule.builder()
+        .musical(musical)
         .date(LocalDate.of(2024, 10, 22))
         .startTime(LocalTime.of(20, 0))
-        .build();
-    scheduleRepository.save(testSchedule);
+        .build());
+  }
 
-    /**
-     * repo가 없음
-     */
+  private void createSeats(EntityManager em) {
     testSection = Section.builder()
         .grade(Grade.R)
-        .availableSeats(1)
+        .availableSeats(availableSeats)
         .build();
-
     em.persist(testSection);
     em.flush();
+    seats = new ArrayList<>();
 
-    return Seat.builder()
-        .id(seatId)
-        .isAvailable(true)
-        .schedule(testSchedule)
-        .section(testSection)
-        .build();
+    for (int i = 1; i <= 2; i++) {
+      Seat seat = Seat.builder()
+          .id(Long.valueOf(i))
+          .isAvailable(true)
+          .schedule(testSchedule)
+          .section(testSection)
+          .build();
+      seats.add(seat);
+    }
   }
 }
