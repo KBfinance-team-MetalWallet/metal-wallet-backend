@@ -35,6 +35,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
+
+  private static final long ENCRYPTION_EXPIRATION_MILLIS = 31_000;
+
+
   private final TicketRepository ticketRepository;
   private final MemberService memberService;
   private final SeatService seatService;
@@ -101,7 +105,7 @@ public class TicketServiceImpl implements TicketService {
     String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
     response.setPublicKey(publicKeyString);
 
-    long expirationTime = System.currentTimeMillis() + 31000;
+    long expirationTime = System.currentTimeMillis() + ENCRYPTION_EXPIRATION_MILLIS;
     response.setSeconds(expirationTime / 1000);
 
     return response;
