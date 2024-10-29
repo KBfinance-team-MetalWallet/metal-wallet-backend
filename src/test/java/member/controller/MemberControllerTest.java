@@ -1,16 +1,26 @@
 package member.controller;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 import com.kb.wallet.global.common.response.ApiResponse;
+import com.kb.wallet.jwt.JwtFilter;
+import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.controller.MemberController;
+import com.kb.wallet.member.dto.request.LoginMemberRequest;
 import com.kb.wallet.member.dto.request.RegisterMemberRequest;
 import com.kb.wallet.member.dto.response.RegisterMemberResponse;
 import com.kb.wallet.member.service.MemberServiceImpl;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -23,12 +33,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @ExtendWith(MockitoExtension.class)
 public class MemberControllerTest {
 
   @Mock
   private MemberServiceImpl memberService;
+
+  @Mock
+  private AuthenticationManager authenticationManager;
+
+  @Mock
+  private TokenProvider tokenProvider;
 
   @InjectMocks
   private MemberController memberController;
@@ -171,4 +196,85 @@ public class MemberControllerTest {
     assertEquals("핀번호의 길이가 6자리가 아닐 시 예외 처리 메시지", "핀번호는 6자리여야 합니다.",
       violations.iterator().next().getMessage());
   }
+
+  @Test
+  @DisplayName("로그인 성공 테스트")
+  void testLoginMember_Success() {
+    // given
+    LoginMemberRequest request = new LoginMemberRequest("test@gmail.com", "testPassword");
+
+    Authentication authentication = mock(Authentication.class);
+    when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+      .thenReturn(authentication);
+    when(authentication.getName()).thenReturn("test@gmail.com");
+
+    GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
+    List<GrantedAuthority> authorities = Collections.singletonList(authority);
+    doReturn(authorities).when(authentication).getAuthorities();
+
+    String accessToken = "mockJwtToken";
+    when(tokenProvider.createToken(anyString(), anyString())).thenReturn(accessToken);
+
+    // when
+    ResponseEntity<HashMap<String, Object>> response = memberController.loginMember(request);
+
+    // then
+    assertEquals("응답 상태는 200 OK 여야 합니다.", HttpStatus.OK, response.getStatusCode());
+    HashMap<String, Object> body = response.getBody();
+    assertEquals("결과는 success 여야 합니다.", "success", body.get("result"));
+    assertEquals("AccessToken은 일치해야 합니다.", accessToken,
+      body.get("accessToken")); // Use the mocked token
+    HttpHeaders headers = response.getHeaders();
+    assertEquals("헤더에 JWT 토큰이 포함되어야 합니다.", "Bearer " + accessToken,
+      headers.getFirst(JwtFilter.AUTHORIZATION_HEADER));
+  }
+
+  @Test
+  @DisplayName("로그인 인증 실패 테스트")
+  void testLoginMember_Unauthorized() {
+    // given
+    LoginMemberRequest request = new LoginMemberRequest("test@gmail.com", "wrongPassword");
+    when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+      .thenThrow(new AuthenticationException("Login failed") {
+      });
+
+    // when
+    ResponseEntity<HashMap<String, Object>> response = memberController.loginMember(request);
+
+    // then
+    assertEquals("응답 상태는 UNAUTHORIZED 여야 합니다.", HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    HashMap<String, Object> body = response.getBody();
+    assertEquals("결과는 fail 여야 합니다.", "fail", body.get("result"));
+    assertTrue("메시지는 'Login failed: Login failed' 여야 합니다.",
+      body.get("message").toString().startsWith("Login failed:"));
+  }
+
+  @Test
+  @DisplayName("로그인 시 NULL 필드 테스트")
+  void testLoginMember_NullFields() {
+    //given
+    LoginMemberRequest request = new LoginMemberRequest(null, null);
+
+    // when
+    Set<ConstraintViolation<LoginMemberRequest>> violations = validator.validate(request);
+
+    // then
+    assertEquals("총 2개의 유효성 검사와 예외 처리가 발생", 2, violations.size());
+  }
+
+  @Test
+  @DisplayName("로그인 시 잘못된 이메일 형식 테스트")
+  void testLoginMember_InvalidEmail() {
+    //given
+    LoginMemberRequest request = new LoginMemberRequest("InvalidEmail", "password");
+
+    // when
+    Set<ConstraintViolation<LoginMemberRequest>> violations = validator.validate(request);
+
+    // then
+    assertEquals("유효하지 않은 이메일 형식 예외 처리가 발생", 1, violations.size());
+    assertEquals("유효하지 않은 이메일 형식 예외 처리 메시지", "유효한 이메일 주소를 입력해 주세요.",
+      violations.iterator().next().getMessage());
+  }
+
 }
