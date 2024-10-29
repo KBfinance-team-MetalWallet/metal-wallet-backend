@@ -68,18 +68,13 @@ public class TicketServiceConcurrencyTest {
 
   private final String deviceId = "device123";
 
-  private static final String[] EMAILS = {
-      "user1@example.com",
-      "user2@example.com",
-      "user3@example.com",
-      "user4@example.com",
-      "user5@example.com",
-      "user6@example.com",
-      "user7@example.com",
-      "user8@example.com",
-      "user9@example.com",
-      "user10@example.com"
-  };
+  private static final String[] EMAILS = new String[100];
+
+  static {
+    for (int i = 0; i < EMAILS.length; i++) {
+      EMAILS[i] = "user" + (i + 1) + "@example.com";
+    }
+  }
 
   static List<Member> members;
   static List<Seat> seats;
@@ -102,6 +97,7 @@ public class TicketServiceConcurrencyTest {
   }
 
   @Test
+  @DisplayName("단건의 티켓 예몌가 성공한다.")
   public void testBookTicket_singleTicketSuccress() {
     Long seatId = 2L;
     TicketRequest ticketRequest = new TicketRequest();
@@ -124,7 +120,7 @@ public class TicketServiceConcurrencyTest {
   }
 
   @Test
-  @DisplayName("10명의 사용자가 동시에 티켓을 예매할 경우, 단 1건의 예몌만 성공한다.")
+  @DisplayName("100명의 사용자가 동시에 티켓을 예매할 경우, 단 1건의 예몌만 성공한다.")
   public void testBookTicket_multipleUsersSungleSeatSuccress() throws InterruptedException {
     //given
     Long seatId = 1L;
@@ -133,8 +129,8 @@ public class TicketServiceConcurrencyTest {
     ticketRequest.setDeviceId(deviceId);
 
     AtomicInteger successfulBookingsCount = new AtomicInteger(0);
-    int createCnt = 10;
-    ExecutorService executorService = Executors.newFixedThreadPool(10);
+    int createCnt = 100;
+    ExecutorService executorService = Executors.newFixedThreadPool(createCnt);
     CountDownLatch countDownLatch = new CountDownLatch(createCnt);
 
     for (String email : EMAILS) {
@@ -144,7 +140,7 @@ public class TicketServiceConcurrencyTest {
           List<TicketResponse> responses = ticketService.bookTicket(email, ticketRequest);
           System.out.println("Booking responses for " + email + ": " + responses);
           if (responses.size() > 0) {
-            successfulBookingsCount.incrementAndGet(); // 성공한 예매 카운트 증가
+            successfulBookingsCount.incrementAndGet();
           }
         } finally {
           countDownLatch.countDown();
