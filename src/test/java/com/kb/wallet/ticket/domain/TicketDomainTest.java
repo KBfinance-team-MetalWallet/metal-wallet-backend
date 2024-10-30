@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.musical.domain.Musical;
@@ -21,7 +20,6 @@ public class TicketDomainTest {
   private Schedule schedule;
   private String deviceId;
 
-  // 공통 데이터 초기화
   @BeforeEach
   void setUp() {
     schedule = Schedule.builder()
@@ -47,7 +45,7 @@ public class TicketDomainTest {
   @Test
   @DisplayName("예약된 티켓 생성 시 올바른 상태값 설정")
   void createBookedTicket_ShouldSetCorrectStatus() {
-    //Given - When
+    // Given - When
     Ticket ticket = Ticket.createBookedTicket(member, musical, seat, deviceId);
 
     // Then
@@ -62,7 +60,8 @@ public class TicketDomainTest {
         .isEqualTo(musical);
     assertThat(ticket.getDeviceId())
         .as("Ticket should have the correct device ID")
-        .isEqualTo(deviceId);}
+        .isEqualTo(deviceId);
+  }
 
   @Test
   @DisplayName("예약된 티켓의 유효기간과 취소기한 설정 검증")
@@ -107,8 +106,8 @@ public class TicketDomainTest {
         .as("Canceled Ticket should not be cancellable and should throw CustomException")
         .isInstanceOf(CustomException.class)
         .hasMessage("티켓은 이미 취소된 상태입니다.");
-
   }
+
   @Test
   @DisplayName("잘못된 디바이스 ID 또는 BOOKED 상태가 아닌 티켓에 대해 validateCheckedChange 메서드가 예외를 발생시킴")
   void validateCheckedChange_ShouldThrowExceptionForInvalidDeviceOrStatus() {
@@ -170,7 +169,6 @@ public class TicketDomainTest {
         .hasMessage("예약 상태가 아닌 티켓입니다.");
   }
 
-
   private Ticket createTicketWithStatus(TicketStatus status) {
     LocalDateTime validUntil = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
     return Ticket.builder()
@@ -183,4 +181,3 @@ public class TicketDomainTest {
         .build();
   }
 }
-
