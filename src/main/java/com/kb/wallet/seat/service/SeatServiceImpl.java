@@ -5,10 +5,8 @@ import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.seat.domain.Seat;
 import com.kb.wallet.seat.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SeatServiceImpl implements SeatService {
