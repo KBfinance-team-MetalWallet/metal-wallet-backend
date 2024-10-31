@@ -29,15 +29,15 @@ public class AccountServiceImpl implements AccountService {
   private final PlatformTransactionManager jpaTransactionManager;
 
   @Override
-  public Account getAccount(Long accountId) {
+  public Account getAccountById(Long accountId) {
     return accountRepository.findById(accountId)
         .orElseThrow(() -> new CustomException(ErrorCode.ACCOUNT_NOT_FOUND_ERROR));
   }
 
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
-  public AccountResponse getAccount(String email, Long accountId) {
-    Account account = this.getAccount(accountId);
+  public AccountResponse getAccountById(String email, Long accountId) {
+    Account account = this.getAccountById(accountId);
 
     if (!Objects.equals(account.getMember().getEmail(), email)) {
       throw new CustomException(ErrorCode.ACCOUNT_NOT_MATCH);
@@ -46,7 +46,7 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public List<AccountResponse> getAccounts(String email) {
+  public List<AccountResponse> getAccountsByEmail(String email) {
     List<Account> accounts = accountRepository.findAllByEmail(email);
     return AccountResponse.toAccountsResponseList(accounts);
   }
@@ -55,7 +55,7 @@ public class AccountServiceImpl implements AccountService {
   @Transactional(transactionManager = "jpaTransactionManager")
   public List<TransactionRecordResponse> getTransactionRecords(String email, Long accountId,
       Long cursor, int size) {
-    Account account = getAccount(accountId);
+    Account account = getAccountById(accountId);
     String memberEmailByAccountId = account.getMember().getEmail();
 
     if (!Objects.equals(memberEmailByAccountId, email)) {

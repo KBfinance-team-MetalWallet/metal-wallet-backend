@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface AccountService {
 
-  Account getAccount(Long id);
+  Account getAccountById(Long id);
 
-  AccountResponse getAccount(String email, Long accountId);
+  AccountResponse getAccountById(String email, Long accountId);
 
-  List<AccountResponse> getAccounts(String email);
+  List<AccountResponse> getAccountsByEmail(String email);
 
   List<TransactionRecordResponse> getTransactionRecords(String email, Long accountId,
       Long cursor, int size);

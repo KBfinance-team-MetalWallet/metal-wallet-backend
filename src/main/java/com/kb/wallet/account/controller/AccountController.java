@@ -28,14 +28,14 @@ public class AccountController {
   public ApiResponse<AccountResponse> getAccount(
       @AuthenticationPrincipal Member member,
       @PathVariable(name = "accountId") Long accountId) {
-    AccountResponse accountResponse = accountService.getAccount(member.getEmail(), accountId);
+    AccountResponse accountResponse = accountService.getAccountById(member.getEmail(), accountId);
     return ApiResponse.ok(accountResponse);
   }
 
   @GetMapping
   public ApiResponse<List<AccountResponse>> getAccounts(
       @AuthenticationPrincipal Member member) {
-    return ApiResponse.ok(accountService.getAccounts(member.getEmail()));
+    return ApiResponse.ok(accountService.getAccountsByEmail(member.getEmail()));
   }
 
   @GetMapping("/{accountId}/transaction-records")
