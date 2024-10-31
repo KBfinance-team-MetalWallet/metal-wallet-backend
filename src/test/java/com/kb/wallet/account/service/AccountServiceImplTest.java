@@ -239,7 +239,7 @@ class AccountServiceImplTest {
         () -> accountService.getTransactionRecords(originalEmail, accountId, null, size));
 
     // then
-    assertEquals(exception.getErrorCode(), ACCOUNT_NOT_MATCH);
+    assertEquals(ACCOUNT_NOT_MATCH, exception.getErrorCode());
   }
 
 }
