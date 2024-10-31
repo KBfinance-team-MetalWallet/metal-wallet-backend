@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -30,7 +31,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@Import(DataSourceConfig.class)
+//@Import(DataSourceConfig.class)
 @ComponentScan(basePackages = {
     "com.kb.wallet"
 })
@@ -56,7 +57,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 })
 @EnableJpaAuditing
 @EnableTransactionManagement
-
 public class AppConfig {
 
   @Value("${spring.datasource.url}")
@@ -96,6 +96,9 @@ public class AppConfig {
   }
 
 
+  /**
+   * TODO: DataSourceConfig.java 랑 중복 설정이여서 이동해야 함.
+   */
   @Bean
   public DataSource dataSource() {
     HikariConfig config = new HikariConfig();
@@ -109,6 +112,7 @@ public class AppConfig {
     config.setIdleTimeout(idleTimeout);
     config.setMaxLifetime(maxLifetime);
     config.setAutoCommit(true);
+    System.out.println(dbUrl);
     return new HikariDataSource(config);
   }
 
@@ -124,9 +128,12 @@ public class AppConfig {
 
     // JPA Properties 설정
     Properties jpaProperties = new Properties();
-    jpaProperties.put("hibernate.hbm2ddl.auto", "update"); // 테이블 자동 생성
-    jpaProperties.put("hibernate.show_sql", "true"); // SQL 쿼리 로그 출력
-    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 포매팅 출력
+    //TODO: profile에 따라 분리해야 할 듯
+    jpaProperties.put("hibernate.hbm2ddl.auto", "create"); // 테이블 자동 생성
+    jpaProperties.put("hibernate.show_sql", "true"); // SQL 쿼리 로그 출력1
+    //TODO: 이거 설정하면 로그에 쿼리 여러 번 나오는 거 같음
+//    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 로그 출력2
+
     jpaProperties.put("hibernate.physical_naming_strategy",
         "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
 
@@ -136,6 +143,7 @@ public class AppConfig {
   }
 
   @Bean
+  @Primary
   public PlatformTransactionManager jpaTransactionManager(
       LocalContainerEntityManagerFactoryBean entityManagerFactory) {
     JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();

@@ -1,7 +1,6 @@
 package com.kb.wallet.global.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -11,7 +10,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.kb.wallet")
+//@ComponentScan(basePackages = "com.kb.wallet")
+//testcode 작성중 임시 제거 필요없을 거 같아서
 public class WebConfig implements WebMvcConfigurer {
   @Value("${frontend.url}")
   private String frontendUrl;
