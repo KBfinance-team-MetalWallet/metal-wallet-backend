@@ -1,4 +1,4 @@
-package member.controller;
+package com.kb.wallet.member.controller;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -17,7 +17,6 @@ import static org.springframework.test.util.AssertionErrors.assertEquals;
 import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
-import com.kb.wallet.member.controller.MemberController;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.dto.request.LoginMemberRequest;
 import com.kb.wallet.member.dto.request.PinNumberVerificationRequest;

@@ -1,11 +1,10 @@
-package member.domain;
+package com.kb.wallet.member.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.kb.wallet.member.constant.RoleType;
-import com.kb.wallet.member.domain.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

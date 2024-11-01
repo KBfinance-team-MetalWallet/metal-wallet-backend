@@ -1,4 +1,4 @@
-package member.repository;
+package com.kb.wallet.member.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.kb.wallet.global.config.AppConfig;
 import com.kb.wallet.member.constant.RoleType;
 import com.kb.wallet.member.domain.Member;
-import com.kb.wallet.member.repository.MemberRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

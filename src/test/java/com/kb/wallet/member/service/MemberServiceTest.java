@@ -1,4 +1,4 @@
-package member.service;
+package com.kb.wallet.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,7 +17,6 @@ import com.kb.wallet.member.dto.request.PinNumberVerificationRequest;
 import com.kb.wallet.member.dto.request.RegisterMemberRequest;
 import com.kb.wallet.member.dto.response.RegisterMemberResponse;
 import com.kb.wallet.member.repository.MemberRepository;
-import com.kb.wallet.member.service.MemberServiceImpl;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
