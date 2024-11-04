@@ -3,11 +3,13 @@ package com.kb.wallet.musical.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-import com.kb.wallet.global.config.TestConfig;
+import com.kb.wallet.global.config.AppConfig;
 import com.kb.wallet.musical.domain.Musical;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,73 +17,81 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestConfig.class)
+@ContextConfiguration(classes = {AppConfig.class})
+@WebAppConfiguration
 @Transactional
-@ActiveProfiles("test")
-@DisplayName("Musical Repository 테스트")
-class MusicalRepositoryTest {
+public class MusicalRepositoryTest {
 
   @Autowired
   private MusicalRepository musicalRepository;
 
-  private Musical musical1;
-  private Musical musical2;
+  private Musical testMusical1;
+  private Musical testMusical2;
+
 
   @BeforeEach
   void setUp() {
     musicalRepository.deleteAll();
+    LocalDate now = LocalDate.now();
+    int baseRanking = Math.abs(UUID.randomUUID().hashCode() % 1000000);
 
-    musical1 = Musical.builder()
-      .title("Musical 1")
-      .ranking(1)
-      .place("Place 1")
-      .placeDetail("Place Detail 1")
-      .ticketingStartDate(LocalDate.of(2024, 1, 1))
-      .ticketingEndDate(LocalDate.of(2024, 12, 31))
-      .runningTime(120)
-      .posterImageUrl("http://example.com/poster1.jpg")
-      .noticeImageUrl("http://example.com/notice1.jpg")
-      .detailImageUrl("http://example.com/detail1.jpg")
-      .placeImageUrl("http://example.com/place1.jpg")
+    testMusical1 = Musical.builder()
+      .title("레미제라블")
+      .ranking(baseRanking)
+      .place("예술의전당")
+      .placeDetail("오페라하우스")
+      .ticketingStartDate(now)
+      .ticketingEndDate(now.plusMonths(1))
+      .runningTime(180)
+      .posterImageUrl("poster1.jpg")
+      .noticeImageUrl("notice1.jpg")
+      .detailImageUrl("detail1.jpg")
+      .placeImageUrl("place1.jpg")
       .build();
 
-    musical2 = Musical.builder()
-      .title("Musical 2")
-      .ranking(2)
-      .place("Place 2")
-      .placeDetail("Place Detail 2")
-      .ticketingStartDate(LocalDate.of(2024, 2, 1))
-      .ticketingEndDate(LocalDate.of(2024, 11, 30))
-      .runningTime(150)
-      .posterImageUrl("http://example.com/poster2.jpg")
-      .noticeImageUrl("http://example.com/notice2.jpg")
-      .detailImageUrl("http://example.com/detail2.jpg")
-      .placeImageUrl("http://example.com/place2.jpg")
+    testMusical2 = Musical.builder()
+      .title("오페라의 유령")
+      .ranking(baseRanking + 1)
+      .place("블루스퀘어")
+      .placeDetail("신한카드홀")
+      .ticketingStartDate(now.plusDays(7))
+      .ticketingEndDate(now.plusMonths(2))
+      .runningTime(160)
+      .posterImageUrl("poster2.jpg")
+      .noticeImageUrl("notice2.jpg")
+      .detailImageUrl("detail2.jpg")
+      .placeImageUrl("place2.jpg")
       .build();
-
-    musicalRepository.save(musical1);
-    musicalRepository.save(musical2);
+    musicalRepository.saveAll(Arrays.asList(testMusical1, testMusical2));
   }
 
   @Test
-  @DisplayName("페이징 처리된 모든 뮤지컬을 조회할 수 있다")
-  void testFindAll() {
+  @DisplayName("페이지네이션을 사용하여 모든 뮤지컬을 조회하는 테스트")
+  void testFindAllWithPagination() {
     // given
-    Pageable pageable = PageRequest.of(0, 10);
+    PageRequest pageRequest = PageRequest.of(0, 10);
 
     // when
-    Page<Musical> result = musicalRepository.findAll(pageable);
+    Page<Musical> musicalPage = musicalRepository.findAll(pageRequest);
+    List<Musical> content = musicalPage.getContent();
 
     // then
-    assertThat(result.getTotalElements()).isEqualTo(2);
-    assertThat(result.getContent())
+    assertThat(musicalPage.getTotalElements())
+      .as("전체 데이터 수")
+      .isEqualTo(2L);
+
+    assertThat(musicalPage.getTotalPages())
+      .as("전체 페이지 수")
+      .isEqualTo(1);  // 2개의 데이터가 있고 페이지 크기가 2이므로 1페이지
+
+    assertThat(content)
+      .as("페이지 내 데이터")
       .hasSize(2)
       .extracting(
         Musical::getTitle,
@@ -89,126 +99,92 @@ class MusicalRepositoryTest {
         Musical::getPlace
       )
       .containsExactly(
-        tuple("Musical 1", 1, "Place 1"),
-        tuple("Musical 2", 2, "Place 2")
+        tuple(testMusical1.getTitle(), testMusical1.getRanking(), testMusical1.getPlace()),
+        tuple(testMusical2.getTitle(), testMusical2.getRanking(), testMusical2.getPlace())
       );
   }
 
 
   @Test
-  @DisplayName("ID로 뮤지컬을 조회할 수 있다")
+  @DisplayName("ID로 뮤지컬을 성공적으로 조회하는 테스트")
   void testFindById() {
     // when
-    Optional<Musical> result = musicalRepository.findById(musical1.getId());
-
+    Optional<Musical> found = musicalRepository.findById(testMusical1.getId());
     // then
-    assertThat(result)
+    assertThat(found)
+      .as("ID로 조회한 뮤지컬")
       .isPresent()
       .get()
-      .satisfies(m -> {
-        assertThat(m)
-          .extracting(
-            Musical::getTitle,
-            Musical::getRanking,
-            Musical::getPlace,
-            Musical::getPlaceDetail,
-            Musical::getTicketingStartDate,
-            Musical::getTicketingEndDate,
-            Musical::getRunningTime,
-            Musical::getPosterImageUrl,
-            Musical::getNoticeImageUrl,
-            Musical::getDetailImageUrl,
-            Musical::getPlaceImageUrl
-          )
-          .containsExactly(
-            "Musical 1",
-            1,
-            "Place 1",
-            "Place Detail 1",
-            LocalDate.of(2024, 1, 1),
-            LocalDate.of(2024, 12, 31),
-            120,
-            "http://example.com/poster1.jpg",
-            "http://example.com/notice1.jpg",
-            "http://example.com/detail1.jpg",
-            "http://example.com/place1.jpg"
-          );
+      .satisfies(musical -> {
+        assertThat(musical)
+          .usingRecursiveComparison()
+          .ignoringFields("id")  // ID 필드는 제외하고 비교
+          .isEqualTo(testMusical1);
       });
   }
 
   @Test
-  @DisplayName("랭킹 순으로 정렬된 뮤지컬 목록을 조회할 수 있다")
+  @DisplayName("존재하지 않는 ID로 조회 시 빈 Optional을 반환하는 테스트")
+  void testFindById_NotFound() {
+    // when
+    Optional<Musical> foundMusical = musicalRepository.findById(999L);
+    // then
+    assertThat(foundMusical).isEmpty();
+  }
+
+  @Test
+  @DisplayName("랭킹 순으로 정렬된 뮤지컬 목록을 조회하는 테스트")
   void testFindAllByRankingAsc() {
     // given
-    Pageable pageable = PageRequest.of(0, 10);
-
+    PageRequest pageRequest = PageRequest.of(0, 10);
     // when
-    List<Musical> result = musicalRepository.findAllByRankingAsc(pageable);
-
+    List<Musical> musicals = musicalRepository.findAllByRankingAsc(pageRequest);
     // then
-    assertThat(result)
+    assertThat(musicals)
+      .as("랭킹순 정렬")
       .hasSize(2)
-      .extracting(
-        Musical::getTitle,
-        Musical::getRanking,
-        Musical::getPlace
-      )
+      .extracting(Musical::getRanking)
+      .isSorted()
       .containsExactly(
-        tuple("Musical 1", 1, "Place 1"),
-        tuple("Musical 2", 2, "Place 2")
+        testMusical1.getRanking(),
+        testMusical2.getRanking()
       );
   }
 
   @Test
-  @DisplayName("커서 기반으로 다음 뮤지컬 목록을 조회할 수 있다")
+  @DisplayName("커서 기반 페이지네이션으로 뮤지컬 목록을 조회하는 테스트")
   void testFindAllAfterCursor() {
     // given
-    Pageable pageable = PageRequest.of(0, 10);
-
-    Musical musical3 = Musical.builder()
-      .title("Musical 3")
-      .ranking(3)
-      .place("Place 3")
-      .placeDetail("Place Detail 3")
-      .ticketingStartDate(LocalDate.of(2024, 1, 1))
-      .ticketingEndDate(LocalDate.of(2024, 12, 31))
-      .runningTime(120)
-      .posterImageUrl("http://example.com/poster3.jpg")
-      .noticeImageUrl("http://example.com/notice3.jpg")
-      .detailImageUrl("http://example.com/detail3.jpg")
-      .placeImageUrl("http://example.com/place3.jpg")
-      .build();
-
-    Musical musical4 = Musical.builder()
-      .id(4L)
-      .title("Musical 4")
-      .ranking(4)
-      .place("Place 4")
-      .placeDetail("Place Detail 4")
-      .ticketingStartDate(LocalDate.of(2024, 2, 1))
-      .ticketingEndDate(LocalDate.of(2024, 11, 30))
-      .runningTime(150)
-      .posterImageUrl("http://example.com/poster4.jpg")
-      .noticeImageUrl("http://example.com/notice4.jpg")
-      .detailImageUrl("http://example.com/detail4.jpg")
-      .placeImageUrl("http://example.com/place4.jpg")
-      .build();
-    musicalRepository.save(musical3);
-
+    PageRequest pageRequest = PageRequest.of(0, 2);
     // when
-    List<Musical> result = musicalRepository.findAllAfterCursor(musical1.getId(), pageable);
-
+    List<Musical> musicals = musicalRepository.findAllAfterCursor(testMusical1.getId(),
+      pageRequest);
     // then
-    assertThat(result)
-      .hasSize(2)
-      .extracting(
-        Musical::getTitle,
-        Musical::getRanking,
-        Musical::getPlace
-      )
-      .containsExactly(
-        tuple("Musical 2", 2, "Place 2"),
-        tuple("Musical 3", 3, "Place 3")
-      );
+    assertThat(musicals)
+      .as("커서 이후 데이터")
+      .hasSize(1)
+      .extracting(Musical::getRanking)
+      .satisfies(rankings -> {
+        assertThat(rankings)
+          .hasSize(1)
+          .allMatch(rank -> rank > testMusical1.getRanking())
+          .first()
+          .isEqualTo(testMusical2.getRanking());
+      });
   }
+
+  @Test
+  @DisplayName("마지막 커서 이후 데이터가 없을 경우 빈 리스트를 반환하는 테스트")
+  void testFindAllAfterCursor_NoMoreData() {
+    // given
+    PageRequest pageRequest = PageRequest.of(0, 2);
+    // when
+    List<Musical> musicals = musicalRepository.findAllAfterCursor(testMusical2.getId(),
+      pageRequest);
+    // then
+    assertThat(musicals)
+      .as("마지막 커서 이후 데이터")
+      .isEmpty();
+  }
+
 }
