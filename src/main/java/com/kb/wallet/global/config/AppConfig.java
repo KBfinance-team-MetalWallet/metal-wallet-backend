@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -33,26 +32,26 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 //@Import(DataSourceConfig.class)
 @ComponentScan(basePackages = {
-    "com.kb.wallet"
+  "com.kb.wallet"
 })
 @PropertySource("classpath:application.properties")
 @MapperScan(
 
-    basePackages = {
-        "com.kb.wallet.member.repository",
-        "com.kb.wallet.ticket.repository",
-        "com.kb.wallet.seat.repository",
-        "com.kb.wallet.musical.repository"
-
-    },
-    annotationClass = org.apache.ibatis.annotations.Mapper.class //해당패키지에서 @Mapper어노테이션이 선언된 인터페이스 찾기
-)
-@EnableJpaRepositories(basePackages = {
+  basePackages = {
     "com.kb.wallet.member.repository",
     "com.kb.wallet.ticket.repository",
     "com.kb.wallet.seat.repository",
-    "com.kb.wallet.musical.repository",
-    "com.kb.wallet.account.repository"
+    "com.kb.wallet.musical.repository"
+
+  },
+  annotationClass = org.apache.ibatis.annotations.Mapper.class //해당패키지에서 @Mapper어노테이션이 선언된 인터페이스 찾기
+)
+@EnableJpaRepositories(basePackages = {
+  "com.kb.wallet.member.repository",
+  "com.kb.wallet.ticket.repository",
+  "com.kb.wallet.seat.repository",
+  "com.kb.wallet.musical.repository",
+  "com.kb.wallet.account.repository"
 
 })
 @EnableJpaAuditing
@@ -91,7 +90,7 @@ public class AppConfig {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule()); // LocalDate와 LocalDateTime을 지원
     objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
-        false); // 날짜를 타임스탬프가 아닌 ISO 8601 형식으로 출력
+      false); // 날짜를 타임스탬프가 아닌 ISO 8601 형식으로 출력
     return objectMapper;
   }
 
@@ -122,20 +121,20 @@ public class AppConfig {
     LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
     emf.setDataSource(dataSource);
     emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain",
-        "com.kb.wallet.seat.domain",
-        "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain");
+      "com.kb.wallet.seat.domain",
+      "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain");
     emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
     // JPA Properties 설정
     Properties jpaProperties = new Properties();
     //TODO: profile에 따라 분리해야 할 듯
-    jpaProperties.put("hibernate.hbm2ddl.auto", "create"); // 테이블 자동 생성
+    jpaProperties.put("hibernate.hbm2ddl.auto", "update"); // 테이블 자동 생성
     jpaProperties.put("hibernate.show_sql", "true"); // SQL 쿼리 로그 출력1
     //TODO: 이거 설정하면 로그에 쿼리 여러 번 나오는 거 같음
 //    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 로그 출력2
 
     jpaProperties.put("hibernate.physical_naming_strategy",
-        "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
+      "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
 
     emf.setJpaProperties(jpaProperties);
 
@@ -143,9 +142,8 @@ public class AppConfig {
   }
 
   @Bean
-  @Primary
   public PlatformTransactionManager jpaTransactionManager(
-      LocalContainerEntityManagerFactoryBean entityManagerFactory) {
+    LocalContainerEntityManagerFactoryBean entityManagerFactory) {
     JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
     jpaTransactionManager.setEntityManagerFactory(entityManagerFactory.getObject());
     return jpaTransactionManager;
@@ -157,16 +155,16 @@ public class AppConfig {
     SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
     sessionFactory.setDataSource(dataSource);
     sessionFactory.setTypeAliasesPackage("com.kb.wallet.member.domain,"
-        + "com.kb.wallet.ticket.domain,"
-        + "com.kb.wallet.seat.domain,"
-        + "com.kb.wallet.musical.domain");
+      + "com.kb.wallet.ticket.domain,"
+      + "com.kb.wallet.seat.domain,"
+      + "com.kb.wallet.musical.domain");
 
     sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(
-        "classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
+      "classpath*:mapper/**/*.xml"));  // MyBatis 매퍼 설정
 
     org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
     configuration.setAutoMappingBehavior(
-        org.apache.ibatis.session.AutoMappingBehavior.PARTIAL); // Set AUTO_MAPPING_BEHAVIOR to PARTIAL
+      org.apache.ibatis.session.AutoMappingBehavior.PARTIAL); // Set AUTO_MAPPING_BEHAVIOR to PARTIAL
     configuration.setMapUnderscoreToCamelCase(true);
     sessionFactory.setConfiguration(configuration);
 
@@ -186,9 +184,10 @@ public class AppConfig {
 
   // 두 트랜잭션 매니저를 ChainedTransactionManager로 묶음
   @Bean
+  @Primary  // 여기에만 @Primary 추가
   public PlatformTransactionManager transactionManager(
-      @Qualifier("jpaTransactionManager") PlatformTransactionManager jpaTransactionManager,
-      @Qualifier("myBatisTransactionManager") PlatformTransactionManager myBatisTransactionManager) {
+    @Qualifier("jpaTransactionManager") PlatformTransactionManager jpaTransactionManager,
+    @Qualifier("myBatisTransactionManager") PlatformTransactionManager myBatisTransactionManager) {
     return new ChainedTransactionManager(jpaTransactionManager, myBatisTransactionManager);
   }
 
