@@ -1,5 +1,6 @@
 package com.kb.wallet.musical.controller;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
@@ -18,17 +19,18 @@ import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.service.MusicalService;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @DisplayName("Musical Controller 테스트")
+@ExtendWith(MockitoExtension.class)
 class MusicalControllerTest {
 
   @Mock
@@ -44,7 +46,6 @@ class MusicalControllerTest {
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
     musical = Musical.builder()
       .id(1L)
       .title("뮤지컬 제목")
@@ -140,14 +141,31 @@ class MusicalControllerTest {
     void getScheduleDates_Success() {
       List<String> dates = new ArrayList<>();
       dates.add("2024-10-23");
-      when(musicalService.getScheduleDates(1L)).thenReturn(new HashSet<>(dates));
+      MusicalScheduleResponse responseMock = MusicalScheduleResponse.builder()
+        .musicalId(1L)
+        .scheduleDate(dates)
+        .build();
+      when(musicalService.getScheduleDates(1L)).thenReturn(responseMock);
 
       ApiResponse<MusicalScheduleResponse> response = musicalController.getScheduleDates(member,
         1L);
 
-      assertEquals("Status code should be 200", 200, response.getResultCode());
-      assertNotNull(response.getResult());
-      assertEquals("Schedule dates should match", dates, response.getResult().getScheduleDate());
+      assertThat(response)
+        .as("Response should not be null")
+        .isNotNull()
+        .satisfies(r -> {
+          assertThat(r.getResultCode())
+            .as("Status code should be 200")
+            .isEqualTo(200);
+
+          assertThat(r.getResult())
+            .as("Response result should not be null")
+            .isNotNull()
+            .extracting("scheduleDate")
+            .as("Schedule dates should match")
+            .isEqualTo(dates);
+        });
+
     }
 
     @Test
