@@ -15,6 +15,7 @@ import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.musical.domain.Musical;
 import com.kb.wallet.musical.dto.response.MusicalResponse;
+import com.kb.wallet.musical.dto.response.MusicalScheduleResponse;
 import com.kb.wallet.musical.dto.response.MusicalScheduleSeatAvailabilityResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.repository.CustomMusicalRepository;
@@ -31,16 +32,17 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 
 @DisplayName("MusicalService 테스트")
+@ExtendWith(MockitoExtension.class)
 class MusicalServiceTest {
 
   @Mock
@@ -55,7 +57,7 @@ class MusicalServiceTest {
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
+
     musicalServiceImpl = new MusicalServiceImpl(musicalRepository, customMusicalRepository,
       scheduleService, seatRepository);
   }
@@ -252,14 +254,15 @@ class MusicalServiceTest {
     @DisplayName("Musical ID로 스케줄 날짜들을 조회한다")
     void testGetScheduleDates() {
       // given
-      Set<String> expectedDates = new HashSet<>(Arrays.asList("2024-01-01", "2024-01-02"));
-      when(scheduleService.getScheduleDatesByMusicalId(1L)).thenReturn(expectedDates);
+      List<String> expectedDates = Arrays.asList("2024-01-01", "2024-01-02");
+      when(scheduleService.getScheduleDatesByMusicalId(1L)).thenReturn(
+        new HashSet<>(expectedDates));
 
       // when
-      Set<String> result = musicalServiceImpl.getScheduleDates(1L);
+      MusicalScheduleResponse result = musicalServiceImpl.getScheduleDates(1L);
 
       // then
-      assertThat(result).isEqualTo(expectedDates);
+      assertThat(result.getScheduleDate()).containsExactlyInAnyOrderElementsOf(expectedDates);
       verify(scheduleService, times(1)).getScheduleDatesByMusicalId(1L);
     }
 
