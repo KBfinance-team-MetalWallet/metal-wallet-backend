@@ -108,6 +108,10 @@ dependencies {
 
     // Apache Commons DBCP2 (for BasicDataSource)
     implementation 'org.apache.commons:commons-dbcp2:2.9.0'
+
+    // EL API 추가
+    implementation 'javax.el:javax.el-api:3.0.0'
+    implementation 'org.glassfish:javax.el:3.0.0'
 }
 
 test {
