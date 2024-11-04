@@ -1,10 +1,15 @@
 package com.kb.wallet.member.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Getter;
 
+
+@Builder
 @Getter
 public class RegisterMemberRequest {
 
@@ -26,4 +31,20 @@ public class RegisterMemberRequest {
   @NotBlank(message = "핀번호는 필수 입력 항목입니다.")
   @Size(min = 6, max = 6, message = "핀번호는 6자리여야 합니다.")
   private String pinNumber;
+
+  // Jackson을 위한 JsonCreator와 JsonProperty 추가
+  @JsonCreator
+  public RegisterMemberRequest(
+    @JsonProperty("email") String email,
+    @JsonProperty("password") String password,
+    @JsonProperty("name") String name,
+    @JsonProperty("phone") String phone,
+    @JsonProperty("pinNumber") String pinNumber) {
+
+    this.email = email;
+    this.password = password;
+    this.name = name;
+    this.phone = phone;
+    this.pinNumber = pinNumber;
+  }
 }

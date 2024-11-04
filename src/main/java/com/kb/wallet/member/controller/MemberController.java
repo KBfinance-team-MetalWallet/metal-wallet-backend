@@ -90,7 +90,7 @@ public class MemberController {
   public ApiResponse<Void> checkPinNumber(
     @AuthenticationPrincipal Member member,
     @RequestBody @Valid PinNumberVerificationRequest verificationRequest) {
-    memberService.checkPassword(member.getEmail(), verificationRequest);
+    memberService.checkPinNumber(member.getEmail(), verificationRequest);
     return ApiResponse.ok();
   }
 }

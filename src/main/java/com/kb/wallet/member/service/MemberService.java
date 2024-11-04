@@ -11,7 +11,7 @@ public interface MemberService {
 
   Member getMemberByEmail(String email);
 
-  void checkPassword(String email, PinNumberVerificationRequest passwordRequest);
+  void checkPinNumber(String email, PinNumberVerificationRequest passwordRequest);
 
   void checkEmail(String email);
 
