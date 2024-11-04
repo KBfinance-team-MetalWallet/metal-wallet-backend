@@ -50,7 +50,7 @@ class MusicalDomainTest {
           assertThat(m.getPlace()).isEqualTo("샤롯데씨어터");
           assertThat(m.getPlaceDetail()).isEqualTo("서울특별시 송파구");
           assertThat(m.getTicketingStartDate()).isEqualTo(startDate);   // 초기화된 변수와 비교
-          assertThat(m.getTicketingEndDate()).isEqualTo(endDate);       // 초기화된 변수와 비교
+          assertThat(m.getTicketingEndDate()).isEqualTo(endDate);
           assertThat(m.getRunningTime()).isEqualTo(180);
         });
 
@@ -74,20 +74,15 @@ class MusicalDomainTest {
     @DisplayName("필수 필드만으로 Musical 객체를 생성할 수 있다")
     void createMusicalWithRequiredFieldsOnly() {
       // given
-      Musical musicalWithRequiredFields = new Musical(
-        null,
-        "오페라의 유령",
-        1,
-        "샤롯데씨어터",
-        "서울특별시 송파구",
-        startDate,
-        endDate,
-        180,
-        null,
-        null,
-        null,
-        null
-      );
+      Musical musicalWithRequiredFields = Musical.builder()
+        .title("오페라의 유령")
+        .ranking(1)
+        .place("샤롯데씨어터")
+        .placeDetail("서울특별시 송파구")
+        .ticketingStartDate(startDate)
+        .ticketingEndDate(endDate)
+        .runningTime(180)
+        .build();
 
       // then
       assertThat(musicalWithRequiredFields)
