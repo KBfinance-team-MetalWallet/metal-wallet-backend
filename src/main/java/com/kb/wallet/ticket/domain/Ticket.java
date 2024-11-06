@@ -49,7 +49,7 @@ public class Ticket {
   @JoinColumn(name = "member_id")
   private Member member;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "musical_id")
   private Musical musical;
 

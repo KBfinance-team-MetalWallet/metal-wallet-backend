@@ -22,6 +22,7 @@ import com.kb.wallet.ticket.repository.ScheduleRepository;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,7 +39,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+//테스트 인스턴스를 클래스 수준에서 관리하도록 하고, 각 테스트 메소드 간에 데이터가 유지되도록
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
     AppConfig.class
@@ -88,25 +90,58 @@ public class TicketServiceConcurrencyTest {
   private Schedule testSchedule;
   private boolean isInitialized = false;
 
-  @BeforeEach
-  public void setup() {
-    if (!isInitialized) {
-      createMembers();
-      memberRepository.saveAll(members);
-      testMusical = createTestMusical(musicalRepository);
-      testSchedule = createTestSchedule(scheduleRepository, testMusical);
-      createSeats(em);
-      seatRepository.saveAll(seats);
-      isInitialized = true;
-    }
-  }
+  long initialSeatCnt = 0;
+
+//  @BeforeEach
+//  public void setup() {
+//    if (!isInitialized) {
+//      createMembers();
+//      memberRepository.saveAll(members);
+//      testMusical = createTestMusical(musicalRepository);
+//      testSchedule = createTestSchedule(scheduleRepository, testMusical);
+//      createSeats(em);
+//    System.out.println("seats: ");
+//    System.out.println(seats.get(0).getId());
+//    System.out.println(seats.get(1).getId());
+////    initialSeatCnt = seatRepository.count();
+//      isInitialized = true;
+//    }
+//  }
 
   @Test
+  @DisplayName("단건 티켓을 예매할 경우, 예몌가 성공한다.")
   public void testBookTicket_singleTicketSuccress() {
     Long seatId = 2L;
     TicketRequest ticketRequest = new TicketRequest();
     ticketRequest.setSeatId(List.of(seatId));
     ticketRequest.setDeviceId(deviceId);
+
+    Member member = Member.builder()
+        .email(EMAILS[0])
+        .name("User" + (0 + 1))
+        .phone("010123456" + 0)
+        .password("password")
+        .pinNumber("1234")
+        .role(RoleType.USER)
+        .isActivated(true)
+        .build();
+    memberRepository.save(member);
+
+    testMusical = createTestMusical(musicalRepository);
+    testSchedule = createTestSchedule(scheduleRepository, testMusical);
+    testSection = Section.builder()
+        .grade(Grade.R)
+        .availableSeats(availableSeats)
+        .build();
+    em.persist(testSection);
+    em.flush();
+
+    Seat seat = Seat.builder()
+        .isAvailable(true)
+        .schedule(testSchedule)
+        .section(testSection)
+        .build();
+    seatRepository.save(seat);
 
     List<TicketResponse> ticketResponses = ticketService.bookTicket(EMAILS[0], ticketRequest);
 
@@ -119,6 +154,7 @@ public class TicketServiceConcurrencyTest {
 
     TicketResponse ticketResponse = ticketResponses.get(0);
     assertNotNull(ticketResponse.getId(), "티켓 ID는 null이 아니어야 합니다.");
+
     //TODO: TicketResponse.seatId 추가
 //    assertEquals(seatId, ticketResponse.getSeatId(), "좌석 ID가 일치해야 합니다.");
   }
@@ -132,6 +168,41 @@ public class TicketServiceConcurrencyTest {
     ticketRequest.setSeatId(List.of(seatId));
     ticketRequest.setDeviceId(deviceId);
 
+//    createMembers();
+    for (int i = 1; i < EMAILS.length; i++) {
+      Member member = Member.builder()
+          .email(EMAILS[i])
+          .name("User" + (i + 1))
+          .phone("010123456" + i)
+          .password("password")
+          .pinNumber("1234")
+          .role(RoleType.USER)
+          .isActivated(true)
+          .build();
+      memberRepository.save(member);
+    }
+
+    testMusical = createTestMusical(musicalRepository);
+    testSchedule = createTestSchedule(scheduleRepository, testMusical);
+    testSection = Section.builder()
+        .grade(Grade.R)
+        .availableSeats(availableSeats)
+        .build();
+    em.persist(testSection);
+    em.flush();
+    Seat seat = Seat.builder()
+        .isAvailable(true)
+        .schedule(testSchedule)
+        .section(testSection)
+        .build();
+    seatRepository.save(seat);
+
+    Long savedSeatId = seat.getId();
+    System.out.println("savedSeatId: " + savedSeatId);
+
+    if(seatRepository.findById(seatId).isPresent()) {
+      System.out.println("seat ok: 2");
+    }
     AtomicInteger successfulBookingsCount = new AtomicInteger(0);
     int createCnt = 10;
     ExecutorService executorService = Executors.newFixedThreadPool(10);
@@ -140,6 +211,12 @@ public class TicketServiceConcurrencyTest {
     for (String email : EMAILS) {
       executorService.submit(() -> {
         try {
+          if(memberRepository.getByEmail(email).isPresent()) {
+            System.out.println("email: 1");
+          } else {
+            System.out.println("email: 2");
+          }
+          System.out.println(email);
           //when
           List<TicketResponse> responses = ticketService.bookTicket(email, ticketRequest);
           System.out.println("Booking responses for " + email + ": " + responses);
@@ -175,11 +252,11 @@ public class TicketServiceConcurrencyTest {
   public static void createMembers() {
     members = new ArrayList<>();
 
-    for (int i = 0; i < EMAILS.length; i++) {
+    for (int i = 1; i < EMAILS.length; i++) {
       Member member = Member.builder()
           .email(EMAILS[i])
           .name("User" + (i + 1))
-          .phone("0101234567" + i)
+          .phone("010123456" + i)
           .password("password")
           .pinNumber("1234")
           .role(RoleType.USER)
@@ -211,23 +288,21 @@ public class TicketServiceConcurrencyTest {
         .build());
   }
 
-  private void createSeats(EntityManager em) {
+  private void createSeats(EntityManager em, Long seatId) {
     testSection = Section.builder()
         .grade(Grade.R)
         .availableSeats(availableSeats)
         .build();
     em.persist(testSection);
     em.flush();
-    seats = new ArrayList<>();
-
-    for (int i = 1; i <= 2; i++) {
-      Seat seat = Seat.builder()
-          .id(Long.valueOf(i))
-          .isAvailable(true)
-          .schedule(testSchedule)
-          .section(testSection)
-          .build();
-      seats.add(seat);
-    }
+    Seat seat = Seat.builder()
+        .id(seatId)
+        .isAvailable(true)
+        .schedule(testSchedule)
+        .section(testSection)
+        .build();
+    seatRepository.save(seat);
+    System.out.println("seat.getId(): ");
+    System.out.println(seat.getId());
   }
 }
