@@ -3,21 +3,18 @@ package com.kb.wallet.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import java.util.Properties;
 import javax.sql.DataSource;
+import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -31,7 +28,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-//@Import(DataSourceConfig.class)
+@Import(DataSourceConfig.class)
 @ComponentScan(basePackages = {
     "com.kb.wallet"
 })
@@ -57,34 +54,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 })
 @EnableJpaAuditing
 @EnableTransactionManagement
+@RequiredArgsConstructor
 public class AppConfig {
-
-  @Value("${spring.datasource.url}")
-  private String dbUrl;
-
-  @Value("${spring.datasource.username}")
-  private String dbUsername;
-
-  @Value("${spring.datasource.password}")
-  private String dbPassword;
-
-  @Value("${spring.datasource.hikari.minimum-idle}")
-  private int minimumIdle;
-
-  @Value("${spring.datasource.hikari.maximum-pool-size}")
-  private int maximumPoolSize;
-
-  @Value("${spring.datasource.hikari.connection-timeout}")
-  private long connectionTimeout;
-
-  @Value("${spring.datasource.hikari.idle-timeout}")
-  private long idleTimeout;
-
-  @Value("${spring.datasource.hikari.max-lifetime}")
-  private long maxLifetime;
-
-  @Value("${spring.datasource.driver-class-name}")
-  private String driverClassName;
+  private final DataSource dataSource;
 
   @Bean
   public ObjectMapper objectMapper() {
@@ -95,26 +67,6 @@ public class AppConfig {
     return objectMapper;
   }
 
-
-  /**
-   * TODO: DataSourceConfig.java 랑 중복 설정이여서 이동해야 함.
-   */
-  @Bean
-  public DataSource dataSource() {
-    HikariConfig config = new HikariConfig();
-    config.setDriverClassName(driverClassName);
-    config.setJdbcUrl(dbUrl);
-    config.setUsername(dbUsername);
-    config.setPassword(dbPassword);
-    config.setConnectionTimeout(connectionTimeout);
-    config.setMinimumIdle(minimumIdle);
-    config.setMaximumPoolSize(maximumPoolSize);
-    config.setIdleTimeout(idleTimeout);
-    config.setMaxLifetime(maxLifetime);
-    config.setAutoCommit(true);
-    System.out.println(dbUrl);
-    return new HikariDataSource(config);
-  }
 
   // JPA 설정
   @Bean
@@ -142,7 +94,6 @@ public class AppConfig {
   }
 
   @Bean
-  @Primary
   public PlatformTransactionManager jpaTransactionManager(
       LocalContainerEntityManagerFactoryBean entityManagerFactory) {
     JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
