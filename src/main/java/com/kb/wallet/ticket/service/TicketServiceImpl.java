@@ -55,7 +55,7 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  @Transactional(transactionManager = "jpaTransactionManager")
+  @Transactional(transactionManager = "jpaTransactionManager", rollbackFor = CustomException.class)
   public List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest) {
     Member member = memberService.getMemberByEmail(email);
 
@@ -75,7 +75,7 @@ public class TicketServiceImpl implements TicketService {
     Ticket ticket = saveTicket(member, seat, deviceId);
 
     seat.updateSeatAvailability();
-
+    seat.getSection();
     return ticket;
   }
 

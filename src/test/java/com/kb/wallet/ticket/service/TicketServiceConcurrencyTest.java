@@ -70,18 +70,13 @@ public class TicketServiceConcurrencyTest {
 
   private final String deviceId = "device123";
 
-  private static final String[] EMAILS = {
-      "user1@example.com",
-      "user2@example.com",
-      "user3@example.com",
-      "user4@example.com",
-      "user5@example.com",
-      "user6@example.com",
-      "user7@example.com",
-      "user8@example.com",
-      "user9@example.com",
-      "user10@example.com"
-  };
+  private static final String[] EMAILS = new String[11];
+
+  static {
+    for (int i = 0; i < EMAILS.length; i++) {
+      EMAILS[i] = "user" + (i + 1) + "@example.com";
+    }
+  }
 
   static List<Member> members;
   static List<Seat> seats;
@@ -89,24 +84,6 @@ public class TicketServiceConcurrencyTest {
   private Section testSection;
   private Schedule testSchedule;
   private boolean isInitialized = false;
-
-  long initialSeatCnt = 0;
-
-//  @BeforeEach
-//  public void setup() {
-//    if (!isInitialized) {
-//      createMembers();
-//      memberRepository.saveAll(members);
-//      testMusical = createTestMusical(musicalRepository);
-//      testSchedule = createTestSchedule(scheduleRepository, testMusical);
-//      createSeats(em);
-//    System.out.println("seats: ");
-//    System.out.println(seats.get(0).getId());
-//    System.out.println(seats.get(1).getId());
-////    initialSeatCnt = seatRepository.count();
-//      isInitialized = true;
-//    }
-//  }
 
   @Test
   @DisplayName("단건 티켓을 예매할 경우, 예몌가 성공한다.")
@@ -168,8 +145,9 @@ public class TicketServiceConcurrencyTest {
     ticketRequest.setSeatId(List.of(seatId));
     ticketRequest.setDeviceId(deviceId);
 
-//    createMembers();
-    for (int i = 1; i < EMAILS.length; i++) {
+    int startNo = 1;
+    members = new ArrayList<>();
+    for (int i = startNo; i < EMAILS.length; i++) {
       Member member = Member.builder()
           .email(EMAILS[i])
           .name("User" + (i + 1))
@@ -179,7 +157,13 @@ public class TicketServiceConcurrencyTest {
           .role(RoleType.USER)
           .isActivated(true)
           .build();
-      memberRepository.save(member);
+      members.add(member);
+    }
+    memberRepository.saveAll(members);
+    if(memberRepository.getByEmail(EMAILS[1]).isPresent()) {
+      System.out.println("email: 1");
+    } else {
+      System.out.println("email: 2");
     }
 
     testMusical = createTestMusical(musicalRepository);
@@ -187,6 +171,7 @@ public class TicketServiceConcurrencyTest {
     testSection = Section.builder()
         .grade(Grade.R)
         .availableSeats(availableSeats)
+        .musical(testMusical)
         .build();
     em.persist(testSection);
     em.flush();
@@ -203,26 +188,31 @@ public class TicketServiceConcurrencyTest {
     if(seatRepository.findById(seatId).isPresent()) {
       System.out.println("seat ok: 2");
     }
+
     AtomicInteger successfulBookingsCount = new AtomicInteger(0);
-    int createCnt = 10;
-    ExecutorService executorService = Executors.newFixedThreadPool(10);
+    int createCnt = EMAILS.length - 1;
+    ExecutorService executorService = Executors.newFixedThreadPool(createCnt);
     CountDownLatch countDownLatch = new CountDownLatch(createCnt);
 
-    for (String email : EMAILS) {
+    for (int i=startNo; i<EMAILS.length; i++) {
+      String currentEmail = EMAILS[i];
       executorService.submit(() -> {
         try {
-          if(memberRepository.getByEmail(email).isPresent()) {
-            System.out.println("email: 1");
+          if(memberRepository.getByEmail(currentEmail).isPresent()) {
+            System.out.println("email: 3");
           } else {
-            System.out.println("email: 2");
+            System.out.println("email: 4");
           }
-          System.out.println(email);
+          System.out.println(currentEmail);
           //when
-          List<TicketResponse> responses = ticketService.bookTicket(email, ticketRequest);
-          System.out.println("Booking responses for " + email + ": " + responses);
+          List<TicketResponse> responses = ticketService.bookTicket(currentEmail, ticketRequest);
+          System.out.println("Booking responses for " + currentEmail + ": " + responses);
           if (responses.size() > 0) {
             successfulBookingsCount.incrementAndGet(); // 성공한 예매 카운트 증가
           }
+        } catch (Exception e) {
+          System.out.println("Exception during booking for " + currentEmail + ": " + e.getMessage());
+          e.printStackTrace();
         } finally {
           countDownLatch.countDown();
 
@@ -232,40 +222,10 @@ public class TicketServiceConcurrencyTest {
     countDownLatch.await();
     executorService.shutdown();
 
-    /**
-     * 1. 이거 id가 뭔지를 모르겠는데 어떤 쿼리에서 조회되는 결과인지 아는 사람?
-     * 뭐는 unread, 뭐는 null이고(이건 내가 값을 설정 안해줘서 그런 듯) 뭐는 id가 있어서 왜이런지 궁금
-     * |---------|-------------|------------|--------|-----------|---|-----------|---------|-----------|-----------|---|-----------------|-----------------|----------|-------------|----------------|-----------------|--------|-------------|-------------------|---------------------|-------------|---|----------------|------|-----------|------|------------|-------|-----------------|-----------------|---------|-------------|----------------|-----------------|---------|-------------|-------------------|---------------------|---------|-------|---------|---------|-----------|-----------|
-     * |id       |is_available |schedule_id |seat_no |section_id |id |date       |end_time |musical_id |start_time |id |detail_image_url |notice_image_url |place     |place_detail |place_image_url |poster_image_url |ranking |running_time |ticketing_end_date |ticketing_start_date |title        |id |available_seats |grade |musical_id |price |schedule_id |id     |detail_image_url |notice_image_url |place    |place_detail |place_image_url |poster_image_url |ranking  |running_time |ticketing_end_date |ticketing_start_date |title    |id     |date     |end_time |musical_id |start_time |
-     * |---------|-------------|------------|--------|-----------|---|-----------|---------|-----------|-----------|---|-----------------|-----------------|----------|-------------|----------------|-----------------|--------|-------------|-------------------|---------------------|-------------|---|----------------|------|-----------|------|------------|-------|-----------------|-----------------|---------|-------------|----------------|-----------------|---------|-------------|-------------------|---------------------|---------|-------|---------|---------|-----------|-----------|
-     * |[unread] |false        |1           |0       |1          |1  |2024-10-22 |null     |1          |20:00:00   |1  |null             |null             |Main Hall |1층           |null            |null             |1       |120          |2024-11-27         |2024-10-28           |test Musical |1  |0               |R     |[null]     |0     |[null]      |[null] |[unread]         |[unread]         |[unread] |[unread]     |[unread]        |[unread]         |[unread] |[unread]     |[unread]           |[unread]             |[unread] |[null] |[unread] |[unread] |[unread]   |[unread]   |
-     * |---------|-------------|------------|--------|-----------|---|-----------|---------|-----------|-----------|---|-----------------|-----------------|----------|-------------|----------------|-----------------|--------|-------------|-------------------|---------------------|-------------|---|----------------|------|-----------|------|------------|-------|-----------------|-----------------|---------|-------------|----------------|-----------------|---------|-------------|-------------------|---------------------|---------|-------|---------|---------|-----------|-----------|
-     *
-     * 2. seatService.getSeatById 조회하면 seat0, schedule1, musical2, section3, musical4, schedule5
-     * 이렇게 조회되는 거 같음 최적화가 된건지 궁금함
-     */
     //then
     assertEquals(1, successfulBookingsCount.get(), "동시성 문제: 오직 한 명만 좌석 예약에 성공해야 함");
     //TODO: 첫번째 사용자 검증 필요
   }
-
-  public static void createMembers() {
-    members = new ArrayList<>();
-
-    for (int i = 1; i < EMAILS.length; i++) {
-      Member member = Member.builder()
-          .email(EMAILS[i])
-          .name("User" + (i + 1))
-          .phone("010123456" + i)
-          .password("password")
-          .pinNumber("1234")
-          .role(RoleType.USER)
-          .isActivated(true)
-          .build();
-      members.add(member);
-    }
-  }
-
 
   private static Musical createTestMusical(MusicalRepository musicalRepository) {
     return musicalRepository.save(Musical.builder()
@@ -286,23 +246,5 @@ public class TicketServiceConcurrencyTest {
         .date(LocalDate.of(2024, 10, 22))
         .startTime(LocalTime.of(20, 0))
         .build());
-  }
-
-  private void createSeats(EntityManager em, Long seatId) {
-    testSection = Section.builder()
-        .grade(Grade.R)
-        .availableSeats(availableSeats)
-        .build();
-    em.persist(testSection);
-    em.flush();
-    Seat seat = Seat.builder()
-        .id(seatId)
-        .isAvailable(true)
-        .schedule(testSchedule)
-        .section(testSection)
-        .build();
-    seatRepository.save(seat);
-    System.out.println("seat.getId(): ");
-    System.out.println(seat.getId());
   }
 }
