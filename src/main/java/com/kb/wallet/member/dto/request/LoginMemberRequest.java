@@ -2,8 +2,10 @@ package com.kb.wallet.member.dto.request;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@AllArgsConstructor
 @Getter
 public class LoginMemberRequest {
 

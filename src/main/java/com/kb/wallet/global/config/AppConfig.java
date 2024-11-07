@@ -81,10 +81,10 @@ public class AppConfig {
     // JPA Properties 설정
     Properties jpaProperties = new Properties();
     //TODO: profile에 따라 분리해야 할 듯
-    jpaProperties.put("hibernate.hbm2ddl.auto", "create"); // 테이블 자동 생성
+    jpaProperties.put("hibernate.hbm2ddl.auto", "update"); // 테이블 자동 생성
     jpaProperties.put("hibernate.show_sql", "true"); // SQL 쿼리 로그 출력1
     //TODO: 이거 설정하면 로그에 쿼리 여러 번 나오는 거 같음
-//    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 로그 출력2
+//    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 포매팅 출력
     jpaProperties.put("hibernate.physical_naming_strategy",
         "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
 

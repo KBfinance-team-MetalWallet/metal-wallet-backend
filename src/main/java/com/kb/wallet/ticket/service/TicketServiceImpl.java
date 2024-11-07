@@ -43,15 +43,15 @@ public class TicketServiceImpl implements TicketService {
   @Override
   public Ticket getTicket(Long id) {
     return ticketRepository.findById(id)
-        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
   }
 
   @Override
   public List<TicketListResponse> getTickets(String email, TicketStatus ticketStatus,
-      int page, int size, Long cursor) {
+    int page, int size, Long cursor) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     return ticketRepository.findAllByMemberAndTicketStatus(email, ticketStatus, cursor,
-        pageable);
+      pageable);
   }
 
   @Override
@@ -81,13 +81,14 @@ public class TicketServiceImpl implements TicketService {
 
   private Ticket saveTicket(Member member, Seat seat, String deviceId) {
     Ticket ticket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(), seat,
-        deviceId);
+      deviceId);
+    
     return ticketRepository.save(ticket);
   }
 
   @Override
   public ProposedEncryptResponse provideEncryptElement(Long ticketId, String email,
-      EncryptRequest encryptRequest) {
+    EncryptRequest encryptRequest) {
     encryptRequest.validateDeviceId();
 
     Ticket ticket = getTicket(ticketId);
@@ -114,8 +115,8 @@ public class TicketServiceImpl implements TicketService {
   @Override
   @Transactional(transactionManager = "jpaTransactionManager")
   public void cancelTicket(String email, Long ticketId) {
-    Ticket ticket = ticketRepository.findByMember(ticketId, email)
-        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+    Ticket ticket = ticketRepository.findByTicketIdAndEmail(ticketId, email)
+      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
     ticket.isCancellable();
     updateTicketStatus(ticket, TicketStatus.CANCELED);
   }
