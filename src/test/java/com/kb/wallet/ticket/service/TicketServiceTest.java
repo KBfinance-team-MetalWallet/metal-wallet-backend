@@ -126,7 +126,7 @@ class TicketServiceTest {
   }
 
   @Test
-  @DisplayName("단건 티켓을 예매할 경우, 예몌가 성공한다.")
+  @DisplayName("단건 티켓을 예매할 경우, 예매가 성공한다.")
   void testBookTicket_singleTicketSuccess() {
     // given
     TicketRequest ticketRequest = new TicketRequest();
@@ -146,7 +146,7 @@ class TicketServiceTest {
   }
 
   @Test
-  @DisplayName("2명의 사용자가 동시에 티켓을 예매할 경우, 단 1건의 예몌만 성공한다.")
+  @DisplayName("2명의 사용자가 동시에 티켓을 예매할 경우, 단 1건의 예매만 성공한다.")
   void testBookTicket_multipleUsersSingleSeatSuccess2() throws InterruptedException {
 
     int threadCount = 2;
