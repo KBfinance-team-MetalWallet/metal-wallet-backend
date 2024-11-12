@@ -2,7 +2,6 @@ package com.kb.wallet.ticket.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.kb.wallet.global.config.AppConfig;
@@ -19,20 +18,18 @@ import com.kb.wallet.ticket.domain.Schedule;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.ScheduleRepository;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -43,7 +40,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 //테스트 인스턴스를 클래스 수준에서 관리하도록 하고, 각 테스트 메소드 간에 데이터가 유지되도록
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-    AppConfig.class
+  AppConfig.class
 })
 @WebAppConfiguration
 @Transactional
@@ -94,40 +91,40 @@ public class TicketServiceConcurrencyTest {
     ticketRequest.setDeviceId(deviceId);
 
     Member member = Member.builder()
-        .email(EMAILS[0])
-        .name("User" + (0 + 1))
-        .phone("010123456" + 0)
-        .password("password")
-        .pinNumber("1234")
-        .role(RoleType.USER)
-        .isActivated(true)
-        .build();
+      .email(EMAILS[0])
+      .name("User" + (0 + 1))
+      .phone("010123456" + 0)
+      .password("password")
+      .pinNumber("1234")
+      .role(RoleType.USER)
+      .isActivated(true)
+      .build();
     memberRepository.save(member);
 
     testMusical = createTestMusical(musicalRepository);
     testSchedule = createTestSchedule(scheduleRepository, testMusical);
     testSection = Section.builder()
-        .grade(Grade.R)
-        .availableSeats(availableSeats)
-        .build();
+      .grade(Grade.R)
+      .availableSeats(availableSeats)
+      .build();
     em.persist(testSection);
     em.flush();
 
     Seat seat = Seat.builder()
-        .isAvailable(true)
-        .schedule(testSchedule)
-        .section(testSection)
-        .build();
+      .isAvailable(true)
+      .schedule(testSchedule)
+      .section(testSection)
+      .build();
     seatRepository.save(seat);
 
     List<TicketResponse> ticketResponses = ticketService.bookTicket(EMAILS[0], ticketRequest);
 
     assertThat(ticketResponses)
-        .isNotNull()
-        .isNotEmpty()
-        .withFailMessage("티켓 응답이 비어 있지 않아야 합니다.")
-        .hasSize(1)
-        .describedAs("예약된 티켓 수가 1이어야 합니다.");
+      .isNotNull()
+      .isNotEmpty()
+      .withFailMessage("티켓 응답이 비어 있지 않아야 합니다.")
+      .hasSize(1)
+      .describedAs("예약된 티켓 수가 1이어야 합니다.");
 
     TicketResponse ticketResponse = ticketResponses.get(0);
     assertNotNull(ticketResponse.getId(), "티켓 ID는 null이 아니어야 합니다.");
@@ -149,18 +146,18 @@ public class TicketServiceConcurrencyTest {
     members = new ArrayList<>();
     for (int i = startNo; i < EMAILS.length; i++) {
       Member member = Member.builder()
-          .email(EMAILS[i])
-          .name("User" + (i + 1))
-          .phone("010123456" + i)
-          .password("password")
-          .pinNumber("1234")
-          .role(RoleType.USER)
-          .isActivated(true)
-          .build();
+        .email(EMAILS[i])
+        .name("User" + (i + 1))
+        .phone("010123456" + i)
+        .password("password")
+        .pinNumber("1234")
+        .role(RoleType.USER)
+        .isActivated(true)
+        .build();
       members.add(member);
     }
     memberRepository.saveAll(members);
-    if(memberRepository.getByEmail(EMAILS[1]).isPresent()) {
+    if (memberRepository.findByEmail(EMAILS[1]).isPresent()) {
       System.out.println("email: 1");
     } else {
       System.out.println("email: 2");
@@ -169,23 +166,23 @@ public class TicketServiceConcurrencyTest {
     testMusical = createTestMusical(musicalRepository);
     testSchedule = createTestSchedule(scheduleRepository, testMusical);
     testSection = Section.builder()
-        .grade(Grade.R)
-        .availableSeats(availableSeats)
-        .musical(testMusical)
-        .build();
+      .grade(Grade.R)
+      .availableSeats(availableSeats)
+      .musical(testMusical)
+      .build();
     em.persist(testSection);
     em.flush();
     Seat seat = Seat.builder()
-        .isAvailable(true)
-        .schedule(testSchedule)
-        .section(testSection)
-        .build();
+      .isAvailable(true)
+      .schedule(testSchedule)
+      .section(testSection)
+      .build();
     seatRepository.save(seat);
 
     Long savedSeatId = seat.getId();
     System.out.println("savedSeatId: " + savedSeatId);
 
-    if(seatRepository.findById(seatId).isPresent()) {
+    if (seatRepository.findById(seatId).isPresent()) {
       System.out.println("seat ok: 2");
     }
 
@@ -194,11 +191,11 @@ public class TicketServiceConcurrencyTest {
     ExecutorService executorService = Executors.newFixedThreadPool(createCnt);
     CountDownLatch countDownLatch = new CountDownLatch(createCnt);
 
-    for (int i=startNo; i<EMAILS.length; i++) {
+    for (int i = startNo; i < EMAILS.length; i++) {
       String currentEmail = EMAILS[i];
       executorService.submit(() -> {
         try {
-          if(memberRepository.getByEmail(currentEmail).isPresent()) {
+          if (memberRepository.findByEmail(currentEmail).isPresent()) {
             System.out.println("email: 3");
           } else {
             System.out.println("email: 4");
@@ -211,7 +208,8 @@ public class TicketServiceConcurrencyTest {
             successfulBookingsCount.incrementAndGet(); // 성공한 예매 카운트 증가
           }
         } catch (Exception e) {
-          System.out.println("Exception during booking for " + currentEmail + ": " + e.getMessage());
+          System.out.println(
+            "Exception during booking for " + currentEmail + ": " + e.getMessage());
           e.printStackTrace();
         } finally {
           countDownLatch.countDown();
@@ -229,22 +227,22 @@ public class TicketServiceConcurrencyTest {
 
   private static Musical createTestMusical(MusicalRepository musicalRepository) {
     return musicalRepository.save(Musical.builder()
-        .title("test Musical")
-        .ranking(1)
-        .place("Main Hall")
-        .placeDetail("1층")
-        .ticketingStartDate(LocalDate.now())
-        .ticketingEndDate(LocalDate.now().plusDays(30))
-        .runningTime(120)
-        .build());
+      .title("test Musical")
+      .ranking(1)
+      .place("Main Hall")
+      .placeDetail("1층")
+      .ticketingStartDate(LocalDate.now())
+      .ticketingEndDate(LocalDate.now().plusDays(30))
+      .runningTime(120)
+      .build());
   }
 
   private static Schedule createTestSchedule(ScheduleRepository scheduleRepository,
-      Musical musical) {
+    Musical musical) {
     return scheduleRepository.save(Schedule.builder()
-        .musical(musical)
-        .date(LocalDate.of(2024, 10, 22))
-        .startTime(LocalTime.of(20, 0))
-        .build());
+      .musical(musical)
+      .date(LocalDate.of(2024, 10, 22))
+      .startTime(LocalTime.of(20, 0))
+      .build());
   }
 }
