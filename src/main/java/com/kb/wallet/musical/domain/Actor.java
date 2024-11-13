@@ -3,6 +3,7 @@ package com.kb.wallet.musical.domain;
 import com.kb.wallet.ticket.domain.Schedule;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -34,7 +35,7 @@ public class Actor {
 
   private String imageUrl;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "schedule_id")
   private Schedule schedule;
 }

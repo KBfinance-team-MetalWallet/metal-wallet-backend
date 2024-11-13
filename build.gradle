@@ -98,7 +98,7 @@ dependencies {
     testImplementation "org.springframework:spring-test:${springVersion}"
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
-    testImplementation("junit:junit:4.13.2") // JUnit 4
+
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.14.1'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.14.1'
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.26.3'
@@ -116,8 +116,4 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    // JUnit 4와 JUnit 5 모두 사용 가능하도록 설정
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
 }

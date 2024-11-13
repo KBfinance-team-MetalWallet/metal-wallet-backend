@@ -5,6 +5,7 @@ import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.ticket.domain.Schedule;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -29,11 +30,11 @@ public class Seat {
   @Column(nullable = false)
   private int seatNo;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "section_id")
   private Section section;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "schedule_id")
   private Schedule schedule;
 

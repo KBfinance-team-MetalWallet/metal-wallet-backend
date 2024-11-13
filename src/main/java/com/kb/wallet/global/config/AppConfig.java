@@ -3,26 +3,24 @@ package com.kb.wallet.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import java.util.Properties;
 import javax.sql.DataSource;
+import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.transaction.ChainedTransactionManager;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -57,34 +55,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 })
 @EnableJpaAuditing
 @EnableTransactionManagement
+@RequiredArgsConstructor
 public class AppConfig {
 
-  @Value("${spring.datasource.url}")
-  private String dbUrl;
-
-  @Value("${spring.datasource.username}")
-  private String dbUsername;
-
-  @Value("${spring.datasource.password}")
-  private String dbPassword;
-
-  @Value("${spring.datasource.hikari.minimum-idle}")
-  private int minimumIdle;
-
-  @Value("${spring.datasource.hikari.maximum-pool-size}")
-  private int maximumPoolSize;
-
-  @Value("${spring.datasource.hikari.connection-timeout}")
-  private long connectionTimeout;
-
-  @Value("${spring.datasource.hikari.idle-timeout}")
-  private long idleTimeout;
-
-  @Value("${spring.datasource.hikari.max-lifetime}")
-  private long maxLifetime;
-
-  @Value("${spring.datasource.driver-class-name}")
-  private String driverClassName;
+  private final DataSource dataSource;
 
   @Bean
   public ObjectMapper objectMapper() {
@@ -95,26 +69,6 @@ public class AppConfig {
     return objectMapper;
   }
 
-
-  /**
-   * TODO: DataSourceConfig.java 랑 중복 설정이여서 이동해야 함.
-   */
-  @Bean
-  public DataSource dataSource() {
-    HikariConfig config = new HikariConfig();
-    config.setDriverClassName(driverClassName);
-    config.setJdbcUrl(dbUrl);
-    config.setUsername(dbUsername);
-    config.setPassword(dbPassword);
-    config.setConnectionTimeout(connectionTimeout);
-    config.setMinimumIdle(minimumIdle);
-    config.setMaximumPoolSize(maximumPoolSize);
-    config.setIdleTimeout(idleTimeout);
-    config.setMaxLifetime(maxLifetime);
-    config.setAutoCommit(true);
-    System.out.println(dbUrl);
-    return new HikariDataSource(config);
-  }
 
   // JPA 설정
   @Bean
@@ -129,11 +83,10 @@ public class AppConfig {
     // JPA Properties 설정
     Properties jpaProperties = new Properties();
     //TODO: profile에 따라 분리해야 할 듯
-    jpaProperties.put("hibernate.hbm2ddl.auto", "update"); // 테이블 자동 생성
+    jpaProperties.put("hibernate.hbm2ddl.auto", "create"); // 테이블 자동 생성
     jpaProperties.put("hibernate.show_sql", "true"); // SQL 쿼리 로그 출력1
     //TODO: 이거 설정하면 로그에 쿼리 여러 번 나오는 거 같음
-//    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 로그 출력2
-
+//    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 포매팅 출력
     jpaProperties.put("hibernate.physical_naming_strategy",
       "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
 
@@ -177,6 +130,11 @@ public class AppConfig {
     return new SqlSessionTemplate(sqlSessionFactory);
   }
 
+  @Bean
+  public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+    return new JdbcTemplate(dataSource);
+  }
+
   // MyBatis 트랜잭션 매니저
   @Bean
   public PlatformTransactionManager myBatisTransactionManager(DataSource dataSource) {
@@ -185,7 +143,6 @@ public class AppConfig {
 
   // 두 트랜잭션 매니저를 ChainedTransactionManager로 묶음
   @Bean
-  @Primary  // 여기에만 @Primary 추가
   public PlatformTransactionManager transactionManager(
     @Qualifier("jpaTransactionManager") PlatformTransactionManager jpaTransactionManager,
     @Qualifier("myBatisTransactionManager") PlatformTransactionManager myBatisTransactionManager) {
