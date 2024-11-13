@@ -58,6 +58,7 @@ public class TicketServiceImpl implements TicketService {
   @Transactional(transactionManager = "jpaTransactionManager")
   public List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest) {
     Member member = memberService.getMemberByEmail(email);
+
     List<TicketResponse> responses = new ArrayList<>();
 
     for (Long seatId : ticketRequest.getSeatId()) {
@@ -72,6 +73,7 @@ public class TicketServiceImpl implements TicketService {
     seat.checkSeatAvailability();
 
     Ticket ticket = saveTicket(member, seat, deviceId);
+
     seat.updateSeatAvailability();
 
     return ticket;
@@ -79,7 +81,7 @@ public class TicketServiceImpl implements TicketService {
 
   private Ticket saveTicket(Member member, Seat seat, String deviceId) {
     Ticket ticket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(), seat,
-      deviceId);
+        deviceId);
     return ticketRepository.save(ticket);
   }
 
