@@ -55,9 +55,10 @@ public class TicketServiceImpl implements TicketService {
   }
 
   @Override
-  @Transactional(transactionManager = "jpaTransactionManager")
+  @Transactional(transactionManager = "jpaTransactionManager", rollbackFor = CustomException.class)
   public List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest) {
     Member member = memberService.getMemberByEmail(email);
+
     List<TicketResponse> responses = new ArrayList<>();
 
     for (Long seatId : ticketRequest.getSeatId()) {
@@ -72,14 +73,16 @@ public class TicketServiceImpl implements TicketService {
     seat.checkSeatAvailability();
 
     Ticket ticket = saveTicket(member, seat, deviceId);
-    seat.updateSeatAvailability();
 
+    seat.updateSeatAvailability();
+    seat.getSection();
     return ticket;
   }
 
   private Ticket saveTicket(Member member, Seat seat, String deviceId) {
     Ticket ticket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(), seat,
       deviceId);
+    
     return ticketRepository.save(ticket);
   }
 

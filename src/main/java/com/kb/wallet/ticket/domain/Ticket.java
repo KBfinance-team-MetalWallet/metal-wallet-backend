@@ -23,6 +23,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,10 +34,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Table(name = "ticket")
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED) //생성자를 사용하도록 강제
 public class Ticket {
 
   @Id
@@ -56,7 +57,7 @@ public class Ticket {
   private TicketStatus ticketStatus;
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "seat_id")
+  @JoinColumn(name = "seat_id", unique = true)
   private Seat seat;
 
   @Column(updatable = false)
