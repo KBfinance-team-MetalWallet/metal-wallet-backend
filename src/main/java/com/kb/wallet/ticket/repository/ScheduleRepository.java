@@ -14,5 +14,4 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
   @Query("SELECT s FROM Schedule s JOIN FETCH s.musical WHERE s.musical.id = :musicalId")
   List<Schedule> findByMusicalId(@Param("musicalId") Long musicalId);
 
-  boolean existsByStartTime(LocalTime startTime);
 }

@@ -51,7 +51,4 @@ public class Seat {
     this.section.decrementAvailableSeats();
   }
 
-  public void markAsAvailable() {
-    this.isAvailable = true;
-  }
 }
