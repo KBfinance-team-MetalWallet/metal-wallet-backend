@@ -21,17 +21,9 @@ https://github.com/KBfinance-team-MetalWallet/metal-wallet-frontend
 
 ### 둘러보기 👀
 
- **BackEnd**
+![Service Preview](https://github.com/user-attachments/assets/3ef0f7de-e949-4e3a-a94c-f7077045343b)
 
-https://github.com/KBfinance-team-MetalWallet/metal-wallet-backend
-
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/3032c7b1-27d6-432b-94b9-19285a38bcac/image.png)
-
-티켓 예매하기
-
-티켓 사용하기
-
-거래 내역 확인하기
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;티켓 예매하기&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;티켓 사용하기&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;거래 내역 확인하기
 
 ## ✍️ 기획 의도
 
@@ -58,11 +50,13 @@ https://github.com/KBfinance-team-MetalWallet/metal-wallet-backend
 
 ### 2. 와이어프레임 🖼️
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/4b883345-f381-4669-8ec0-940b0aab6a1b/image.png)
+![image](https://github.com/user-attachments/assets/cf79d7a4-985b-4763-9a4e-a05d6d7fd124)
+
 
 ### 3. ERD 📚
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/4eba287e-b94a-4e6e-b869-8b25e9659b8f/image.png)
+![image](https://github.com/user-attachments/assets/d2997b3a-e0f5-45cf-93b4-4d6134b61092)
+
 
 ### 4. API 명세서 📑
 
@@ -71,14 +65,29 @@ https://github.com/KBfinance-team-MetalWallet/metal-wallet-backend
 ---
 
 ### **최종 아키텍처** 🎯
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <b>Frontend</b><br/>
+      <img src="https://github.com/user-attachments/assets/2769c606-f0c5-409c-8f24-06110e41837f" width="400px" />
+    </td>
+    <td align="center" width="50%">
+      <b>Backend</b><br/>
+      <img src="https://github.com/user-attachments/assets/0a217b5e-2b3a-4364-ab7d-694b21c810d2" width="400px" />
+    </td>
+  </tr>
+</table>
 
-`FrontEnd`
+### Frontend
+- Github Actions을 통한 build → export 후 정적 파일(HTML, CSS, JS) 생성
+- gh-pages를 통해 배포
+- AWS S3 bucket에 정적 웹 사이트 호스팅
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/e2bd3cbd-66e9-4551-8c42-eddee6d30f94/image.png)
-
-`BackEnd`
-
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/2eefbeb8-fc99-40a7-a78e-7fe0e74c9bc9/image.png)
+### Backend
+- Local 개발 환경에서 코드 Push
+- Github Actions를 통한 자동 빌드
+- AWS EC2 인스턴스에 Spring Framework 애플리케이션 배포
+- AWS RDS MySQL 데이터베이스 연동
 
 ## 🍀 주요 기술
 
@@ -107,60 +116,146 @@ https://github.com/KBfinance-team-MetalWallet/metal-wallet-backend
 
 ---
 
-### 1. 암표방지
+# 🛠 주요 기술 구현
 
-> 어떻게 구현했을까?
-> 
+## 1. 암표 방지
+<details>
+<summary><b>구현 방식 및 프로세스</b></summary>
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/f89fce8b-08cf-459c-98fd-c9943b9a39b7/image.png)
+![Anti-Scalping System](https://github.com/user-attachments/assets/b078e98f-91e6-4f70-bf54-547c4e848f4a)
 
-1. 사용자가 티켓을 예매할 때, 전자지갑의 CI와 좌석 정보가 서버로 전송된다.
-2. 티켓 사용 시 QR 코드를 통해 서버는 미리 저장된 CI 값을 활용하여 검증을 수행한다. 이때 서버만이 비밀키를 보유하고 있어 중간에 정보가 탈취되더라도 위조 여부를 확인할 수 있다.
+### 구현 프로세스
+1. 티켓 예매 단계
+   - 사용자의 전자지갑 CI와 좌석 정보가 서버로 전송
+   - 서버에서 비밀키를 통한 정보 암호화 및 저장
 
-이를 통해 티켓 불법 복제를 원천적으로 차단할 수 있다.
+2. 티켓 검증 단계
+   - QR 코드를 통해 서버는 미리 저장된 CI 값으로 검증
+   - 서버만이 비밀키 보유로 정보 탈취 시에도 위조 여부 확인 가능
+   - 티켓 불법 복제 원천 차단
+</details>
 
-> 왜 도입하게 되었을까?
-> 
+<details>
+<summary><b>도입 배경 및 장점</b></summary>
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/e8ad3f7d-cae9-4094-aca6-5077d6e73f00/image.png)
+![Scalping Prevention Background](https://github.com/user-attachments/assets/8410d353-7476-4a1e-b143-33e59a6993d1)
 
-문화 활동의 암표 방지를 위해 정부와 기업에서 노력하고 있다. 하지만 단순 신분증 확인만으로는 한계가 있다는 것을 확인할 수 있었다.
+### 기존 시스템의 한계
+- 문화 활동의 암표 방지를 위한 정부와 기업의 노력
+- 단순 신분증 확인 방식의 한계 존재
 
-1. 정보가 중간에 탈취되어 위/변조 되어도 그 여부 판별가능
-2. 사용자 검증 가능
+### RSA 도입 장점
+1. 보안성 강화
+   - 정보 탈취/위변조 시에도 판별 가능
+   - 정확한 사용자 검증 가능
+2. 전자 지갑 연동
+   - 사용자 식별 보안 강화
+   - 효율적인 인증 시스템 구축
+</details>
 
-RSA는 위와 같은 장점을 갖고 있기에, 전자 지갑의 사용자 식별에 보안을 강화할 수 있을 것이라 생각하여 해당 기술을 도입했다.
+## 2. 동시성
+<details>
+<summary><b>문제 상황</b></summary>
 
-### 2. 동시성
+### 동시 예매 문제점
+- 여러 명의 사용자가 같은 좌석을 동시에 티켓 예매 시 발생하는 이슈
+  1. 티켓 중복 예매 발생
+  2. 재고 없는 상태에서 예매 완료
 
-> 어떻게 구현했을까?
-> 
+### 영향
+- 사용자의 성공적 예매 후 중복 예매 취소
+- 부정적인 사용자 경험 초래
+- 서비스 신뢰도 하락
+</details>
 
-### 3. 트래픽
+<details>
+<summary><b>문제 원인</b></summary>
 
-**문제상황 :** 
+### 트랜잭션 격리 수준 이슈
+- **`REPEATABLE READ`** 격리 수준으로 인한 문제점:
+  - 중복된 데이터 갱신 방지 불가
+  - 다수의 트랜잭션이 동시에 가용 좌석으로 판단
+  - DB 레코드 동시 업데이트로 데이터 일관성 훼손
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/aa0f3eb9-b0a5-442a-b675-1ead8c50c986/image.png)
+### 초기 해결 시도
+- Ticket의 외래키(좌석 id값)에 `UNIQUE` 제약 조건 설정
+- 한계점:
+  - 데드락 발생 가능성
+  - 트랜잭션 재시도로 인한 성능 저하
+  - 트랜잭션의 순차적 처리 필요성 대두
 
-우리 서비스는 전자지갑과 티켓 서비스가 동일한 서버에서 운영된다.
+### 해결 방향
+- Redis 분산 락 도입을 통한 동시성 제어
+- 단일 사용자만 예약 성공하도록 설계
+</details>
 
-예매가 몰리는 특정 시간대에 트래픽이 집중되면서 서버에 과부하가 걸리면, 전자지갑 서비스와 결제 서비스 모두 영향을 받을 수 있기에 트래픽 처리 방안을 고려해야 했다.
+<details>
+<summary><b>해결 방안</b></summary>
 
-**솔루션 검토 :** 
+### 작동 원리
+![image](https://github.com/user-attachments/assets/203369e5-ccf0-4d0f-a104-27d7d168d687)
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/5b070eaf-b02a-4273-9138-b31712d63ffa/image.png)
+- Redis의 Key-Value 구조 활용
+- 좌석별 고유 락 관리
+- 선착순 락 획득자만 예약 진행 가능
+- 동시 요청 시 중복 예매 방지
 
-1. Nginx Reverse Proxy를 통해 Rate Bucket을 설정하여 트래픽을 서버 외부에서 관리하는 방법.이를 통해 Spring 서버 앞단에서 트래픽을 효율적으로 분산하여 티켓 서비스의 부하를 줄일 수 있다.
-2. Spring 서버를 하나 구현하여 가상 대기열을 만들어 관리하는 방법.필터와 인터셉터를 활용해 대기열을 구성할 수 있다.사용자의 새로고침에도 대기열 순서가 유지되게 커스텀할 수 있다는 장점이 있다.
+### 개선 효과
+#### 적용 전
+![image](https://github.com/user-attachments/assets/dfa593ee-32e4-45e1-b57f-b61e9d9b4ce4)
+- 4명의 사용자 중복 예매 발생
+- 데이터 무결성 훼손
 
-시간적인 요인과 향후 서버 이중화 시 로드밸런서 등으로 확장이 가능한 Nginx를 선택했다.
+#### 적용 후
+![image](https://github.com/user-attachments/assets/3de81b3d-6060-4957-b7f5-9fab88f822e2)
+- 재고 초과 문제 해결
+- 고부하 상황에서도 안정적인 티켓팅 처리
+- 다중 서버 환경에서의 동시성 제어 가능성 확보
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/0579513f-8bff-4034-8d2b-3f7209197aaa/73af5720-d216-40f5-99a6-f878ef8d81ae/image.png)
+*Note: 테스트 코드 및 성능 개선 관련 내용 추가 예정*
+</details>
 
-Nginx로 요청이 들어오면 Lua 스크립트를 통해 실시간으로 접수자 수를 counting하여 해당 요청이 동시에 얼마나 들어오는지를 체크하게 했다.
+## 3. 트래픽 관리
+<details>
+<summary><b>문제 상황</b></summary>
 
-*물론 해당 로직만으로는 부족한 점이 많다. Bucket Head를 구성하고 이에 Lua 스크립트를 통해 대기자 수를 Counting 하는 로직뿐이다.*
+![Traffic Issue](https://github.com/user-attachments/assets/6937f6d1-8666-4319-abcc-eec833b5a770)
 
+### 서비스 구조상 문제점
+- 전자지갑과 티켓 서비스의 단일 서버 운영
+- 특정 시간대 트래픽 집중으로 인한 과부하 위험
+- 전체 서비스(전자지갑, 결제)에 영향을 미칠 수 있는 구조
+</details>
+
+<details>
+<summary><b>해결 방안</b></summary>
+
+![Solution Architecture](https://github.com/user-attachments/assets/29204c83-d922-4dc8-9557-915137bf6e50)
+
+### 검토된 솔루션
+1. **Nginx Reverse Proxy 방식**
+   - Rate Bucket을 통한 외부 트래픽 관리
+   - Spring 서버 앞단에서 효율적인 트래픽 분산
+   - 티켓 서비스 부하 감소
+
+2. **Spring 가상 대기열 방식**
+   - 필터와 인터셉터 활용한 대기열 구성
+   - 사용자 새로고침에도 대기열 순서 유지
+   - 커스터마이징 가능
+
+### 최종 선택: Nginx Reverse Proxy
+- 시간적 효율성
+- 향후 서버 이중화 및 로드밸런서 확장 용이성 고려
+
+![Implementation Detail](https://github.com/user-attachments/assets/e4e20b68-dde6-4592-8e88-e0273765a2a5)
+
+### 구현 상세
+- Lua 스크립트를 통한 실시간 접수자 수 카운팅
+- 동시 요청 모니터링 시스템 구축
+- Bucket Head 구성 및 대기자 수 Counting 로직 구현
+
+*Note: 현재는 기본적인 트래픽 관리 기능만 구현된 상태로, 추후 확장 예정*
+</details>
 ## 🚨 트러블슈팅
 
 ---
