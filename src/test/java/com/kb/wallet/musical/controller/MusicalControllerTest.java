@@ -1,11 +1,7 @@
 package com.kb.wallet.musical.controller;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.util.AssertionErrors.assertEquals;
-import static org.springframework.test.util.AssertionErrors.assertFalse;
-import static org.springframework.test.util.AssertionErrors.assertTrue;
 
 import com.kb.wallet.global.common.response.ApiResponse;
 import com.kb.wallet.global.common.response.CursorResponse;
@@ -17,8 +13,12 @@ import com.kb.wallet.musical.dto.response.MusicalScheduleResponse;
 import com.kb.wallet.musical.dto.response.MusicalScheduleSeatAvailabilityResponse;
 import com.kb.wallet.musical.dto.response.MusicalSeatAvailabilityResponse;
 import com.kb.wallet.musical.service.MusicalService;
+import com.kb.wallet.seat.constant.Grade;
+import com.kb.wallet.seat.dto.response.SectionAvailability;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,6 +43,8 @@ class MusicalControllerTest {
   private Member member;
 
   private Musical musical;
+  private MusicalSeatAvailabilityResponse seatAvailabilityResponse;
+  private MusicalScheduleSeatAvailabilityResponse scheduleSeatResponse;
 
   @BeforeEach
   void setUp() {
@@ -60,6 +62,15 @@ class MusicalControllerTest {
       .detailImageUrl("상세 이미지 URL")
       .placeImageUrl("장소 이미지 URL")
       .build();
+
+    // MusicalSeatAvailabilityResponse 설정
+    seatAvailabilityResponse = new MusicalSeatAvailabilityResponse(1L, LocalTime.of(14, 30));
+    seatAvailabilityResponse.setActorNames(Arrays.asList("배우1", "배우2"));
+    List<SectionAvailability> sections = new ArrayList<>(); // SectionAvailability 객체들 추가 필요
+    seatAvailabilityResponse.setSections(sections);
+
+    // MusicalScheduleSeatAvailabilityResponse 설정
+    scheduleSeatResponse = new MusicalScheduleSeatAvailabilityResponse(1L, 1, Grade.R);
   }
 
   @Nested
@@ -69,13 +80,39 @@ class MusicalControllerTest {
     @Test
     @DisplayName("ID로 뮤지컬을 성공적으로 조회할 수 있다")
     void getMusicalById_Success() {
+      // given
       when(musicalService.getMusicalById(1L)).thenReturn(musical);
 
+      // when
       ApiResponse<MusicalDetailResponse> response = musicalController.getMusicalById(1L);
 
-      assertEquals("Status code should be 200", 200, response.getResultCode());
-      assertNotNull(response.getResult());
-      assertEquals("Musical ID should match", musical.getId(), response.getResult().getId());
+      // then
+      assertThat(response)
+        .as("Response should not be null")
+        .isNotNull()
+        .satisfies(r -> {
+          assertThat(r.getResultCode())
+            .as("Status code should be 200")
+            .isEqualTo(200);
+
+          assertThat(r.getResult())
+            .as("Result should not be null")
+            .isNotNull()
+            .satisfies(result -> {
+              assertThat(result.getId())
+                .as("Musical ID should match")
+                .isEqualTo(musical.getId());
+              assertThat(result.getTitle())
+                .as("Musical title should match")
+                .isEqualTo(musical.getTitle());
+              assertThat(result.getPlace())
+                .as("Musical place should match")
+                .isEqualTo(musical.getPlace());
+              assertThat(result.getPlaceDetail())
+                .as("Musical place detail should match")
+                .isEqualTo(musical.getPlaceDetail());
+            });
+        });
     }
 
     @Test
@@ -84,37 +121,77 @@ class MusicalControllerTest {
       // given
       List<MusicalResponse> musicals = new ArrayList<>();
       musicals.add(MusicalResponse.convertToResponse(musical));
-
-      // musicalService.getMusicalsWithLimit()는 List<MusicalResponse>를 반환
       when(musicalService.getMusicalsWithLimit(10)).thenReturn(musicals);
 
       // when
-      ApiResponse<CursorResponse<MusicalResponse>> response = musicalController.getMusicals(null,
-        10);
+      ApiResponse<CursorResponse<MusicalResponse>> response =
+        musicalController.getMusicals(null, 10);
 
       // then
-      assertEquals("Status code should be 200", 200, response.getResultCode());
-      assertNotNull(response.getResult());
-      assertFalse("Result data should not be empty", response.getResult().getData().isEmpty());
+      assertThat(response)
+        .as("Response should not be null")
+        .isNotNull()
+        .satisfies(r -> {
+          assertThat(r.getResultCode())
+            .as("Status code should be 200")
+            .isEqualTo(200);
 
-      // 데이터 검증 추가
-      MusicalResponse firstMusical = response.getResult().getData().get(0);
-      assertEquals("Musical title should match", musical.getTitle(), firstMusical.getTitle());
-      assertEquals("Musical id should match", musical.getId(), firstMusical.getId());
+          assertThat(r.getResult())
+            .as("Result should not be null")
+            .isNotNull()
+            .satisfies(result -> {
+              assertThat(result.getData())
+                .asList()
+                .as("Result data should not be empty")
+                .isNotEmpty()
+                .hasSize(1)
+                .first()
+                .satisfies(firstMusical -> {
+                  assertThat(((MusicalResponse) firstMusical).getId())
+                    .as("Musical ID should match")
+                    .isEqualTo(musical.getId());
+                  assertThat(((MusicalResponse) firstMusical).getTitle())
+                    .as("Musical title should match")
+                    .isEqualTo(musical.getTitle());
+                });
+            });
+        });
     }
 
     @Test
     @DisplayName("커서를 이용하여 다음 뮤지컬 목록을 조회할 수 있다")
     void getMusicals_WithCursor() {
+      // given
       List<MusicalResponse> musicals = new ArrayList<>();
       musicals.add(MusicalResponse.convertToResponse(musical));
       when(musicalService.getMusicalsAfterCursor(1L, 10)).thenReturn(musicals);
 
-      ApiResponse<CursorResponse<MusicalResponse>> response = musicalController.getMusicals(1L, 10);
+      // when
+      ApiResponse<CursorResponse<MusicalResponse>> response =
+        musicalController.getMusicals(1L, 10);
 
-      assertEquals("Status code should be 200", 200, response.getResultCode());
-      assertNotNull(response.getResult());
-      assertFalse("Result data should not be empty", response.getResult().getData().isEmpty());
+      // then
+      assertThat(response)
+        .as("Response should not be null")
+        .isNotNull()
+        .satisfies(r -> {
+          assertThat(r.getResultCode())
+            .as("Status code should be 200")
+            .isEqualTo(200);
+
+          assertThat(r.getResult())
+            .as("Result should not be null")
+            .isNotNull()
+            .satisfies(result -> {
+              assertThat(result.getData())
+                .asList()
+                .as("Result data should not be empty")
+                .isNotEmpty();
+              assertThat(result.getNextCursor())
+                .as("Next cursor should not be null")
+                .isNotNull();
+            });
+        });
     }
   }
 
@@ -125,20 +202,33 @@ class MusicalControllerTest {
     @Test
     @DisplayName("특정 날짜의 뮤지컬 스케줄 정보를 조회할 수 있다")
     void getScheduleInfos_Success() {
+      // given
       List<MusicalSeatAvailabilityResponse> responses = new ArrayList<>();
-      when(musicalService.getScheduleInfos(1L, LocalDate.now().toString())).thenReturn(responses);
+      when(musicalService.getScheduleInfos(1L, LocalDate.now().toString()))
+        .thenReturn(responses);
 
-      ApiResponse<List<MusicalSeatAvailabilityResponse>> response = musicalController.getScheduleInfos(
-        member, 1L, LocalDate.now().toString());
+      // when
+      ApiResponse<List<MusicalSeatAvailabilityResponse>> response =
+        musicalController.getScheduleInfos(member, 1L, LocalDate.now().toString());
 
-      assertEquals("Status code should be 200", 200, response.getResultCode());
-      assertNotNull(response.getResult());
-      assertTrue("Result data should be empty", response.getResult().isEmpty());
+      // then
+      assertThat(response)
+        .as("Response should not be null")
+        .isNotNull()
+        .satisfies(r -> {
+          assertThat(r.getResultCode())
+            .as("Status code should be 200")
+            .isEqualTo(200);
+          assertThat(r.getResult())
+            .as("Result should not be null")
+            .isNotNull();
+        });
     }
 
     @Test
     @DisplayName("뮤지컬의 전체 스케줄 날짜를 조회할 수 있다")
     void getScheduleDates_Success() {
+      // given
       List<String> dates = new ArrayList<>();
       dates.add("2024-10-23");
       MusicalScheduleResponse responseMock = MusicalScheduleResponse.builder()
@@ -147,9 +237,11 @@ class MusicalControllerTest {
         .build();
       when(musicalService.getScheduleDates(1L)).thenReturn(responseMock);
 
-      ApiResponse<MusicalScheduleResponse> response = musicalController.getScheduleDates(member,
-        1L);
+      // when
+      ApiResponse<MusicalScheduleResponse> response = musicalController.getScheduleDates(
+        member, 1L);
 
+      // then
       assertThat(response)
         .as("Response should not be null")
         .isNotNull()
@@ -159,27 +251,113 @@ class MusicalControllerTest {
             .isEqualTo(200);
 
           assertThat(r.getResult())
-            .as("Response result should not be null")
+            .as("Result should not be null")
             .isNotNull()
-            .extracting("scheduleDate")
-            .as("Schedule dates should match")
-            .isEqualTo(dates);
+            .satisfies(result -> {
+              assertThat(result.getScheduleDate())
+                .as("Schedule dates should match")
+                .asList()
+                .hasSize(1)
+                .contains("2024-10-23");
+              assertThat(result.getMusicalId())
+                .as("Musical ID should match")
+                .isEqualTo(1L);
+            });
         });
+    }
+  }
 
+  @Nested
+  @DisplayName("Musical 좌석 가용성 API 테스트")
+  class SeatAvailabilityTest {
+
+    @Test
+    @DisplayName("특정 날짜의 뮤지컬 좌석 가용성 정보를 상세하게 조회할 수 있다")
+    void getScheduleInfos_DetailedValidation() {
+      // given
+      List<MusicalSeatAvailabilityResponse> responses = Arrays.asList(seatAvailabilityResponse);
+      when(musicalService.getScheduleInfos(1L, LocalDate.now().toString()))
+        .thenReturn(responses);
+
+      // when
+      ApiResponse<List<MusicalSeatAvailabilityResponse>> response =
+        musicalController.getScheduleInfos(member, 1L, LocalDate.now().toString());
+
+      // then
+      assertThat(response)
+        .as("Response should not be null")
+        .isNotNull()
+        .satisfies(r -> {
+          assertThat(r.getResultCode())
+            .as("Status code should be 200")
+            .isEqualTo(200);
+
+          assertThat(r.getResult())
+            .as("Result should not be null")
+            .isNotNull()
+            .asList()
+            .as("Result should contain exactly one response")
+            .hasSize(1)
+            .first()
+            .satisfies(firstResponse -> {
+              assertThat(((MusicalSeatAvailabilityResponse) firstResponse).getScheduleId())
+                .as("Schedule ID should match")
+                .isEqualTo(1L);
+              assertThat(((MusicalSeatAvailabilityResponse) firstResponse).getTime())
+                .as("Time should match")
+                .isEqualTo("14:30");
+              assertThat(((MusicalSeatAvailabilityResponse) firstResponse).getActorNames())
+                .as("Actor names should be present")
+                .asList()
+                .hasSize(2)
+                .contains("배우1", "배우2");
+              assertThat(((MusicalSeatAvailabilityResponse) firstResponse).getSections())
+                .as("Sections should not be null")
+                .isNotNull();
+            });
+        });
     }
 
     @Test
-    @DisplayName("특정 뮤지컬의 잔여석 정보를 조회할 수 있다")
-    void getAvailableSeats_Success() {
-      List<MusicalScheduleSeatAvailabilityResponse> responses = new ArrayList<>();
+    @DisplayName("특정 스케줄의 좌석 가용성 정보를 상세하게 조회할 수 있다")
+    void getAvailableSeats_DetailedValidation() {
+      // given
+      List<MusicalScheduleSeatAvailabilityResponse> responses =
+        Arrays.asList(scheduleSeatResponse);
       when(musicalService.getAvailableSeats(1L)).thenReturn(responses);
 
+      // when
       ApiResponse<List<MusicalScheduleSeatAvailabilityResponse>> response =
         musicalController.getAvailableSeats(member, 1L);
 
-      assertEquals("Status code should be 200", 200, response.getResultCode());
-      assertNotNull(response.getResult());
-      assertTrue("Result data should be empty", response.getResult().isEmpty());
+      // then
+      assertThat(response)
+        .as("Response should not be null")
+        .isNotNull()
+        .satisfies(r -> {
+          assertThat(r.getResultCode())
+            .as("Status code should be 200")
+            .isEqualTo(200);
+
+          assertThat(r.getResult())
+            .as("Result should not be null")
+            .isNotNull()
+            .asList()
+            .as("Result should contain exactly one response")
+            .hasSize(1)
+            .first()
+            .satisfies(firstResponse -> {
+              assertThat(((MusicalScheduleSeatAvailabilityResponse) firstResponse).getSeatId())
+                .as("Seat ID should match")
+                .isEqualTo(1L);
+              assertThat(((MusicalScheduleSeatAvailabilityResponse) firstResponse).getSeatNo())
+                .as("Seat number should match")
+                .isEqualTo(1);
+              assertThat(((MusicalScheduleSeatAvailabilityResponse) firstResponse).getGrade())
+                .as("Seat grade should match")
+                .isEqualTo(Grade.R);
+            });
+        });
     }
   }
 }
