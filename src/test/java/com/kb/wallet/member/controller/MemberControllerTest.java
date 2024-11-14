@@ -15,7 +15,6 @@ import static org.springframework.test.util.AssertionErrors.assertEquals;
 import static org.springframework.test.util.AssertionErrors.assertTrue;
 
 import com.kb.wallet.global.common.response.ApiResponse;
-import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.dto.request.LoginMemberRequest;
@@ -38,9 +37,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -49,7 +45,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @ExtendWith(MockitoExtension.class)
-public class MemberControllerTest {
+class MemberControllerTest {
 
   @Mock
   private MemberServiceImpl memberService;
@@ -221,17 +217,14 @@ public class MemberControllerTest {
     when(tokenProvider.createToken(anyString(), anyString())).thenReturn(accessToken);
 
     // when
-    ResponseEntity<HashMap<String, Object>> response = memberController.loginMember(request);
+    ApiResponse<HashMap<String, Object>> response = memberController.loginMember(request);
 
     // then
-    assertEquals("응답 상태는 200 OK 여야 합니다.", HttpStatus.OK, response.getStatusCode());
-    HashMap<String, Object> body = response.getBody();
+    assertEquals("응답 코드는 200 이어야 합니다.", 200, response.getResultCode());
+    HashMap<String, Object> body = response.getResult();
     assertEquals("결과는 success 여야 합니다.", "success", body.get("result"));
     assertEquals("AccessToken은 일치해야 합니다.", accessToken,
-      body.get("accessToken")); // Use the mocked token
-    HttpHeaders headers = response.getHeaders();
-    assertEquals("헤더에 JWT 토큰이 포함되어야 합니다.", "Bearer " + accessToken,
-      headers.getFirst(JwtFilter.AUTHORIZATION_HEADER));
+      body.get("accessToken"));
   }
 
   @Test
@@ -244,11 +237,11 @@ public class MemberControllerTest {
       });
 
     // when
-    ResponseEntity<HashMap<String, Object>> response = memberController.loginMember(request);
+    ApiResponse<HashMap<String, Object>> response = memberController.loginMember(request);
 
     // then
-    assertEquals("응답 상태는 UNAUTHORIZED 여야 합니다.", HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    HashMap<String, Object> body = response.getBody();
+    assertEquals("응답 코드는 404 이어야 합니다.", 404, response.getResultCode());
+    HashMap<String, Object> body = response.getResult();
     assertEquals("결과는 fail 여야 합니다.", "fail", body.get("result"));
     assertTrue("메시지는 'Login failed: Login failed' 여야 합니다.",
       body.get("message").toString().startsWith("Login failed:"));

@@ -1,7 +1,6 @@
 package com.kb.wallet.member.controller;
 
 import com.kb.wallet.global.common.response.ApiResponse;
-import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.dto.request.LoginMemberRequest;
@@ -14,9 +13,6 @@ import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -48,7 +44,7 @@ public class MemberController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<HashMap<String, Object>> loginMember(
+  public ApiResponse<HashMap<String, Object>> loginMember(
     @RequestBody @Valid LoginMemberRequest request) {
     HashMap<String, Object> map = new HashMap<>();
 
@@ -73,16 +69,12 @@ public class MemberController {
       map.put("result", "success");
       map.put("accessToken", accessToken);
 
-      // 헤더에 토큰 추가
-      HttpHeaders httpHeaders = new HttpHeaders();
-      httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-
-      return new ResponseEntity<>(map, httpHeaders, HttpStatus.OK);
+      return ApiResponse.ok(map);
 
     } catch (AuthenticationException e) {
       map.put("result", "fail");
       map.put("message", "Login failed: " + e.getMessage());
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(map); // UNAUTHORIZED 반환
+      return ApiResponse.unauthorized(map);
     }
   }
 
