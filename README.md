@@ -23,7 +23,7 @@ https://github.com/KBfinance-team-MetalWallet/metal-wallet-frontend
 
 ![Service Preview](https://github.com/user-attachments/assets/3ef0f7de-e949-4e3a-a94c-f7077045343b)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;티켓 예매하기&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;티켓 사용하기&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;거래 내역 확인하기
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;티켓 예매하기&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;티켓 사용하기&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;거래 내역 확인하기
 
 ## ✍️ 기획 의도
 
@@ -289,8 +289,7 @@ https://github.com/KBfinance-team-MetalWallet/metal-wallet-frontend
 
 | [손서원](https://github.com/seowonn) | [이준렬](https://github.com/lee-JunR) | [이현희](https://github.com/heegane) | [최민준](https://github.com/veniharuka) | [최한솔](https://github.com/chuseok) | [최호진](https://github.com/gentle-tiger) |
 |:---:| :---: | :---: | :---: | :---: | :---: |
-|<a href="https://github.com/seowonn"><img src="https://avatars.githubusercontent.com/u/seowonn" width="90px" height="90px"></a>|<a href="https://github.com/lee-JunR"><img src="https://avatars.githubusercontent.com/u/lee-JunR" width="90px" height="90px"></a>|<a href="https://github.com/heegane"><img src="https://avatars.githubusercontent.com/u/heegane" width="90px" height="90px"></a>|<a href="https://github.com/veniharuka"><img src="https://avatars.githubusercontent.com/u/veniharuka" width="90px" height="90px"></a>|<a href="https://github.com/chuseok"><img src="https://avatars.githubusercontent.com/u/chuseok" width="90px" height="90px"></a>|<a href="https://github.com/gentle-tiger"><img src="https://avatars.githubusercontent.com/u/gentle-tiger" width="90px" height="90px"></a>|
-
+|![image](https://github.com/user-attachments/assets/778e702a-77b9-4d5e-9ecb-431bc52aa5b6)|![image](https://github.com/user-attachments/assets/0aecee06-4363-48da-ae27-adb73c321a17)|![image](https://github.com/user-attachments/assets/4e0a6e24-bb61-445d-b117-7e487da587fb)|![image](https://github.com/user-attachments/assets/3c3090a3-e0b9-439b-a16b-0506020b94ea)|![image](https://github.com/user-attachments/assets/c72046ed-c9d5-44ce-9bd3-2ebb24e2e008)|![image](https://github.com/user-attachments/assets/05a62117-2d66-499e-b9e2-9108549fb6e3)|
 
 ### 협업 도구 🛠️
 
