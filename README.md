@@ -286,18 +286,11 @@ https://github.com/KBfinance-team-MetalWallet/metal-wallet-frontend
 ---
 
 # 👥 팀원 소개
-| **Name** | **Position** | **Role** | **Github** |
-| --- | --- | --- | --- |
-| [손서원](https://github.com/seowonn) | Backend & Frontend | • [BE] QR 암호화, 티켓 생성 및 사용 로직<br>• [FE] 메인페이지, 공지 티켓 페이지 | [@seowonn](https://github.com/seowonn) |
-| [이준렬](https://github.com/lee-JunR) | Backend & Frontend | • [BE] 글로벌 예외 처리, CI/CD, 트래픽 처리<br>• [FE] 메세 티켓 신청 페이지, 관리자 페이지 | [@lee-JunR](https://github.com/lee-JunR) |
-| [이현희](https://github.com/heegane) | Backend & Frontend | • [BE] 회원가입 & 로그인, 예매 동시성 처리<br>• [FE] 뮤직픽 넥슨/서버 내장/어버버 페이지 | [@heegane](https://github.com/heegane) |
-| [최민준](https://github.com/veniharuka) | Backend & Frontend | • [BE] QR 암호화, 티켓 생성 및 사용<br>• [FE] 티켓 서비스 페이지, 티켓 사용 | [@veniharuka](https://github.com/veniharuka) |
-| [최한솔](https://github.com/chuseok) | Backend & Frontend | • [BE] QR 암호화, 티켓 생성 및 사용<br>• [FE] 홈 페이지, 티켓 내역 페이지 | [@chuseok](https://github.com/chuseok) |
-| [최호진](https://github.com/gentle-tiger) | Backend & Frontend | • [BE] 계좌 생성 및 조회, 예매 동시성 처리<br>• [FE] 티켓 사용 페이지, 이벤트 날짜 신청 페이지 | [@gentle-tiger](https://github.com/gentle-tiger) |
 
-**`KPT 회고`** 
+| [손서원](https://github.com/seowonn) | [이준렬](https://github.com/lee-JunR) | [이현희](https://github.com/heegane) | [최민준](https://github.com/veniharuka) | [최한솔](https://github.com/chuseok) | [최호진](https://github.com/gentle-tiger) |
+|:---:| :---: | :---: | :---: | :---: | :---: |
+|<a href="https://github.com/seowonn"><img src="https://avatars.githubusercontent.com/u/seowonn" width="90px" height="90px"></a>|<a href="https://github.com/lee-JunR"><img src="https://avatars.githubusercontent.com/u/lee-JunR" width="90px" height="90px"></a>|<a href="https://github.com/heegane"><img src="https://avatars.githubusercontent.com/u/heegane" width="90px" height="90px"></a>|<a href="https://github.com/veniharuka"><img src="https://avatars.githubusercontent.com/u/veniharuka" width="90px" height="90px"></a>|<a href="https://github.com/chuseok"><img src="https://avatars.githubusercontent.com/u/chuseok" width="90px" height="90px"></a>|<a href="https://github.com/gentle-tiger"><img src="https://avatars.githubusercontent.com/u/gentle-tiger" width="90px" height="90px"></a>|
 
-[KPT 회고](https://www.notion.so/KPT-13794635e7168021b9cec11384c9b943?pvs=21)
 
 ### 협업 도구 🛠️
 
