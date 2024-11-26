@@ -7,11 +7,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
-@Setter
+@Builder
 public class TicketListResponse {
 
   private Long id;
@@ -46,31 +47,26 @@ public class TicketListResponse {
     this.seatNo = seatNo;
   }
 
+  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
+          "yyyy.MM.dd(E) HH:mm", Locale.KOREAN);
+  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(
+          "yyyy.MM.dd(E)", Locale.KOREAN);
+  private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(
+          "HH:mm", Locale.KOREAN);
+
   // LocalDateTime을 "년.월.일(요일) 시:분" 형태로 변환하는 메서드
-  private String formatDateTime(LocalDateTime dateTime) {
-    if (dateTime == null) {
-      return null;
-    }
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd(E) HH:mm",
-        Locale.KOREAN);
-    return dateTime.format(dateTimeFormatter);
+  public static String formatDateTime(LocalDateTime dateTime) {
+    return (dateTime == null) ? null : dateTime.format(DATE_TIME_FORMATTER);
   }
 
   // LocalDate를 "년.월.일(요일)" 형태로 변환하는 메서드
-  private String formatDate(LocalDate date) {
-    if (date == null) {
-      return null;
-    }
-    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd(E)", Locale.KOREAN);
-    return date.format(dateFormatter);
+  public static String formatDate(LocalDate date) {
+    return (date == null) ? null : date.format(DATE_FORMATTER);
   }
 
   // LocalTime을 "시:분" 형태로 변환하는 메서드
-  private String formatTime(LocalTime time) {
-    if (time == null) {
-      return null;
-    }
-    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-    return time.format(timeFormatter);
+  public static String formatTime(LocalTime time) {
+    return (time == null) ? null : time.format(TIME_FORMATTER);
   }
+
 }
