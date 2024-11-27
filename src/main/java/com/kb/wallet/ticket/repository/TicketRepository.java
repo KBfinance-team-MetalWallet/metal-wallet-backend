@@ -1,6 +1,5 @@
 package com.kb.wallet.ticket.repository;
 
-import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
 import com.kb.wallet.ticket.dto.response.TicketListResponse;
@@ -15,12 +14,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
-  Optional<Ticket> findByIdAndMember(Long ticketId, Member member);
-
   @Query("SELECT t FROM Ticket t "
+      + "JOIN FETCH t.member m "
       + "WHERE t.id = :id "
-      + "AND t.member.email = :email ")
-  Optional<Ticket> findByMember(
+      + "AND m.email = :email ")
+  Optional<Ticket> findByTicketIdAndEmail(
       @Param("id") Long id,
       @Param("email") String email);
 
@@ -38,7 +36,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
       "AND (:status IS NULL OR t.ticketStatus = :status) " +
       "AND (:cursor IS NULL OR t.id < :cursor) " +
       "ORDER BY t.id desc")
-  List<TicketListResponse> findTicketsByMemberAndTicketStatus(
+  List<TicketListResponse> findAllByMemberAndTicketStatus(
       @Param("email") String email,
       @Param("status") TicketStatus status,
       @Param("cursor") Long cursor,

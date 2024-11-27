@@ -1,5 +1,6 @@
 package com.kb.wallet.global.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -13,12 +14,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackages = "com.kb.wallet")
 public class WebConfig implements WebMvcConfigurer {
 
+  @Value("${frontend.url}")
+  private String frontendUrl;
+
   @Override
   public void addResourceHandlers(ResourceHandlerRegistry registry) {
     //Vue.js 빌드 결과물(정적 파일)을 제공할 경로를 설정합니다.
     //Vue.js 빌드 결과물이 /static 폴더에 배치되었다고 가정
     registry.addResourceHandler("/static/**")
-        .addResourceLocations("classpath:/static/");
+      .addResourceLocations("classpath:/static/");
   }
 
   @Override
@@ -29,10 +33,10 @@ public class WebConfig implements WebMvcConfigurer {
   @Override
   public void addCorsMappings(CorsRegistry registry) {
     registry.addMapping("/**")
-        .allowedMethods("*")
-        .allowedOrigins("https://kbfinance-team-metalwallet.github.io", "http://localhost:5173")
-        .allowedOriginPatterns("*")
-        .allowedHeaders("*")
-        .allowCredentials(true);
+      .allowedMethods("*")
+      .allowedOrigins(frontendUrl)
+      .allowedOriginPatterns("*")
+      .allowedHeaders("*")
+      .allowCredentials(true);
   }
 }

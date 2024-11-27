@@ -1,52 +1,48 @@
 package com.kb.wallet.musical.domain;
 
 import java.time.LocalDate;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "musical")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@DynamicUpdate
 public class Musical {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @NotNull
+  @Column(nullable = false, length = 50)
   private String title;
 
-  @NotNull
+  @Column(nullable = false, unique = true)
   private int ranking;
 
-  @NotNull
+  @Column(nullable = false, length = 30)
   private String place;
 
-  @NotNull
+  @Column(nullable = false, length = 50)
   private String placeDetail;
 
-  @NotNull
+  @Column(nullable = false)
   private LocalDate ticketingStartDate;
 
-  @NotNull
+  @Column(nullable = false)
   private LocalDate ticketingEndDate;
 
-  @NotNull
+  @Column(nullable = false)
   private int runningTime;
 
   private String posterImageUrl;

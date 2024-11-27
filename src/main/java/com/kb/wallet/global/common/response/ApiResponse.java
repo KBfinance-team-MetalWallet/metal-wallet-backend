@@ -37,4 +37,7 @@ public class ApiResponse<T> {
     return new ApiResponse<>(data, 201, "Created");
   }
 
+  public static <T> ApiResponse<T> unauthorized(T data) {
+    return new ApiResponse<>(data, 404, "Unauthorized");
+  }
 }

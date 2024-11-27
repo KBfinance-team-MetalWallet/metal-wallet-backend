@@ -5,17 +5,15 @@ import com.kb.wallet.global.common.response.CursorResponse;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.dto.request.EncryptRequest;
-import com.kb.wallet.ticket.dto.request.TicketExchangeRequest;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.dto.request.VerifyTicketRequest;
 import com.kb.wallet.ticket.dto.response.ProposedEncryptResponse;
-import com.kb.wallet.ticket.dto.response.TicketExchangeResponse;
 import com.kb.wallet.ticket.dto.response.TicketListResponse;
 import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.service.TicketService;
 import java.util.List;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,8 +36,8 @@ public class TicketController {
   @PostMapping
   public ApiResponse<List<TicketResponse>> createTicket(
       @AuthenticationPrincipal Member member,
-      @RequestBody TicketRequest ticketRequest) {
-    List<TicketResponse> tickets = ticketService.saveTicket(member.getEmail(), ticketRequest);
+      @RequestBody @Valid TicketRequest ticketRequest) {
+    List<TicketResponse> tickets = ticketService.bookTicket(member.getEmail(), ticketRequest);
     return ApiResponse.created(tickets);
   }
 
@@ -49,11 +47,12 @@ public class TicketController {
       @RequestParam(name = "cursor", required = false) Long cursor,
       @RequestParam(name = "size", defaultValue = "10") int size,
       @RequestParam(name = "status", required = false) String status) {
-    TicketStatus ticketStatus = "booked".equalsIgnoreCase(status) ? TicketStatus.BOOKED : null;
+    TicketStatus ticketStatus = TicketStatus.convertToTicketStatus(status);
+
     List<TicketListResponse> tickets;
     Long nextCursor = null;
 
-    tickets = ticketService.findAllBookedTickets(member.getEmail(),
+    tickets = ticketService.getTickets(member.getEmail(),
         ticketStatus, 0,
         size, cursor);
     if (!tickets.isEmpty()) {
@@ -61,14 +60,6 @@ public class TicketController {
     }
     CursorResponse<TicketListResponse> cursorResponse = new CursorResponse<>(tickets, nextCursor);
     return ApiResponse.ok(cursorResponse);
-  }
-
-  @GetMapping("/{ticketId}")
-  public ApiResponse<TicketResponse> getTicket(
-      @AuthenticationPrincipal Member member,
-      @PathVariable(name = "ticketId") Long ticketId) {
-    TicketResponse response = ticketService.findTicket(member.getEmail(), ticketId);
-    return ApiResponse.ok(response);
   }
 
   @PostMapping("encrypt/{ticketId}")
@@ -93,32 +84,6 @@ public class TicketController {
   public ApiResponse<Void> cancelTicket(
       @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
     ticketService.cancelTicket(member.getEmail(), ticketId);
-    return ApiResponse.ok();
-  }
-
-  @GetMapping("/exchange")
-  public ResponseEntity<Page<TicketExchangeResponse>> getUserExchangedTickets(
-      @AuthenticationPrincipal Member member,
-      @RequestParam(name = "page", defaultValue = "0") int page,
-      @RequestParam(name = "size", defaultValue = "10") int size) {
-    Page<TicketExchangeResponse> userExchangedTickets = ticketService.getUserExchangedTickets(
-        member, page, size);
-    return ResponseEntity.ok(userExchangedTickets);
-  }
-
-  @PostMapping("/exchange")
-  public ResponseEntity<TicketExchangeResponse> createTicketExchange(
-      @AuthenticationPrincipal Member member,
-      @RequestBody TicketExchangeRequest exchangeRequest) {
-    TicketExchangeResponse ticketExchange = ticketService.createTicketExchange(member,
-        exchangeRequest);
-    return ResponseEntity.ok(ticketExchange);
-  }
-
-  @DeleteMapping("/exchange/{ticketId}")
-  public ApiResponse<Void> cancelTicketExchange(
-      @AuthenticationPrincipal Member member, @PathVariable(name = "ticketId") long ticketId) {
-    ticketService.cancelTicketExchange(member.getEmail(), ticketId);
     return ApiResponse.ok();
   }
 }
